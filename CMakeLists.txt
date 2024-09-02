@@ -44,8 +44,6 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -Wall -Wextra -Wpedantic
 )
 
-message("PROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}")
-
 # Include directories
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
