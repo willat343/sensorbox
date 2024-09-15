@@ -26,6 +26,9 @@ list(APPEND SENSORBOX_SYSTEM_LIBRARIES
     Eigen3::Eigen
 )
 
+# mathbox package
+find_package(mathbox REQUIRED)
+
 # Installation directories
 include(GNUInstallDirs)
 
