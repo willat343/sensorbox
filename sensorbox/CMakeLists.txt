@@ -28,6 +28,12 @@ list(APPEND SENSORBOX_SYSTEM_LIBRARIES
 
 # mathbox package
 find_package(mathbox REQUIRED)
+list(APPEND SENSORBOX_SYSTEM_INCLUDE_DIRS
+    ${mathbox_INCLUDE_DIRS}
+)
+list(APPEND SENSORBOX_SYSTEM_INCLUDE_DIRS
+    ${mathbox_LIBRARIES}
+)
 
 # Installation directories
 include(GNUInstallDirs)
