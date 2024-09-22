@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.5)
 project(sensorbox_catkin
     VERSION 0.2.0
     DESCRIPTION "sensorbox catkin"
