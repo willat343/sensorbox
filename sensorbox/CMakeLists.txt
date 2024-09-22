@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(sensorbox
-    VERSION 0.1.0
+    VERSION 0.2.0
     DESCRIPTION "Sensor Toolbox"
     LANGUAGES CXX
 )
@@ -24,6 +24,15 @@ set(SENSORBOX_SYSTEM_LIBRARIES "")
 find_package(Eigen3 3.3 REQUIRED)
 list(APPEND SENSORBOX_SYSTEM_LIBRARIES
     Eigen3::Eigen
+)
+
+# mathbox package
+find_package(mathbox REQUIRED)
+list(APPEND SENSORBOX_SYSTEM_INCLUDE_DIRS
+    ${mathbox_INCLUDE_DIRS}
+)
+list(APPEND SENSORBOX_SYSTEM_INCLUDE_DIRS
+    ${mathbox_LIBRARIES}
 )
 
 # Installation directories
@@ -67,7 +76,7 @@ write_basic_package_version_file(
     VERSION ${PROJECT_VERSION}
     COMPATIBILITY AnyNewerVersion
 )
-configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/${PROJECT_NAME}-config.cmake.in
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
