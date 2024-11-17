@@ -5,10 +5,11 @@ project(sensorbox_catkin
     LANGUAGES CXX
 )
 
-# Find catkin
-find_package(catkin REQUIRED COMPONENTS
-    mathbox_catkin
-)
+# Find catkin (which adds to CMAKE_PREFIX_PATH)
+find_package(catkin REQUIRED)
+
+# Setup
+include(${CMAKE_CURRENT_SOURCE_DIR}/../sensorbox/cmake/setup.cmake)
 
 # Install sensorbox
 include(ExternalProject)
@@ -23,12 +24,17 @@ ExternalProject_Add(sensorbox
     CMAKE_ARGS
         -DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH_EXT_PROJ}
         -DCMAKE_INSTALL_PREFIX=${CATKIN_DEVEL_PREFIX}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DBUILD_DOCUMENTATION=${BUILD_DOCUMENTATION}
+        -DBUILD_TESTS=${BUILD_TESTS}
 )
 
 # Catkin package
 catkin_package(
     INCLUDE_DIRS
-        ${CATKIN_DEVEL_PREFIX}/include
+        ${CATKIN_DEVEL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}
+        ${sensorbox_SYSTEM_INCLUDE_DIRS}
     LIBRARIES
-        ${CATKIN_DEVEL_PREFIX}/lib/libsensorbox.so
+        ${CATKIN_DEVEL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/libsensorbox.so
+        ${sensorbox_SYSTEM_LIBRARIES}
 )

@@ -6,7 +6,10 @@ A package for processing sensor data.
 
 ### Prerequisites
 
-- [mathbox](https://github.com/willat343/mathbox)
+| **Dependency** | **Version** | **Description** |
+|----------------|-------------|-----------------|
+| Eigen3 | >= 3.3 | Linear Algebra Package |
+| [mathbox](https://github.com/willat343/mathbox) | 0.3 | Math Package |
 
 ### Installation
 
@@ -16,6 +19,7 @@ It is recommended that you configure with `ccmake` (`sudo apt install cmake-curs
 cd sensorbox
 mkdir build && cd build
 ccmake ..
+make -j
 sudo make install
 ```
 
@@ -26,17 +30,97 @@ cd build
 sudo make uninstall
 ```
 
+### Usage
+
+Import the package into your project and add the dependency to your target `<target>` with:
+```cmake
+find_package(sensorbox REQUIRED)
+target_link_libraries(<target> <PUBLIC|INTERFACE|PRIVATE> ${sensorbox_LIBRARIES})
+target_include_directories(<target> SYSTEM <PUBLIC|INTERFACE|PRIVATE> ${sensorbox_INCLUDE_DIRS})
+```
+
+For more information, see [sensorbox/README.md](sensorbox/README.md) and documentation.
+
+### Documentation
+
+Documentation must be turned on by setting the `-DBUILD_DOCUMENTATION=ON` cmake argument.
+
+To view the HTML documentation, open the `build/docs/html/index.html` file.
+
+To view the LaTeX documentation, build it with:
+```bash
+cd build/docs/latex
+make
+```
+Then open the file `refman.pdf`.
+
+### Tests
+
+Tests must be turned on by setting the `-DBUILD_TESTS=ON` cmake argument.
+
+```bash
+cd build
+cmake -DBUILD_TESTS=ON ..
+make -j
+```
+
+They can then be run with `ctest`:
+```bash
+ctest --test-dir test
+```
+
+For more explicit output, the test executables can be run directly from the build directory.
+
 ## Catkin Support
 
-A catkin wrapper is available to facilitate easy integration with the catkin build system (e.g. for ROS applications). To use sensorbox with catkin, simply clone or symlink the sensorbox repository to the catkin workspace `src` directory:
+A catkin wrapper is available to facilitate an isolated installation within a catkin workspace (e.g. for ROS applications).
+
+### Prerequisites
+
+Prerequisites of core C++ library plus the following:
+
+| **Dependency** | **Version** | **Description** |
+|----------------|-------------|-----------------|
+| catkin | - | catkin build system |
+
+### Installation
+
+Clone or symlink the repository to the workspace's `src` directory, for example:
 ```bash
 ln -s /path/to/sensorbox /path/to/catkin_ws/src
 ```
 
-The [mathbox](https://github.com/willat343/mathbox) repository must also exist in the catkin workspace.
+```bash
+cd /path/to/catkin_ws
+catkin build sensorbox_catkin
+```
 
-Your project can then depend on `sensorbox_catkin` in the `package.xml` and `sensorbox_catkin` can be added to `COMPONENTS`, e.g. `find_package(catkin REQUIRED COMPONENTS sensorbox_catkin)`.
+### Uninstallation
 
-## Changelog
+```bash
+cd /path/to/catkin_ws
+catkin clean sensorbox_catkin
+```
 
-* [10.07.2024] Migrated IMU classes and functionality from [serpent](https://github.com/jpl-eels/serpent/tree/develop)
+### Usage
+
+To use the package in a downstream project, one should add to their `package.xml`:
+```xml
+<exec_depend>sensorbox_catkin</exec_depend>
+```
+One can then either use the workspace's isolated installation if the catkin wrapper exists in the workspace, or use the system installation otherwise.
+Importing the dependency is then exactly the same as it would be in a non-catkin package as described above (do NOT rely on the `catkin` variables like `catkin_LIBRARIES` and `catkin_INCLUDE_DIRS`).
+
+### Documentation
+
+Documentation must be turned on by setting the `-DBUILD_DOCUMENTATION=ON` cmake argument. This can be done in catkin with:
+```bash
+catkin config --cmake-args -DBUILD_DOCUMENTATION=ON
+```
+
+### Tests
+
+Tests must be turned on by setting the `-DBUILD_TESTS=ON` cmake argument. This can be done in catkin with:
+```bash
+catkin config --cmake-args -DBUILD_TESTS=ON
+```

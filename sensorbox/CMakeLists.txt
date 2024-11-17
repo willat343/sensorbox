@@ -5,42 +5,17 @@ project(sensorbox
     LANGUAGES CXX
 )
 
-# CMake Build Type
-if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    message(STATUS "Setting build type to Release" )
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose build type" FORCE)
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel" )
-endif()
-
-# General Options
-option(BUILD_DOCUMENTATION "Build Doxygen Documentation" OFF)
-option(BUILD_TESTS "Build Tests" OFF)
-
-# Variables
-set(SENSORBOX_SYSTEM_INCLUDE_DIRS "")
-set(SENSORBOX_SYSTEM_LIBRARIES "")
-
-# Eigen3 Package
-find_package(Eigen3 3.3 REQUIRED)
-list(APPEND SENSORBOX_SYSTEM_LIBRARIES
-    Eigen3::Eigen
-)
-
-# mathbox package
-find_package(mathbox REQUIRED)
-list(APPEND SENSORBOX_SYSTEM_INCLUDE_DIRS
-    ${mathbox_INCLUDE_DIRS}
-)
-list(APPEND SENSORBOX_SYSTEM_INCLUDE_DIRS
-    ${mathbox_LIBRARIES}
-)
-
-# Installation directories
-include(GNUInstallDirs)
+# Setup
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup.cmake)
 
 # Build library
 add_library(${PROJECT_NAME} SHARED
     src/imu.cpp
+)
+
+# Link libraries
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    ${sensorbox_SYSTEM_LIBRARIES}
 )
 
 # Properties
@@ -61,12 +36,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # System include directories
 target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-    ${SENSORBOX_SYSTEM_INCLUDE_DIRS}
-)
-
-# Link libraries
-target_link_libraries(${PROJECT_NAME} PUBLIC
-    ${SENSORBOX_SYSTEM_LIBRARIES}
+    ${sensorbox_SYSTEM_INCLUDE_DIRS}
 )
 
 # Configure package version and config files
