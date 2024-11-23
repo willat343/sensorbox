@@ -73,7 +73,7 @@ For more explicit output, the test executables can be run directly from the buil
 
 ## Catkin Support
 
-A catkin wrapper is available to facilitate an isolated installation within a catkin workspace (e.g. for ROS applications).
+A `package.xml` is supplied to facilitate an isolated installation within a catkin workspace (e.g. for ROS applications).
 
 ### Prerequisites
 
@@ -92,23 +92,23 @@ ln -s /path/to/sensorbox /path/to/catkin_ws/src
 
 ```bash
 cd /path/to/catkin_ws
-catkin build sensorbox_catkin
+catkin build sensorbox
 ```
 
 ### Uninstallation
 
 ```bash
 cd /path/to/catkin_ws
-catkin clean sensorbox_catkin
+catkin clean sensorbox
 ```
 
 ### Usage
 
 To use the package in a downstream project, one should add to their `package.xml`:
 ```xml
-<exec_depend>sensorbox_catkin</exec_depend>
+<depend>sensorbox</depend>
 ```
-One can then either use the workspace's isolated installation if the catkin wrapper exists in the workspace, or use the system installation otherwise.
+One can then either use the workspace's isolated installation or use the system installation otherwise.
 Importing the dependency is then exactly the same as it would be in a non-catkin package as described above (do NOT rely on the `catkin` variables like `catkin_LIBRARIES` and `catkin_INCLUDE_DIRS`).
 
 ### Documentation

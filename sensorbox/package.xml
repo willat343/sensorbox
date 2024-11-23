@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="2">
+    <name>sensorbox</name>
+    <version>0.3.0</version>
+    <description>sensorbox</description>
+    <maintainer email="william.talbot97@gmail.com">William Talbot</maintainer>
+    <license>BSD-3_Clause</license>
+    <url type="repository">https://github.com/willat343/sensorbox</url>
+    <author email="william.talbot97@gmail.com">William Talbot</author>
+
+    <buildtool_depend>cmake</buildtool_depend>
+
+    <depend>eigen</depend>
+    <depend>mathbox</depend>
+
+    <export>
+        <build_type>cmake</build_type>
+    </export>
+</package>
