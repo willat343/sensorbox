@@ -23,15 +23,6 @@ include(GNUInstallDirs)
 set(sensorbox_SYSTEM_INCLUDE_DIRS "")
 set(sensorbox_SYSTEM_LIBRARIES "")
 
-# Find packages
-find_package(Eigen3 3.3 REQUIRED)
-list(APPEND sensorbox_SYSTEM_INCLUDE_DIRS
-    ${EIGEN3_INCLUDE_DIRS}
-)
-list(APPEND sensorbox_SYSTEM_LIBRARIES
-    Eigen3::Eigen
-)
-
 # Find mathbox
 find_package(mathbox REQUIRED)
 list(APPEND sensorbox_SYSTEM_INCLUDE_DIRS
@@ -39,6 +30,15 @@ list(APPEND sensorbox_SYSTEM_INCLUDE_DIRS
 )
 list(APPEND sensorbox_SYSTEM_LIBRARIES
     ${mathbox_LIBRARIES}
+)
+
+# Find eigen
+find_package(Eigen3 3.3 REQUIRED)
+list(APPEND sensorbox_SYSTEM_INCLUDE_DIRS
+    ${EIGEN3_INCLUDE_DIRS}
+)
+list(APPEND sensorbox_SYSTEM_LIBRARIES
+    Eigen3::Eigen
 )
 
 # Build library
