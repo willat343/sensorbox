@@ -65,7 +65,7 @@ inline auto RandomWalkSensorProperties<DoF>::stiffness() const -> const Stiffnes
 
 template<int DoF>
 inline void RandomWalkSensorProperties<DoF>::update_stiffness() {
-    stiffness_ = math::stiffness_from_sigma<D>(noise_density() * std::sqrt(frequency()));
+    stiffness_ = math::stiffness_from_sigma<DoF>(noise_density() * std::sqrt(frequency()));
 }
 
 }
