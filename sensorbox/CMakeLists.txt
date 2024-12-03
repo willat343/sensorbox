@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(sensorbox
-    VERSION 0.3.1
+    VERSION 0.3.2
     DESCRIPTION "Sensor Toolbox"
     LANGUAGES CXX
 )
