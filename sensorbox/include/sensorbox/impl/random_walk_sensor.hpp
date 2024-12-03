@@ -28,6 +28,11 @@ inline double RandomWalkSensorProperties<DoF>::noise_density() const {
 }
 
 template<int DoF>
+inline double RandomWalkSensorProperties<DoF>::period() const {
+    return 1.0 / frequency();
+}
+
+template<int DoF>
 inline void RandomWalkSensorProperties<DoF>::set_bias_noise_density(const double bias_noise_density_) {
     bias_noise_density__ = bias_noise_density_;
 }

@@ -43,6 +43,13 @@ public:
     double noise_density() const;
 
     /**
+     * @brief Sensor period (s)
+     * 
+     * @return double 
+     */
+    double period() const;
+
+    /**
      * @brief Set the bias noise density
      *
      * @param bias_noise_density_
