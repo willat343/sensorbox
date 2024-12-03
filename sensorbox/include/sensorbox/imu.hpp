@@ -1,5 +1,5 @@
-#ifndef EIGEN_ROS_IMU_HPP
-#define EIGEN_ROS_IMU_HPP
+#ifndef SENSORBOX_IMU_HPP
+#define SENSORBOX_IMU_HPP
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
