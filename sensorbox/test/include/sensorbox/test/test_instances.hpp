@@ -42,15 +42,11 @@ Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> test_dynamic_covariance_3x
 
 Eigen::Matrix<double, 6, 6> test_covariance_6x6(const unsigned int i);
 
-Imu test_imu(const unsigned int i);
-
 Eigen::Isometry3d test_isometry3(const unsigned int i);
 
 Eigen::Quaterniond test_quaternion(const unsigned int i);
 
 std::string test_string(const unsigned int i);
-
-Imu::TimeStamp test_time(const unsigned int i);
 
 Eigen::Vector3d test_vector3(const unsigned int i);
 

@@ -72,11 +72,6 @@ Eigen::Matrix<double, 6, 6> test_covariance_6x6(const unsigned int i) {
     return cov;
 }
 
-Imu test_imu(const unsigned int i) {
-    return Imu{test_quaternion(i), test_vector3(i), test_vector3(i + 1), test_covariance_3x3(i),
-            test_covariance_3x3(i + 1), test_covariance_3x3(i + 2), test_time(i), test_string(i)};
-}
-
 Eigen::Isometry3d test_isometry3(const unsigned int i) {
     return Eigen::Translation3d{test_vector3(i)} * test_quaternion(i);
 }
@@ -87,10 +82,6 @@ Eigen::Quaterniond test_quaternion(const unsigned int i) {
 
 std::string test_string(const unsigned int i) {
     return "test_frame_" + std::to_string(i);
-}
-
-Imu::TimeStamp test_time(const unsigned int i) {
-    return Imu::TimeStamp(std::chrono::seconds(123456789 + i) + std::chrono::nanoseconds(987654321 + 27 * i));
 }
 
 Eigen::Vector3d test_vector3(const unsigned int i) {

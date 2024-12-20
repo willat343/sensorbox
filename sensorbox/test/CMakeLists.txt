@@ -3,7 +3,7 @@ enable_testing()
 
 # Build Example
 add_executable(${PROJECT_NAME}_tests
-    src/imu.cpp
+    src/test.cpp
     src/test/test_instances.cpp
 )
 

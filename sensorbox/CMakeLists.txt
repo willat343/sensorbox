@@ -43,7 +43,7 @@ list(APPEND sensorbox_SYSTEM_LIBRARIES
 
 # Build library
 add_library(${PROJECT_NAME} SHARED
-    src/imu.cpp
+    src/unary.cpp
 )
 
 # Link libraries
