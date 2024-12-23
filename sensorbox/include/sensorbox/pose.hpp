@@ -34,6 +34,48 @@ public:
 
     Pose& pose();
 
+    /**
+     * @brief Create a new pose measurement with a different child frame, as:
+     *
+     * \f[
+     *      T_{F,N} = T_{F,C} * T_{C,N}
+     * \f]
+     *
+     * @param new_child_frame new child frame \f$N\f$
+     * @param T_C_N pose of new child frame in the current child frame \f$T_{C,N}\f$
+     * @return PoseMeasurement
+     */
+    PoseMeasurement transform_to_new_child_frame(const std::string& new_child_frame, const Pose& T_C_N) const;
+
+    /**
+     * @brief Create a new pose measurement with a different frame, as:
+     *
+     * \f[
+     *      T_{N,C} = T_{N,F} * T_{F,C}
+     * \f]
+     *
+     * @param new_frame new frame \f$N\f$
+     * @param T_N_F pose of current frame in the new frame \f$T_{N,F}\f$
+     * @return PoseMeasurement
+     */
+    PoseMeasurement transform_to_new_frame(const std::string& new_frame, const Pose& T_N_F) const;
+
+    /**
+     * @brief Create a new pose measurement with different frames, as:
+     *
+     * \f[
+     *      T_{NF,NC} = T_{NF,F} * T_{F,C} * T_{C,NC}
+     * \f]
+     *
+     * @param new_frame new frame \f$NF\f$
+     * @param new_child_frame new child frame \f$NC\f$
+     * @param T_NF_F pose of current frame in the new frame \f$T_{NF,F}\f$
+     * @param T_C_NC pose of new child frame in the current child frame \f$T_{C,N}\f$
+     * @return PoseMeasurement
+     */
+    PoseMeasurement transform_to_new_frames(const std::string& new_frame, const std::string& new_child_frame,
+            const Pose& T_NF_F, const Pose& T_C_NC) const;
+
 private:
     Pose pose_;
 };
