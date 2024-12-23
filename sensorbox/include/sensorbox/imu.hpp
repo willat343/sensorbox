@@ -21,6 +21,7 @@ public:
     static constexpr int GyroDoF = D * (D - 1) / 2;
     using AngularVelocity = Eigen::Matrix<double, GyroDoF, 1>;
     using LinearAcceleration = Eigen::Matrix<double, AccelDoF, 1>;
+    using Pose = Eigen::Transform<double, D, Eigen::Isometry>;
 
     explicit ImuMeasurement();
 
@@ -42,6 +43,8 @@ public:
     const LinearAcceleration& linear_acceleration() const;
 
     LinearAcceleration& linear_acceleration();
+
+    ImuMeasurement transform_to_new_frame(const std::string& new_frame, const Pose& T_N_F) const;
 
 private:
     AngularVelocity angular_velocity_;

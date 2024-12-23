@@ -36,6 +36,16 @@ inline auto ImuMeasurement<D>::linear_acceleration() -> LinearAcceleration& {
     return const_cast<LinearAcceleration&>(std::as_const(*this).linear_acceleration());
 }
 
+template<int D>
+inline auto ImuMeasurement<D>::transform_to_new_frame(const std::string& new_frame,
+        const Pose& T_N_F) const -> ImuMeasurement {
+    if (T_N_F != Pose::Identity()) {
+        throw std::runtime_error("Transformation of IMU measurements (with non-identity matrix) not yet implemented. "
+                                 "Must be done very carefully.");
+    }
+    return ImuMeasurement(timestamp(), new_frame, angular_velocity(), linear_acceleration());
+}
+
 }
 
 #endif
