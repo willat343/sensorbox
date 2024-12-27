@@ -7,7 +7,7 @@ namespace sensorbox {
 
 /**
  * @brief Gyroscope properties. Sensor units are rad * s^{-1}.
- * 
+ *
  * @tparam D dimension (e.g. 3 for 3D)
  */
 template<int D>

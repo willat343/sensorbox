@@ -7,7 +7,7 @@ namespace sensorbox {
 
 /**
  * @brief Accelerometer properties. Sensor units are m * s^{-2}.
- * 
+ *
  * @tparam D dimension (e.g. 3 for 3D)
  */
 template<int D>

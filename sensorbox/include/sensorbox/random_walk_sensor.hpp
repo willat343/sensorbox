@@ -44,8 +44,8 @@ public:
 
     /**
      * @brief Sensor period (s)
-     * 
-     * @return double 
+     *
+     * @return double
      */
     double period() const;
 
