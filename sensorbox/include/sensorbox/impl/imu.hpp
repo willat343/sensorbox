@@ -39,7 +39,7 @@ inline auto ImuMeasurement<D>::linear_acceleration() -> LinearAcceleration& {
 template<int D>
 inline auto ImuMeasurement<D>::transform_to_new_frame(const std::string& new_frame,
         const Pose& T_N_F) const -> ImuMeasurement {
-    if (T_N_F != Pose::Identity()) {
+    if (T_N_F.isApprox(Pose::Identity())) {
         throw std::runtime_error("Transformation of IMU measurements (with non-identity matrix) not yet implemented. "
                                  "Must be done very carefully.");
     }
