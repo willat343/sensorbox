@@ -19,36 +19,22 @@ option(BUILD_TESTS "Build Tests" OFF)
 # Installation directories
 include(GNUInstallDirs)
 
-# Variables
-set(sensorbox_SYSTEM_INCLUDE_DIRS "")
-set(sensorbox_SYSTEM_LIBRARIES "")
-
 # Find mathbox
 find_package(mathbox REQUIRED)
-list(APPEND sensorbox_SYSTEM_INCLUDE_DIRS
-    ${mathbox_INCLUDE_DIRS}
-)
-list(APPEND sensorbox_SYSTEM_LIBRARIES
-    ${mathbox_LIBRARIES}
-)
 
 # Find eigen
-find_package(Eigen3 3.3 REQUIRED)
-list(APPEND sensorbox_SYSTEM_INCLUDE_DIRS
-    ${EIGEN3_INCLUDE_DIRS}
-)
-list(APPEND sensorbox_SYSTEM_LIBRARIES
-    Eigen3::Eigen
-)
+set(MIN_EIGEN_VERSION "3.3")
+find_package(Eigen3 ${MIN_EIGEN_VERSION} REQUIRED)
 
 # Build library
 add_library(${PROJECT_NAME} SHARED
     src/unary.cpp
 )
 
-# Link libraries
-target_link_libraries(${PROJECT_NAME} PUBLIC
-    ${sensorbox_SYSTEM_LIBRARIES}
+# Include directories
+target_include_directories(${PROJECT_NAME} PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 # Properties
@@ -61,15 +47,10 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -Wall -Wextra -Wpedantic
 )
 
-# Include directories
-target_include_directories(${PROJECT_NAME} PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-)
-
-# System include directories
-target_include_directories(${PROJECT_NAME} SYSTEM PUBLIC
-    ${sensorbox_SYSTEM_INCLUDE_DIRS}
+# Link libraries
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    Eigen3::Eigen
+    ${mathbox_LIBRARIES}
 )
 
 # Configure package version and config files

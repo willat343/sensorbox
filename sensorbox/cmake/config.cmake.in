@@ -6,5 +6,5 @@ set_and_check(@PROJECT_NAME@_INCLUDE_DIRS "${PACKAGE_PREFIX_DIR}/@CMAKE_INSTALL_
 set(@PROJECT_NAME@_LIBRARIES "@PROJECT_NAME@")
 
 # Find required packages, ensuring that dynamically linked libraries will be found
-find_package(Eigen3 3.3 REQUIRED)
+find_package(Eigen3 @MIN_EIGEN_VERSION@ REQUIRED)
 find_package(mathbox REQUIRED)
