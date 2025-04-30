@@ -7,13 +7,10 @@ add_executable(${PROJECT_NAME}_tests
     src/test/test_instances.cpp
 )
 
-# Link Libraries
-target_link_libraries(${PROJECT_NAME}_tests PUBLIC
-    sensorbox
-    ${sensorbox_SYSTEM_LIBRARIES}
-    gtest_main
-    gtest
-    pthread
+# Include Directories
+target_include_directories(${PROJECT_NAME}_tests PUBLIC
+    ../include
+    include
 )
 
 # Properties
@@ -33,15 +30,14 @@ target_compile_options(${PROJECT_NAME}_tests PRIVATE
     -Wall -Wextra -Wpedantic
 )
 
-# Include Directories
-target_include_directories(${PROJECT_NAME}_tests PUBLIC
-    ../include
-    include
-)
-
-# System Include Directories
-target_include_directories(${PROJECT_NAME}_tests SYSTEM PUBLIC
-    ${sensorbox_SYSTEM_INCLUDE_DIRS}
+# Link Libraries
+target_link_libraries(${PROJECT_NAME}_tests PUBLIC
+    Eigen3::Eigen
+    ${mathbox_LIBRARIES}
+    sensorbox
+    gtest_main
+    gtest
+    pthread
 )
 
 # Add test
