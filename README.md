@@ -9,6 +9,7 @@ A package for processing sensor data.
 | **Dependency** | **Version** | **Description** |
 |----------------|-------------|-----------------|
 | Eigen3 | >= 3.3.7 (< g++-10) or >= 3.3.9 (>= g++-10) | Linear Algebra Package |
+| nlohmann_json | >= 3.7.3 | JSON Package |
 | [mathbox](https://github.com/willat343/mathbox) | 0.4.0 | Math Package |
 | [cppbox](https://github.com/willat343/cppbox) | >= 0.0.1 | C++ Package |
 
