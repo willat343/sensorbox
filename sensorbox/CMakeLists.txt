@@ -20,7 +20,8 @@ option(BUILD_TESTS "Build Tests" OFF)
 include(GNUInstallDirs)
 
 # Find mathbox
-find_package(mathbox REQUIRED)
+set(MIN_MATHBOX_VERSION "0.4.0")
+find_package(mathbox ${MIN_MATHBOX_VERSION} REQUIRED)
 
 # Find Eigen3
 set(MIN_EIGEN_VERSION "3.3.7")
