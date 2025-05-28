@@ -7,4 +7,5 @@ set(@PROJECT_NAME@_LIBRARIES "@PROJECT_NAME@")
 
 # Find required packages, ensuring that dynamically linked libraries will be found
 find_package(Eigen3 @MIN_EIGEN_VERSION@ REQUIRED)
+find_package(nlohmann_json @MIN_NLOHMANN_JSON_VERSION@ REQUIRED)
 find_package(mathbox REQUIRED)
