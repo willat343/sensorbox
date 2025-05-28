@@ -40,6 +40,10 @@ find_package(Eigen3 ${MIN_EIGEN_VERSION} REQUIRED)
 message(STATUS "Found Eigen3 at ${Eigen3_DIR} with version ${Eigen3_VERSION}")
 # Target=Eigen3::Eigen. Note Eigen3::Eigen sets INTERFACE_INCLUDE_DIRECTORIES.
 
+# Find cppbox
+set(MIN_CPPBOX_VERSION "0.0.1")
+find_package(cppbox ${MIN_CPPBOX_VERSION} REQUIRED)
+
 # Find nlohmann/json
 set(MIN_NLOHMANN_JSON_VERSION "3.7.3")
 message(STATUS "Set minimum nlohmann_json version to ${MIN_NLOHMANN_JSON_VERSION}")
@@ -74,6 +78,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     Eigen3::Eigen
     nlohmann_json::nlohmann_json
     ${mathbox_LIBRARIES}
+    ${cppbox_LIBRARIES}
 )
 
 # Configure package version and config files

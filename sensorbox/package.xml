@@ -12,6 +12,7 @@
 
     <depend>eigen</depend>
     <depend>mathbox</depend>
+    <depend>cppbox</depend>
 
     <export>
         <build_type>cmake</build_type>
