@@ -22,9 +22,29 @@ include(GNUInstallDirs)
 # Find mathbox
 find_package(mathbox REQUIRED)
 
-# Find eigen
-set(MIN_EIGEN_VERSION "3.3")
+# Find Eigen3
+set(MIN_EIGEN_VERSION "3.3.7")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # Note: gcc/g++
+	if (CMAKE_CXX_COMPILER_VERSION_MAJOR GREATER_EQUAL 10)
+	    # g++-10 with c++20 requires Eigen3 >=3.3.9. For further details see issues:
+	    #  - https://gitlab.com/libeigen/eigen/-/issues/2012
+	    #  - https://gitlab.com/libeigen/eigen/-/issues/1872
+	    set(MIN_EIGEN_VERSION "3.3.9")
+	endif()
+else()
+	message(WARNING "Eigen3 minimum version not known for non-GNU CXX compiler")
+endif()
+message(STATUS "Set minimum Eigen3 version to ${MIN_EIGEN_VERSION}")
 find_package(Eigen3 ${MIN_EIGEN_VERSION} REQUIRED)
+message(STATUS "Found Eigen3 at ${Eigen3_DIR} with version ${Eigen3_VERSION}")
+# Target=Eigen3::Eigen. Note Eigen3::Eigen sets INTERFACE_INCLUDE_DIRECTORIES.
+
+# Find nlohmann/json
+set(MIN_NLOHMANN_JSON_VERSION "3.7.3")
+message(STATUS "Set minimum nlohmann_json version to ${MIN_NLOHMANN_JSON_VERSION}")
+find_package(nlohmann_json ${MIN_NLOHMANN_JSON_VERSION} REQUIRED)
+message(STATUS "Found nlohmann_json at ${nlohmann_json_DIR} with version ${nlohmann_json_VERSION}")
+# Target=nlohmann_json::nlohmann_json.
 
 # Build library
 add_library(${PROJECT_NAME} SHARED
@@ -40,6 +60,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 # Properties
 set_target_properties(${PROJECT_NAME} PROPERTIES
     CXX_STANDARD 20
+    CXX_STANDARD_REQUIRED ON
 )
 
 # Compile options
@@ -50,6 +71,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 # Link libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC
     Eigen3::Eigen
+    nlohmann_json::nlohmann_json
     ${mathbox_LIBRARIES}
 )
 
