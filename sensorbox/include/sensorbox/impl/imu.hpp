@@ -6,6 +6,20 @@
 namespace sensorbox {
 
 template<int D_>
+Imu<D_>::Imu(const nlohmann::json& config)
+    : Sensor(config), accelerometer_(config["accelerometer"]), gyroscope_(config["gyroscope"]) {}
+
+template<int D_>
+inline auto Imu<D_>::accelerometer() const -> const Accelerometer<D>& {
+    return accelerometer_;
+}
+
+template<int D_>
+inline auto Imu<D_>::gyroscope() const -> const Gyroscope<D>& {
+    return gyroscope_;
+}
+
+template<int D_>
 ImuMeasurement<D_>::ImuMeasurement()
     : ImuMeasurement(Timestamp(Duration::zero()), std::string(), AngularVelocity::Zero(), LinearAcceleration::Zero()) {}
 

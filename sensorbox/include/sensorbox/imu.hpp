@@ -6,9 +6,41 @@
 #include <chrono>
 #include <string>
 
+#include "sensorbox/accelerometer.hpp"
+#include "sensorbox/gyroscope.hpp"
+#include "sensorbox/sensor.hpp"
 #include "sensorbox/unary.hpp"
 
 namespace sensorbox {
+
+template<int D_>
+class Imu : public Sensor {
+public:
+    /**
+     * @brief Dimension D
+     *
+     */
+    static constexpr int D = D_;
+
+    /**
+     * @brief Construct an instance of the class from a json config with Sensor structure plus:
+     * ```json
+     * "accelerometer": <Accelerometer>,
+     * "gyroscope": <Gyroscope>
+     * ```
+     *
+     * @param config
+     */
+    explicit Imu(const nlohmann::json& config);
+
+    const Accelerometer<D>& accelerometer() const;
+
+    const Gyroscope<D>& gyroscope() const;
+
+private:
+    Accelerometer<D> accelerometer_;
+    Gyroscope<D> gyroscope_;
+};
 
 template<int D_>
 class ImuMeasurement : public UnaryMeasurement {

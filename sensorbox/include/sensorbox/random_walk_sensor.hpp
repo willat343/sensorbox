@@ -3,23 +3,49 @@
 
 #include <Eigen/Core>
 
+#include "sensorbox/sensor.hpp"
+
 namespace sensorbox {
 
 template<int DoF_>
-class RandomWalkSensorProperties {
+class RandomWalkSensor : public Sensor {
 public:
+    /**
+     * @brief Sensor degrees of freedom
+     *
+     */
     static constexpr int DoF = DoF_;
+
+    /**
+     * @brief Sensor stiffness matrix
+     *
+     */
     using Stiffness = Eigen::Matrix<double, DoF, DoF>;
+
+    /**
+     * @brief Construct an instance of the class from a json config with Sensor structure plus:
+     * ```json
+     * "frequency": <double>,
+     * "noise_density": <double>,
+     * "bias_noise_density": <double>,
+     * "initial_noise": <double>
+     * ```
+     *
+     * @param config
+     */
+    explicit RandomWalkSensor(const nlohmann::json& config);
 
     /**
      * @brief Construct an instance of the class
      *
+     * @param type
      * @param frequency
      * @param noise_density
      * @param bias_noise_density
+     * @param initial_noise
      */
-    explicit RandomWalkSensorProperties(const double frequency, const double noise_density,
-            const double bias_noise_density);
+    explicit RandomWalkSensor(const SensorType type, const double frequency, const double noise_density,
+            const double bias_noise_density, const double initial_noise);
 
     /**
      * @brief Bias (random walk) noise density (in sensor units * s^{-1} * Hz^{-1/2})
@@ -34,6 +60,13 @@ public:
      * @return double
      */
     double frequency() const;
+
+    /**
+     * @brief Initial noise (in sensor units) at sensor boot
+     *
+     * @return double
+     */
+    double initial_noise() const;
 
     /**
      * @brief Noise density (in sensor units * Hz^{-1/2})
@@ -62,6 +95,13 @@ public:
      * @param frequency_
      */
     void set_frequency(const double frequency_);
+
+    /**
+     * @brief Set the initial noise (on sensor boot)
+     *
+     * @param initial_noise_
+     */
+    void set_initial_noise(const double initial_noise_);
 
     /**
      * @brief Set the noise density
@@ -109,6 +149,9 @@ private:
 
     // Bias (Random Walk) Noise Density (unspecified units)
     double bias_noise_density__;
+
+    // Initial noise (unspecified units) on sensor boot
+    double initial_noise__;
 
     // Stiffness matrix
     Stiffness stiffness_;
