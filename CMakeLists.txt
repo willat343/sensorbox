@@ -53,6 +53,31 @@ if (NOT TARGET Eigen3::Eigen)
     endif()
 endif()
 
+# Dependency: nlohmann_json (Target: nlohmann_json::nlohmann_json)
+if (NOT TARGET nlohmann_json::nlohmann_json)
+    set(NLOHMANN_JSON_VERSION "3.7.3")
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # Note: gcc/g++
+        if (CMAKE_CXX_COMPILER_VERSION_MAJOR GREATER_EQUAL 10)
+            # g++-10 with c++17 requires nlohmann_json >=3.8.0. For further details see issues:
+            #  - https://github.com/nlohmann/json/issues/1912
+            set(NLOHMANN_JSON_VERSION "3.8.0")
+        endif()
+    endif()
+    if (${USE_SYSTEM_nlohmann_json})
+        find_package(nlohmann_json ${NLOHMANN_JSON_VERSION} REQUIRED)
+        message(STATUS "Found nlohmann_json at ${nlohmann_json_SOURCE_DIR} with version ${nlohmann_json_VERSION}")
+    else()
+        set(JSON_BuildTests OFF CACHE BOOL "")
+        FetchContent_Declare(
+            nlohmann_json
+            GIT_REPOSITORY https://github.com/nlohmann/json.git
+            GIT_TAG v${NLOHMANN_JSON_VERSION}
+        )
+        FetchContent_MakeAvailable(nlohmann_json)
+        message(STATUS "Fetched nlohmann_json to ${nlohmann_json_SOURCE_DIR} with version ${NLOHMANN_JSON_VERSION}")
+    endif()
+endif()
+
 # Dependency: cppbox (Target: cppbox::cppbox)
 if (NOT TARGET cppbox::cppbox)
     set(CPPBOX_VERSION "0.0.4")
@@ -82,30 +107,6 @@ if (NOT TARGET mathbox::mathbox)
         message(STATUS "Found mathbox at ${mathbox_SOURCE_DIR} (DEVELOPER_MODE = ON)")
     else()
         message(STATUS "Fetched mathbox to ${mathbox_SOURCE_DIR} with version ${MATHBOX_VERSION}")
-    endif()
-endif()
-
-# Dependency: nlohmann_json (Target: nlohmann_json::nlohmann_json)
-if (NOT TARGET nlohmann_json::nlohmann_json)
-    set(NLOHMANN_JSON_VERSION "3.7.3")
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # Note: gcc/g++
-        if (CMAKE_CXX_COMPILER_VERSION_MAJOR GREATER_EQUAL 10)
-            # g++-10 with c++17 requires nlohmann_json >=3.8.0. For further details see issues:
-            #  - https://github.com/nlohmann/json/issues/1912
-            set(NLOHMANN_JSON_VERSION "3.8.0")
-        endif()
-    endif()
-    if (${USE_SYSTEM_nlohmann_json})
-        find_package(nlohmann_json ${NLOHMANN_JSON_VERSION} REQUIRED)
-        message(STATUS "Found nlohmann_json at ${nlohmann_json_SOURCE_DIR} with version ${nlohmann_json_VERSION}")
-    else()
-        FetchContent_Declare(
-            nlohmann_json
-            GIT_REPOSITORY https://github.com/nlohmann/json.git
-            GIT_TAG v${NLOHMANN_JSON_VERSION}
-        )
-        FetchContent_MakeAvailable(nlohmann_json)
-        message(STATUS "Fetched nlohmann_json to ${nlohmann_json_SOURCE_DIR} with version ${NLOHMANN_JSON_VERSION}")
     endif()
 endif()
 
