@@ -5,6 +5,9 @@ project(sensorbox
     LANGUAGES CXX
 )
 
+# Installation directories
+include(GNUInstallDirs)
+
 # CMake Build Type
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose build type" FORCE)
@@ -15,70 +18,127 @@ message(STATUS "Build type set to ${CMAKE_BUILD_TYPE}")
 # General Options
 option(BUILD_DOCUMENTATION "Build Doxygen Documentation" OFF)
 option(BUILD_TESTS "Build Tests" OFF)
+option(DEVELOPER_MODE "Use local versions of cppbox, mathbox" OFF)
+option(USE_SYSTEM_Eigen3 "Use system install of Eigen3" ON)
+option(USE_SYSTEM_nlohmann_json "Use system install of nlohmann_json" OFF)
 
-# Installation directories
-include(GNUInstallDirs)
-
-# Find mathbox
-set(MIN_MATHBOX_VERSION "0.4.0")
-find_package(mathbox ${MIN_MATHBOX_VERSION} REQUIRED)
-
-# Find Eigen3
-set(MIN_EIGEN_VERSION "3.3.7")
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # Note: gcc/g++
-	if (CMAKE_CXX_COMPILER_VERSION_MAJOR GREATER_EQUAL 10)
-	    # g++-10 with c++20 requires Eigen3 >=3.3.9. For further details see issues:
-	    #  - https://gitlab.com/libeigen/eigen/-/issues/2012
-	    #  - https://gitlab.com/libeigen/eigen/-/issues/1872
-	    set(MIN_EIGEN_VERSION "3.3.9")
-	endif()
-else()
-	message(WARNING "Eigen3 minimum version not known for non-GNU CXX compiler")
+# Configure FetchContent source directories for DEVELOPER_MODE
+if (DEVELOPER_MODE)
+    set(FETCHCONTENT_SOURCE_DIR_CPPBOX "${CMAKE_SOURCE_DIR}/dependencies/cppbox")
+    set(FETCHCONTENT_SOURCE_DIR_MATHBOX "${CMAKE_SOURCE_DIR}/dependencies/mathbox")
 endif()
-message(STATUS "Set minimum Eigen3 version to ${MIN_EIGEN_VERSION}")
-find_package(Eigen3 ${MIN_EIGEN_VERSION} REQUIRED)
-message(STATUS "Found Eigen3 at ${Eigen3_DIR} with version ${Eigen3_VERSION}")
-# Target=Eigen3::Eigen. Note Eigen3::Eigen sets INTERFACE_INCLUDE_DIRECTORIES.
 
-# Find cppbox
-set(MIN_CPPBOX_VERSION "0.0.1")
-find_package(cppbox ${MIN_CPPBOX_VERSION} REQUIRED)
+# Dependency: Eigen3 (Target: Eigen3::Eigen, Note: Eigen3::Eigen sets INTERFACE_INCLUDE_DIRECTORIES)
+if (NOT TARGET Eigen3::Eigen)
+    set(EIGEN3_VERSION "3.3.7")
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # Note: gcc/g++
+        if (CMAKE_CXX_COMPILER_VERSION_MAJOR GREATER_EQUAL 10)
+            # g++-10 with c++20 requires Eigen3 >=3.3.9. For further details see issues:
+            #  - https://gitlab.com/libeigen/eigen/-/issues/2012
+            #  - https://gitlab.com/libeigen/eigen/-/issues/1872
+            set(EIGEN3_VERSION "3.3.9")
+        endif()
+    endif()
+    if (${USE_SYSTEM_Eigen3})
+        find_package(Eigen3 ${EIGEN3_VERSION} REQUIRED)
+        message(STATUS "Found Eigen3 at ${Eigen3_DIR} with version ${Eigen3_VERSION}")
+    else()
+        FetchContent_Declare(
+            eigen
+            GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+            GIT_TAG ${EIGEN3_VERSION}
+        )
+        FetchContent_MakeAvailable(eigen)
+        message(STATUS "Fetched eigen to ${eigen_SOURCE_DIR} with version ${EIGEN3_VERSION}")
+    endif()
+endif()
 
-# Find nlohmann/json
-set(MIN_NLOHMANN_JSON_VERSION "3.7.3")
-message(STATUS "Set minimum nlohmann_json version to ${MIN_NLOHMANN_JSON_VERSION}")
-find_package(nlohmann_json ${MIN_NLOHMANN_JSON_VERSION} REQUIRED)
-message(STATUS "Found nlohmann_json at ${nlohmann_json_DIR} with version ${nlohmann_json_VERSION}")
-# Target=nlohmann_json::nlohmann_json.
+# Dependency: cppbox (Target: cppbox::cppbox)
+if (NOT TARGET cppbox::cppbox)
+    set(CPPBOX_VERSION "0.0.4")
+    FetchContent_Declare(
+        cppbox
+        GIT_REPOSITORY git@github.com:willat343/cppbox.git
+        GIT_TAG v${CPPBOX_VERSION}
+    )
+    FetchContent_MakeAvailable(cppbox)
+    if (${DEVELOPER_MODE})
+        message(STATUS "Found cppbox at ${cppbox_SOURCE_DIR} (DEVELOPER_MODE = ON)")
+    else()
+        message(STATUS "Fetched cppbox to ${cppbox_SOURCE_DIR} with version ${CPPBOX_VERSION}")
+    endif()
+endif()
+
+# Dependency: mathbox (Target: mathbox::mathbox)
+if (NOT TARGET mathbox::mathbox)
+    set(MATHBOX_VERSION "0.5.0")
+    FetchContent_Declare(
+        mathbox
+        GIT_REPOSITORY git@github.com:willat343/mathbox.git
+        GIT_TAG v${MATHBOX_VERSION}
+    )
+    FetchContent_MakeAvailable(mathbox)
+    if (${DEVELOPER_MODE})
+        message(STATUS "Found mathbox at ${mathbox_SOURCE_DIR} (DEVELOPER_MODE = ON)")
+    else()
+        message(STATUS "Fetched mathbox to ${mathbox_SOURCE_DIR} with version ${MATHBOX_VERSION}")
+    endif()
+endif()
+
+# Dependency: nlohmann_json (Target: nlohmann_json::nlohmann_json)
+if (NOT TARGET nlohmann_json::nlohmann_json)
+    set(NLOHMANN_JSON_VERSION "3.7.3")
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # Note: gcc/g++
+        if (CMAKE_CXX_COMPILER_VERSION_MAJOR GREATER_EQUAL 10)
+            # g++-10 with c++17 requires nlohmann_json >=3.8.0. For further details see issues:
+            #  - https://github.com/nlohmann/json/issues/1912
+            set(NLOHMANN_JSON_VERSION "3.8.0")
+        endif()
+    endif()
+    if (${USE_SYSTEM_nlohmann_json})
+        find_package(nlohmann_json ${NLOHMANN_JSON_VERSION} REQUIRED)
+        message(STATUS "Found nlohmann_json at ${nlohmann_json_SOURCE_DIR} with version ${nlohmann_json_VERSION}")
+    else()
+        FetchContent_Declare(
+            nlohmann_json
+            GIT_REPOSITORY https://github.com/nlohmann/json.git
+            GIT_TAG v${NLOHMANN_JSON_VERSION}
+        )
+        FetchContent_MakeAvailable(nlohmann_json)
+        message(STATUS "Fetched nlohmann_json to ${nlohmann_json_SOURCE_DIR} with version ${NLOHMANN_JSON_VERSION}")
+    endif()
+endif()
 
 # Build library
-add_library(${PROJECT_NAME} SHARED
+set(LIBRARY_NAME ${PROJECT_NAME})
+add_library(${LIBRARY_NAME} SHARED
     src/unary.cpp
 )
+add_library(${PROJECT_NAME}::${LIBRARY_NAME} ALIAS ${LIBRARY_NAME})
 
 # Include directories
-target_include_directories(${PROJECT_NAME} PUBLIC
+target_include_directories(${LIBRARY_NAME} PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 # Properties
-set_target_properties(${PROJECT_NAME} PROPERTIES
+set_target_properties(${LIBRARY_NAME} PROPERTIES
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
 )
 
 # Compile options
-target_compile_options(${PROJECT_NAME} PRIVATE
+target_compile_options(${LIBRARY_NAME} PRIVATE
     -Wall -Wextra -Wpedantic
 )
 
 # Link libraries
-target_link_libraries(${PROJECT_NAME} PUBLIC
+target_link_libraries(${LIBRARY_NAME} PUBLIC
     Eigen3::Eigen
     nlohmann_json::nlohmann_json
-    ${mathbox_LIBRARIES}
-    ${cppbox_LIBRARIES}
+    mathbox::mathbox
+    cppbox::cppbox
 )
 
 # Configure package version and config files
@@ -95,7 +155,7 @@ configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.in
 
 # Installation
 install(
-    TARGETS ${PROJECT_NAME}
+    TARGETS ${LIBRARY_NAME}
     EXPORT ${PROJECT_NAME}
     PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}"
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
