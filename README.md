@@ -8,42 +8,139 @@ A package for processing sensor data.
 
 | **Dependency** | **Version** | **Description** |
 |----------------|-------------|-----------------|
-| Eigen3 | >= 3.3.7 (< g++-10) or >= 3.3.9 (>= g++-10) | Linear Algebra Package |
-| nlohmann_json | >= 3.7.3 | JSON Package |
-| [mathbox](https://github.com/willat343/mathbox) | 0.4.0 | Math Package |
-| [cppbox](https://github.com/willat343/cppbox) | >= 0.0.1 | C++ Package |
+| CMake | >= 3.21 | CMake Build Tool |
+| [cmakebox](https://github.com/willat343/cmakebox) | >= 0.0.1 | CMake Functions and Utilities |
+| [cppbox](https://github.com/willat343/cppbox) | >= 0.1.0 | C++ Package |
+| Eigen3 | >= 3.4.0 | Linear Algebra Package |
+| nlohmann_json | >= 3.7.3 (< g++-10) or >= 3.8.0 (>= g++-10) | JSON Package |
+| [mathbox](https://github.com/willat343/mathbox) | 0.6.0 | Math Package |
 
-### Installation
+There are several ways to include `sensorbox` within your project:
+- [Preferred] Via `FetchContent` allowing package to be built as a submodule.
+- Via `find_package`, requiring package to be installed to the system, locally, or to a catkin workspace.
 
-It is recommended that you configure with `ccmake` (`sudo apt install cmake-curses-gui`) to see the various options. Otherwise use `cmake` instead of `ccmake` and set flags manually.
+## Include via FetchContent
+
+It is recommended to leverage the functionality of [cmakebox](https://github.com/willat343/cmakebox) by including the following lines in the `CMakeLists.txt` (replace `X.Y.Z` with version):
+```CMake
+set(CMAKEBOX_VERSION "0.0.1")
+FetchContent_Declare(
+    cmakebox
+    GIT_REPOSITORY git@github.com:willat343/cmakebox.git
+    GIT_TAG v${CMAKEBOX_VERSION}
+)
+FetchContent_MakeAvailable(cmakebox)
+list(APPEND CMAKE_MODULE_PATH "${cmakebox_SOURCE_DIR}/cmake")
+include(CMakeBox)
+
+set(SENSORBOX_VERSION "X.Y.Z")
+import_dependency(
+    sensorbox
+    TARGET sensorbox::sensorbox
+    VERSION ${SENSORBOX_VERSION}
+    USE_SYSTEM_REQUIRED_VERSION ${SENSORBOX_VERSION}
+    GIT_REPOSITORY git@github.com:willat343/sensorbox
+    GIT_TAG v${SENSORBOX_VERSION}
+)
+```
+
+Without relying on [cmakebox](https://github.com/willat343/cmakebox), this can be achieved with (replace `X.Y.Z` with version):
+```CMake
+set(SENSORBOX_VERSION "X.Y.Z")
+FetchContent_Declare(
+    sensorbox
+    GIT_REPOSITORY git@github.com:willat343/sensorbox
+    GIT_TAG        v${SENSORBOX_VERSION}
+)
+FetchContent_MakeAvailable(sensorbox)
+```
+
+## Include via Install
+
+### Clone
 
 ```bash
+git clone git@github.com:willat343/sensorbox.git
 cd sensorbox
-mkdir build && cd build
-ccmake ..
-make -j
-sudo make install
 ```
 
-### Uninstallation
+### Configure
+
+For system install:
+```bash
+cmake -S . -B build
+```
+
+For local install:
+```bash
+cmake -S . -B build -DCMAKE_INSTALL_DIR=$HOME/.local
+```
+
+### Build
 
 ```bash
-cd build
-sudo make uninstall
+cmake --build build -j
 ```
 
-### Usage
+### Install
 
-Import the package into your project and add the dependency to your target `<target>` with:
-```cmake
+```bash
+sudo cmake --build build --target install
+```
+
+### Include
+
+Include with the following lines in the `CMakeLists.txt`:
+```CMake
 find_package(sensorbox REQUIRED)
-target_link_libraries(<target> <PUBLIC|INTERFACE|PRIVATE> ${sensorbox_LIBRARIES})
-target_include_directories(<target> SYSTEM <PUBLIC|INTERFACE|PRIVATE> ${sensorbox_INCLUDE_DIRS})
+target_link_libraries(<target> PUBLIC sensorbox::sensorbox)
 ```
 
-For more information, see [sensorbox/README.md](sensorbox/README.md) and documentation.
+### Uninstall
 
-### Documentation
+```bash
+sudo cmake --build build --target uninstall
+```
+
+## Include in Catkin Workspace
+
+A `package.xml` is supplied to facilitate an isolated installation within a catkin workspace (e.g. for ROS applications).
+
+### Clone
+
+```bash
+cd /path/to/catkin_ws/src
+git clone git@github.com:willat343/sensorbox.git
+```
+
+### Build
+
+```bash
+cd /path/to/catkin_ws
+catkin build sensorbox
+```
+
+### Include
+
+To use the package in a downstream project, one should add to their `package.xml`:
+```xml
+<depend>sensorbox</depend>
+```
+
+One can then include `sensorbox` package by includeing in the `CMakeLists.txt`:
+```CMake
+find_package(sensorbox REQUIRED)
+target_link_libraries(<target> PUBLIC sensorbox::sensorbox)
+```
+
+### Clean
+
+```bash
+cd /path/to/catkin_ws
+catkin clean sensorbox
+```
+
+## Documentation
 
 Documentation must be turned on by setting the `-DBUILD_DOCUMENTATION=ON` cmake argument.
 
@@ -56,15 +153,9 @@ make
 ```
 Then open the file `refman.pdf`.
 
-### Tests
+## Tests
 
 Tests must be turned on by setting the `-DBUILD_TESTS=ON` cmake argument.
-
-```bash
-cd build
-cmake -DBUILD_TESTS=ON ..
-make -j
-```
 
 They can then be run with `ctest`:
 ```bash
@@ -72,57 +163,3 @@ ctest --test-dir test
 ```
 
 For more explicit output, the test executables can be run directly from the build directory.
-
-## Catkin Support
-
-A `package.xml` is supplied to facilitate an isolated installation within a catkin workspace (e.g. for ROS applications).
-
-### Prerequisites
-
-Prerequisites of core C++ library plus the following:
-
-| **Dependency** | **Version** | **Description** |
-|----------------|-------------|-----------------|
-| catkin | - | catkin build system |
-
-### Installation
-
-Clone or symlink the repository to the workspace's `src` directory, for example:
-```bash
-ln -s /path/to/sensorbox /path/to/catkin_ws/src
-```
-
-```bash
-cd /path/to/catkin_ws
-catkin build sensorbox
-```
-
-### Uninstallation
-
-```bash
-cd /path/to/catkin_ws
-catkin clean sensorbox
-```
-
-### Usage
-
-To use the package in a downstream project, one should add to their `package.xml`:
-```xml
-<depend>sensorbox</depend>
-```
-One can then either use the workspace's isolated installation or use the system installation otherwise.
-Importing the dependency is then exactly the same as it would be in a non-catkin package as described above (do NOT rely on the `catkin` variables like `catkin_LIBRARIES` and `catkin_INCLUDE_DIRS`).
-
-### Documentation
-
-Documentation must be turned on by setting the `-DBUILD_DOCUMENTATION=ON` cmake argument. This can be done in catkin with:
-```bash
-catkin config --cmake-args -DBUILD_DOCUMENTATION=ON
-```
-
-### Tests
-
-Tests must be turned on by setting the `-DBUILD_TESTS=ON` cmake argument. This can be done in catkin with:
-```bash
-catkin config --cmake-args -DBUILD_TESTS=ON
-```
