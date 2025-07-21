@@ -38,7 +38,7 @@ import_dependency(
     sensorbox
     TARGET sensorbox::sensorbox
     VERSION ${SENSORBOX_VERSION}
-    USE_SYSTEM_REQUIRED_VERSION ${SENSORBOX_VERSION}
+    USE_FIND_PACKAGE_REQUIRED_VERSION ${SENSORBOX_VERSION}
     GIT_REPOSITORY git@github.com:willat343/sensorbox
     GIT_TAG v${SENSORBOX_VERSION}
 )

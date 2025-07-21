@@ -70,7 +70,7 @@ import_dependency(
     cppbox
     TARGET cppbox::cppbox
     VERSION ${CPPBOX_VERSION}
-    USE_SYSTEM_REQUIRED_VERSION ${CPPBOX_VERSION}
+    USE_FIND_PACKAGE_REQUIRED_VERSION ${CPPBOX_VERSION}
     GIT_REPOSITORY git@github.com:willat343/cppbox.git
     GIT_TAG v${CPPBOX_VERSION}
 )
@@ -81,7 +81,7 @@ import_dependency(
     mathbox
     TARGET mathbox::mathbox
     VERSION ${MATHBOX_VERSION}
-    USE_SYSTEM_REQUIRED_VERSION ${MATHBOX_VERSION}
+    USE_FIND_PACKAGE_REQUIRED_VERSION ${MATHBOX_VERSION}
     GIT_REPOSITORY git@github.com:willat343/mathbox.git
     GIT_TAG v${MATHBOX_VERSION}
 )
