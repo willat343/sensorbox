@@ -27,7 +27,7 @@ if (DEVELOPER_MODE)
 endif()
 
 # Dependency: cmakebox
-set(CMAKEBOX_VERSION "0.0.1")
+set(CMAKEBOX_VERSION "0.0.2")
 FetchContent_Declare(
     cmakebox
     GIT_REPOSITORY git@github.com:willat343/cmakebox.git
@@ -163,16 +163,7 @@ export(
 export(PACKAGE ${PROJECT_NAME})
 
 # Uninstallation
-if(NOT TARGET uninstall AND PROJECT_IS_TOP_LEVEL)
-    configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-        @ONLY
-    )
-
-    # Add uninstall target
-    add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
-endif()
+create_uninstall_target()
 
 # Build Tests
 if(BUILD_TESTING)
