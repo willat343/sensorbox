@@ -27,7 +27,7 @@ if (DEVELOPER_MODE)
 endif()
 
 # Dependency: cmakebox
-set(CMAKEBOX_VERSION "0.0.2")
+set(CMAKEBOX_VERSION "0.0.3")
 FetchContent_Declare(
     cmakebox
     GIT_REPOSITORY git@github.com:willat343/cmakebox.git
@@ -36,8 +36,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(cmakebox)
 list(APPEND CMAKE_MODULE_PATH "${cmakebox_SOURCE_DIR}/cmake")
 include(CMakeBox)
-include(Dependencies/Eigen3)
-include(Dependencies/nlohmann_json)
 
 # CMake Build Type
 setup_build_type()
