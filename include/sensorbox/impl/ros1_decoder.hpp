@@ -105,18 +105,24 @@ inline void ROS1BytesDecoder::read_to(std::string& out) {
 }
 
 inline void ROS1BytesDecoder::read_to(std::chrono::nanoseconds& out) {
-    // Careful ordering of read functions
-    const std::chrono::seconds sec{read<uint32_t>()};
-    const std::chrono::nanoseconds nsec{read<uint32_t>()};
-    out = sec + nsec;
+    // Duration is sec/nsecs as int32_t
+    const std::chrono::seconds secs{read<int32_t>()};
+    const std::chrono::nanoseconds nsecs{read<int32_t>()};
+    out = secs + nsecs;
 }
 
 inline void ROS1BytesDecoder::read_to(std::chrono::steady_clock::time_point& out) {
-    out = std::chrono::steady_clock::time_point{read_to<std::chrono::nanoseconds>()};
+    // Time is sec/nsecs as uint32_t
+    const std::chrono::seconds secs{read<uint32_t>()};
+    const std::chrono::nanoseconds nsecs{read<uint32_t>()};
+    out = std::chrono::steady_clock::time_point{secs + nsecs};
 }
 
 inline void ROS1BytesDecoder::read_to(std::chrono::system_clock::time_point& out) {
-    out = std::chrono::system_clock::time_point{read_to<std::chrono::nanoseconds>()};
+    // Time is sec/nsecs as uint32_t
+    const std::chrono::seconds secs{read<uint32_t>()};
+    const std::chrono::nanoseconds nsecs{read<uint32_t>()};
+    out = std::chrono::system_clock::time_point{secs + nsecs};
 }
 
 }

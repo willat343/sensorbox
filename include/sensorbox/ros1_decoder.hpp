@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cppbox/bytes.hpp>
 #include <string>
+#include <vector>
 
 #include "sensorbox/pose.hpp"
 #include "sensorbox/unary.hpp"
@@ -25,14 +26,6 @@ public:
      */
     template<typename T>
     T decode_to();
-
-    template<typename T>
-        requires(std::is_trivially_copyable_v<T>)
-    void ignore(const std::size_t num_ignore = 1);
-
-    template<typename T>
-        requires(std::is_same_v<T, std::string>)
-    void ignore(const std::size_t num_ignore = 1);
 
     void ignore(const std::string& msg_type);
 
@@ -115,9 +108,19 @@ public:
 
     void read_to(PoseMeasurement<3>& out);
 
+    void read_to(std::vector<PoseMeasurement<3>>& out);
+
 protected:
     explicit ROS1BytesDecoder(const std::byte* bytes_, const std::size_t size_, const std::string& msg_type_,
             ROS1BytesDecoder* parent_decoder_);
+
+    template<typename T>
+        requires(std::is_trivially_copyable_v<T>)
+    void ignore(const std::size_t num_ignore = 1);
+
+    template<typename T>
+        requires(std::is_same_v<T, std::string>)
+    void ignore(const std::size_t num_ignore = 1);
 
     std::size_t internal_msg_size(const std::string& internal_msg_type, std::size_t offset) const;
 
@@ -132,17 +135,22 @@ struct ROS1DecodabilityTraits {
 
 template<>
 struct ROS1DecodabilityTraits<std::string> {
-    static constexpr std::array<std::string_view, 1> msg_types{"string"};
+    static constexpr std::array<std::string_view, 2> msg_types{"string", "std_msgs/String"};
+};
+
+template<>
+struct ROS1DecodabilityTraits<std::chrono::nanoseconds> {
+    static constexpr std::array<std::string_view, 2> msg_types{"duration", "std_msgs/Duration"};
 };
 
 template<>
 struct ROS1DecodabilityTraits<std::chrono::steady_clock::time_point> {
-    static constexpr std::array<std::string_view, 1> msg_types{"time"};
+    static constexpr std::array<std::string_view, 2> msg_types{"time", "std_msgs/Time"};
 };
 
 template<>
 struct ROS1DecodabilityTraits<std::chrono::system_clock::time_point> {
-    static constexpr std::array<std::string_view, 1> msg_types{"time"};
+    static constexpr std::array<std::string_view, 2> msg_types{"time", "std_msgs/Time"};
 };
 
 template<>
@@ -170,6 +178,11 @@ template<>
 struct ROS1DecodabilityTraits<PoseMeasurement<3>> {
     static constexpr std::array<std::string_view, 4> msg_types{"geometry_msgs/PoseStamped",
             "geometry_msgs/PoseWithCovarianceStamped", "geometry_msgs/TransformStamped", "nav_msgs/Odometry"};
+};
+
+template<>
+struct ROS1DecodabilityTraits<std::vector<PoseMeasurement<3>>> {
+    static constexpr std::array<std::string_view, 1> msg_types{"tf2_msgs/TFMessage"};
 };
 
 }
