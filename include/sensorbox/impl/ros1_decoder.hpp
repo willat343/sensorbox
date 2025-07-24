@@ -9,9 +9,13 @@ namespace sensorbox {
 
 template<typename T>
 inline T ROS1BytesDecoder::decode_to() {
-    const T out = read_to<T>();
-    assert(is_finished());
-    return out;
+    if constexpr (is_decodable<T>()) {
+        const T out = read_to<T>();
+        assert(is_finished());
+        return out;
+    } else {
+        throw std::runtime_error("ROS1BytesDecoder::decode_to<T>() failed because T cannot be decoded to.");
+    }
 }
 
 template<typename T>
@@ -29,6 +33,22 @@ inline void ROS1BytesDecoder::ignore(const std::size_t num_ignore) {
 
 inline void ROS1BytesDecoder::ignore(const std::string& msg_type) {
     increment_offset(internal_msg_size(msg_type, 0));
+}
+
+inline constexpr bool ROS1BytesDecoder::is_decodable(const std::string_view& msg_type) {
+    constexpr std::array<std::string_view, 22> decodable_msg_types{"duration", "string", "time", "std_msgs/Duration",
+            "std_msgs/Header", "std_msgs/String", "std_msgs/Time", "geometry_msgs/Point", "geometry_msgs/Pose",
+            "geometry_msgs/PoseStamped", "geometry_msgs/PoseWithCovariance", "geometry_msgs/PoseWithCovarianceStamped",
+            "geometry_msgs/Quaternion", "geometry_msgs/Transform", "geometry_msgs/TransformStamped",
+            "geometry_msgs/Twist", "geometry_msgs/TwistStamped", "geometry_msgs/TwistWithCovariance",
+            "geometry_msgs/TwistWithCovarianceStamped", "geometry_msgs/Vector3", "nav_msgs/Odometry",
+            "tf2_msgs/TFMessage"};
+    return std::find(decodable_msg_types.cbegin(), decodable_msg_types.cend(), msg_type) != decodable_msg_types.cend();
+}
+
+template<typename T>
+inline constexpr bool ROS1BytesDecoder::is_decodable() {
+    return !ROS1DecodabilityTraits<T>::msg_types.empty();
 }
 
 template<typename T>

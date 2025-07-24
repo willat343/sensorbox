@@ -17,6 +17,12 @@ public:
 
     ROS1BytesDecoder create_internal_decoder(const std::string& internal_msg_type);
 
+    /**
+     * @brief Decode all bytes to a T object.
+     *
+     * @tparam T
+     * @return T
+     */
     template<typename T>
     T decode_to();
 
@@ -30,9 +36,43 @@ public:
 
     void ignore(const std::string& msg_type);
 
+    /**
+     * @brief Check if there is support for decoding `msg_type`.
+     *
+     * @param msg_type
+     * @return true
+     * @return false
+     */
+    static constexpr bool is_decodable(const std::string_view& msg_type);
+
+    /**
+     * @brief Check if there is any msg type that can be decoded to type T.
+     *
+     * @tparam T
+     * @return true
+     * @return false
+     */
+    template<typename T>
+    static constexpr bool is_decodable();
+
+    /**
+     * @brief Check if `msg_type` is decodable to type T.
+     *
+     * @tparam T
+     * @param msg_type
+     * @return true
+     * @return false
+     */
     template<typename T>
     static constexpr bool is_decodable_to(const std::string_view& msg_type);
 
+    /**
+     * @brief Check if `msg_type()` is decodable to type T.
+     *
+     * @tparam T
+     * @return true
+     * @return false
+     */
     template<typename T>
     bool is_decodable_to();
 
