@@ -87,6 +87,8 @@ import_dependency(
 # Build library
 set(LIBRARY_NAME ${PROJECT_NAME})
 add_library(${LIBRARY_NAME} SHARED
+    src/ros1_decoder.cpp
+    src/sensor.cpp
     src/unary.cpp
 )
 add_library(${PROJECT_NAME}::${LIBRARY_NAME} ALIAS ${LIBRARY_NAME})
