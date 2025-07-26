@@ -12,6 +12,27 @@ ROS1BytesDecoder ROS1BytesDecoder::create_internal_decoder(const std::string& in
     return ROS1BytesDecoder(bytes() + offset(), internal_msg_size(internal_msg_type, 0), internal_msg_type, this);
 }
 
+void ROS1BytesDecoder::read_to(std::chrono::nanoseconds& out) {
+    // Duration is sec/nsecs as int32_t
+    const std::chrono::seconds secs{read<int32_t>()};
+    const std::chrono::nanoseconds nsecs{read<int32_t>()};
+    out = secs + nsecs;
+}
+
+void ROS1BytesDecoder::read_to(std::chrono::steady_clock::time_point& out) {
+    // Time is sec/nsecs as uint32_t
+    const std::chrono::seconds secs{read<uint32_t>()};
+    const std::chrono::nanoseconds nsecs{read<uint32_t>()};
+    out = std::chrono::steady_clock::time_point{secs + nsecs};
+}
+
+void ROS1BytesDecoder::read_to(std::chrono::system_clock::time_point& out) {
+    // Time is sec/nsecs as uint32_t
+    const std::chrono::seconds secs{read<uint32_t>()};
+    const std::chrono::nanoseconds nsecs{read<uint32_t>()};
+    out = std::chrono::system_clock::time_point{secs + nsecs};
+}
+
 void ROS1BytesDecoder::read_to(Eigen::Ref<Eigen::Vector3d> out) {
     out[0] = read<double>();
     out[1] = read<double>();
@@ -44,10 +65,18 @@ void ROS1BytesDecoder::read_to(Eigen::Isometry3d& out) {
     out = Eigen::Isometry3d::TranslationType{t} * q;
 }
 
-void ROS1BytesDecoder::read_to(UnaryMeasurement& out) {
-    ignore<uint32_t>();  // seq
-    read_to(out.timestamp());
-    read_to(out.frame());
+void ROS1BytesDecoder::read_to(ImuMeasurement<3>& out) {
+    if (msg_type() == "sensor_msgs/Imu") {
+        create_internal_decoder("std_msgs/Header").read_to(static_cast<UnaryMeasurement&>(out));
+        ignore("geometry_msgs/Quaternion");  // orientation
+        ignore<double>(9);                   // orientation_covariance
+        create_internal_decoder("geometry_msgs/Vector3").read_to(out.angular_velocity());
+        ignore<double>(9);  // orientation_covariance
+        create_internal_decoder("geometry_msgs/Vector3").read_to(out.linear_acceleration());
+        ignore<double>(9);  // orientation_covariance
+    } else {
+        throw std::runtime_error("msg_type " + msg_type() + " cannot be converted to UnaryMeasurement.");
+    }
 }
 
 void ROS1BytesDecoder::read_to(PoseMeasurement<3>& out) {
@@ -73,12 +102,19 @@ void ROS1BytesDecoder::read_to(PoseMeasurement<3>& out) {
 
 void ROS1BytesDecoder::read_to(std::vector<PoseMeasurement<3>>& out) {
     if (msg_type() == "tf2_msgs/TFMessage") {
-        out.resize(read<uint32_t>());
-        for (PoseMeasurement<3>& out_element : out) {
-            create_internal_decoder("geometry_msgs/TransformStamped").read_to(out_element);
-        }
+        read_vector_to("geometry_msgs/TransformStamped", out);
     } else {
-        throw std::runtime_error("msg_type " + msg_type() + " cannot be converted to PoseMeasurement<3>.");
+        throw std::runtime_error("msg_type " + msg_type() + " cannot be converted to std::vector<PoseMeasurement<3>>.");
+    }
+}
+
+void ROS1BytesDecoder::read_to(UnaryMeasurement& out) {
+    if (msg_type() == "std_msgs/Header") {
+        ignore<uint32_t>();  // seq
+        read_to(out.timestamp());
+        read_to(out.frame());
+    } else {
+        throw std::runtime_error("msg_type " + msg_type() + " cannot be converted to UnaryMeasurement.");
     }
 }
 
@@ -150,6 +186,14 @@ std::size_t ROS1BytesDecoder::internal_msg_size(const std::string& internal_msg_
         offset += internal_msg_size("string", offset);
         offset += internal_msg_size("geometry_msgs/PoseWithCovariance", offset);
         offset += internal_msg_size("geometry_msgs/TwistWithCovariance", offset);
+    } else if (internal_msg_type == "sensor_msgs/Imu") {
+        offset += internal_msg_size("std_msgs/Header", offset);
+        offset += internal_msg_size("geometry_msgs/Quaternion", offset);
+        offset += sizeof(double) * 9;
+        offset += internal_msg_size("geometry_msgs/Vector3", offset);
+        offset += sizeof(double) * 9;
+        offset += internal_msg_size("geometry_msgs/Vector3", offset);
+        offset += sizeof(double) * 9;
     } else if (internal_msg_type == "tf2_msgs/TFMessage") {
         // In ROS 1, the array length in elements is encoded in the first 4 bytes as a uint32
         offset += sizeof(uint32_t);
@@ -161,6 +205,15 @@ std::size_t ROS1BytesDecoder::internal_msg_size(const std::string& internal_msg_
         throw std::runtime_error("ROS1 internal msg size for msg_type " + internal_msg_type + " not known.");
     }
     return offset - initial_offset;
+}
+
+template<typename T>
+void ROS1BytesDecoder::read_vector_to(const std::string& vector_msg_type, std::vector<T>& out) {
+    // ROS 1 dynamic-sized vectors store the number elements as a uint32_t in the first 4 bytes
+    out.resize(read<uint32_t>());
+    for (T& out_element : out) {
+        create_internal_decoder(vector_msg_type).read_to(out_element);
+    }
 }
 
 }

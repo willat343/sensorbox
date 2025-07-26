@@ -36,13 +36,13 @@ inline void ROS1BytesDecoder::ignore(const std::string& msg_type) {
 }
 
 inline constexpr bool ROS1BytesDecoder::is_decodable(const std::string_view& msg_type) {
-    constexpr std::array<std::string_view, 22> decodable_msg_types{"duration", "string", "time", "std_msgs/Duration",
+    constexpr std::array<std::string_view, 23> decodable_msg_types{"duration", "string", "time", "std_msgs/Duration",
             "std_msgs/Header", "std_msgs/String", "std_msgs/Time", "geometry_msgs/Point", "geometry_msgs/Pose",
             "geometry_msgs/PoseStamped", "geometry_msgs/PoseWithCovariance", "geometry_msgs/PoseWithCovarianceStamped",
             "geometry_msgs/Quaternion", "geometry_msgs/Transform", "geometry_msgs/TransformStamped",
             "geometry_msgs/Twist", "geometry_msgs/TwistStamped", "geometry_msgs/TwistWithCovariance",
             "geometry_msgs/TwistWithCovarianceStamped", "geometry_msgs/Vector3", "nav_msgs/Odometry",
-            "tf2_msgs/TFMessage"};
+            "sensor_msgs/Imu", "tf2_msgs/TFMessage"};
     return std::find(decodable_msg_types.cbegin(), decodable_msg_types.cend(), msg_type) != decodable_msg_types.cend();
 }
 
@@ -102,27 +102,6 @@ inline T ROS1BytesDecoder::read_to() {
 
 inline void ROS1BytesDecoder::read_to(std::string& out) {
     out = read<std::string>();
-}
-
-inline void ROS1BytesDecoder::read_to(std::chrono::nanoseconds& out) {
-    // Duration is sec/nsecs as int32_t
-    const std::chrono::seconds secs{read<int32_t>()};
-    const std::chrono::nanoseconds nsecs{read<int32_t>()};
-    out = secs + nsecs;
-}
-
-inline void ROS1BytesDecoder::read_to(std::chrono::steady_clock::time_point& out) {
-    // Time is sec/nsecs as uint32_t
-    const std::chrono::seconds secs{read<uint32_t>()};
-    const std::chrono::nanoseconds nsecs{read<uint32_t>()};
-    out = std::chrono::steady_clock::time_point{secs + nsecs};
-}
-
-inline void ROS1BytesDecoder::read_to(std::chrono::system_clock::time_point& out) {
-    // Time is sec/nsecs as uint32_t
-    const std::chrono::seconds secs{read<uint32_t>()};
-    const std::chrono::nanoseconds nsecs{read<uint32_t>()};
-    out = std::chrono::system_clock::time_point{secs + nsecs};
 }
 
 }

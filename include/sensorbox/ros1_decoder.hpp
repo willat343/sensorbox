@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "sensorbox/imu.hpp"
 #include "sensorbox/pose.hpp"
 #include "sensorbox/unary.hpp"
 
@@ -110,9 +111,14 @@ public:
 
     void read_to(std::vector<PoseMeasurement<3>>& out);
 
+    void read_to(ImuMeasurement<3>& out);
+
 protected:
     explicit ROS1BytesDecoder(const std::byte* bytes_, const std::size_t size_, const std::string& msg_type_,
             ROS1BytesDecoder* parent_decoder_);
+
+    template<typename T>
+    void read_vector_to(const std::string& vector_msg_type, std::vector<T>& out);
 
     template<typename T>
         requires(std::is_trivially_copyable_v<T>)
@@ -170,8 +176,8 @@ struct ROS1DecodabilityTraits<Eigen::Isometry3d> {
 };
 
 template<>
-struct ROS1DecodabilityTraits<UnaryMeasurement> {
-    static constexpr std::array<std::string_view, 1> msg_types{"std_msgs/Header"};
+struct ROS1DecodabilityTraits<ImuMeasurement<3>> {
+    static constexpr std::array<std::string_view, 1> msg_types{"sensor_msgs/Imu"};
 };
 
 template<>
@@ -183,6 +189,11 @@ struct ROS1DecodabilityTraits<PoseMeasurement<3>> {
 template<>
 struct ROS1DecodabilityTraits<std::vector<PoseMeasurement<3>>> {
     static constexpr std::array<std::string_view, 1> msg_types{"tf2_msgs/TFMessage"};
+};
+
+template<>
+struct ROS1DecodabilityTraits<UnaryMeasurement> {
+    static constexpr std::array<std::string_view, 1> msg_types{"std_msgs/Header"};
 };
 
 }
