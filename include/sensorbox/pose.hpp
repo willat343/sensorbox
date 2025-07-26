@@ -30,6 +30,10 @@ public:
     explicit PoseMeasurement(const Timestamp& timestamp_, const std::string& frame_, const std::string& child_frame_,
             const Pose& pose_);
 
+    const std::string& child_frame() const;
+
+    std::string& child_frame();
+
     const Pose& pose() const;
 
     Pose& pose();
@@ -77,6 +81,7 @@ public:
             const Pose& T_NF_F, const Pose& T_C_NC) const;
 
 private:
+    std::string child_frame_;
     Pose pose_;
 };
 

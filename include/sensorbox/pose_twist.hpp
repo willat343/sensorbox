@@ -33,6 +33,10 @@ public:
     explicit PoseTwistMeasurement(const Timestamp& timestamp_, const std::string& frame_,
             const std::string& child_frame_, const Pose& pose_, const Twist& twist_);
 
+    const std::string& child_frame() const;
+
+    std::string& child_frame();
+
     const Pose& pose() const;
 
     Pose& pose();
@@ -42,6 +46,7 @@ public:
     Twist& twist();
 
 private:
+    std::string child_frame_;
     Pose pose_;
     Twist twist_;
 };

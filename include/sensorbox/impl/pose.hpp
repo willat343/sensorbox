@@ -12,7 +12,17 @@ PoseMeasurement<D_>::PoseMeasurement()
 template<int D_>
 PoseMeasurement<D_>::PoseMeasurement(const Timestamp& timestamp_, const std::string& frame_,
         const std::string& child_frame_, const Pose& pose_)
-    : UnaryMeasurement(timestamp_, frame_, child_frame_), pose_(pose_) {}
+    : UnaryMeasurement(timestamp_, frame_), child_frame_(child_frame_), pose_(pose_) {}
+
+template<int D_>
+const std::string& PoseMeasurement<D_>::child_frame() const {
+    return child_frame_;
+}
+
+template<int D_>
+std::string& PoseMeasurement<D_>::child_frame() {
+    return const_cast<std::string&>(std::as_const(*this).child_frame());
+}
 
 template<int D_>
 inline auto PoseMeasurement<D_>::pose() const -> const Pose& {
