@@ -4,9 +4,38 @@
 #include <cppbox/enum.hpp>
 #include <nlohmann/json.hpp>
 
+#include "sensorbox/measurement.hpp"
+
 namespace sensorbox {
 
-CREATE_SMART_ENUM(SensorType, ACCELEROMETER, GYROSCOPE, IMU)
+CREATE_SMART_ENUM(SensorTypeBase, ACCELEROMETER, DIRECT_POSE, GYROSCOPE, IMU)
+
+class SensorType : public SensorTypeBase {
+public:
+    SensorType()
+        : SensorTypeBase() {}
+
+    SensorType(const SensorTypeBase::Identifiers identifier)
+        : SensorTypeBase(identifier) {}
+
+    SensorType(const std::string& string)
+        : SensorTypeBase(string) {}
+
+    inline MeasurementType measurement_type() const {
+        switch ((*this)()) {
+            case ACCELEROMETER:
+                return MeasurementType::LINEAR_ACCELERATION;
+            case DIRECT_POSE:
+                return MeasurementType::POSE;
+            case GYROSCOPE:
+                return MeasurementType::ANGULAR_VELOCITY;
+            case IMU:
+                return MeasurementType::IMU_MEASUREMENT;
+            default:
+                throw std::runtime_error("No MeasurementType for SensorType " + std::string(*this) + ".");
+        }
+    }
+};
 
 class Sensor {
 public:
@@ -38,6 +67,6 @@ private:
 
 }
 
-CREATE_SMART_ENUM_FREE_FUNCTIONS(sensorbox::SensorType)
+CREATE_SMART_ENUM_FREE_FUNCTIONS(sensorbox::SensorTypeBase)
 
 #endif
