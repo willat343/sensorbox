@@ -17,13 +17,15 @@ include(CMakePackageConfigHelpers)
 
 # General Options
 option(BUILD_DOCUMENTATION "Build Doxygen Documentation" OFF)
-option(DEVELOPER_MODE "Use local versions of cmakebox, cppbox, mathbox" OFF)
+option(BUILD_SENSORBOX_ROS "Build sensorbox ROS 1 conversion functions" OFF)
+option(DEVELOPER_MODE "Use local versions of cmakebox, cppbox, mathbox, and convert" OFF)
 
 # Configure FetchContent source directories for DEVELOPER_MODE
 if (DEVELOPER_MODE)
     set(FETCHCONTENT_SOURCE_DIR_CMAKEBOX "${CMAKE_SOURCE_DIR}/dependencies/cmakebox")
     set(FETCHCONTENT_SOURCE_DIR_CPPBOX "${CMAKE_SOURCE_DIR}/dependencies/cppbox")
     set(FETCHCONTENT_SOURCE_DIR_MATHBOX "${CMAKE_SOURCE_DIR}/dependencies/mathbox")
+    set(FETCHCONTENT_SOURCE_DIR_CONVERT "${CMAKE_SOURCE_DIR}/dependencies/convert")
 endif()
 
 # Dependency: cmakebox
@@ -84,9 +86,40 @@ import_dependency(
     GIT_TAG v${MATHBOX_VERSION}
 )
 
+# Dependency: convert (Target: convert::convert) and sensorbox_ros
+set(BUILD_EIGEN_COMPONENTS ON CACHE BOOL "" FORCE)
+set(SENSORBOX_ROS_SRC_FILES)
+set(SENSORBOX_ROS_SYSTEM_INCLUDE_DIRECTORIES)
+set(SENSORBOX_ROS_LINK_LIBRARIES)
+if (BUILD_SENSORBOX_ROS)
+    set(BUILD_ROS_COMPONENTS ON CACHE BOOL "" FORCE)
+    find_package(sensor_msgs REQUIRED)
+    list(APPEND SENSORBOX_ROS_SRC_FILES
+        src/convert/sensorbox_ros/imu.cpp
+        src/convert/sensorbox_ros/pose_twist.cpp
+        src/convert/sensorbox_ros/pose.cpp
+    )
+    list(APPEND SENSORBOX_ROS_INCLUDE_DIRECTORIES
+        ${sensor_msgs_INCLUDE_DIRS}
+    )
+    list(APPEND SENSORBOX_ROS_LINK_LIBRARIES
+        ${sensor_msgs_LIBRARIES}
+    )
+endif()
+set(CONVERT_VERSION "0.6.0")
+import_dependency(
+    convert
+    TARGET convert::convert
+    VERSION ${CONVERT_VERSION}
+    USE_FIND_PACKAGE_REQUIRED_VERSION ${CONVERT_VERSION}
+    GIT_REPOSITORY git@github.com:willat343/convert.git
+    GIT_TAG v${CONVERT_VERSION}
+)
+
 # Build library
 set(LIBRARY_NAME ${PROJECT_NAME})
 add_library(${LIBRARY_NAME} SHARED
+    ${SENSORBOX_ROS_SRC_FILES}
     src/ros1_decoder.cpp
     src/sensor.cpp
     src/unary.cpp
@@ -97,6 +130,12 @@ target_include_directories(${LIBRARY_NAME} PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
+# System include directories
+if (SENSORBOX_ROS_SYSTEM_INCLUDE_DIRECTORIES)
+    target_include_directories(${LIBRARY_NAME} PUBLIC SYSTEM
+        ${SENSORBOX_ROS_SYSTEM_INCLUDE_DIRECTORIES}
+    )
+endif()
 # Properties
 set_target_properties(${LIBRARY_NAME} PROPERTIES
     CXX_STANDARD 20
@@ -108,6 +147,8 @@ target_compile_options(${LIBRARY_NAME} PRIVATE
 )
 # Link libraries
 target_link_libraries(${LIBRARY_NAME} PUBLIC
+    ${SENSORBOX_ROS_LINK_LIBRARIES}
+    convert::convert    # May depend on Eigen3::Eigen
     mathbox::mathbox    # Depends on Eigen3::Eigen
     Eigen3::Eigen
     nlohmann_json::nlohmann_json
