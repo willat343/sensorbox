@@ -7,7 +7,7 @@
 
 #include "sensorbox/stiffness.hpp"
 
-namespace continuity::problems {
+namespace sensorbox {
 
 template<int Rows>
 Eigen::Matrix<double, Rows, Rows> stiffness_from_config(const nlohmann::json& config) {
