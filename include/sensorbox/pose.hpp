@@ -37,12 +37,6 @@ public:
     using Stiffness = Eigen::Matrix<double, DoF, DoF>;
 
     /**
-     * @brief Construct a new Pose Sensor with identity stiffness.
-     *
-     */
-    explicit DirectPoseSensor();
-
-    /**
      * @brief Construct an instance of the class from a json config with Sensor structure and one of ["sigma",
      * "sigmas", "variance", "variances", "covariance"].
      *
@@ -51,18 +45,11 @@ public:
     explicit DirectPoseSensor(const nlohmann::json& config);
 
     /**
-     * @brief Construct an instance of the class.
-     *
-     * @param noise_sigma
-     */
-    explicit DirectPoseSensor(const double noise_sigma);
-
-    /**
      * @brief Get stiffness matrix for sensor.
      *
-     * @return Stiffness
+     * @return const Stiffness&
      */
-    Stiffness stiffness() const;
+    const Stiffness& stiffness() const;
 
 private:
     Stiffness stiffness_;

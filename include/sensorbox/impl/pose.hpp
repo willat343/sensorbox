@@ -9,15 +9,15 @@
 namespace sensorbox {
 
 template<int D_>
-DirectPoseSensor<D_>::DirectPoseSensor() : Sensor(SensorType::DIRECT_POSE), stiffness_(Stiffness::Identity()) {}
-
-template<int D_>
 DirectPoseSensor<D_>::DirectPoseSensor(const nlohmann::json& config)
-    : Sensor(config), stiffness_(stiffness_from_config(config)) {}
+    : Sensor(config), stiffness_(stiffness_from_config(config)) {
+    assert(type() == SensorType::DIRECT_POSE);
+}
 
 template<int D_>
-DirectPoseSensor<D_>::DirectPoseSensor(const double noise_sigma)
-    : Sensor(SensorType::DIRECT_POSE), stiffness_(math::stiffness_from_sigma<DoF>(noise_sigma)) {}
+inline const typename DirectPoseSensor<D_>::Stiffness& DirectPoseSensor<D_>::stiffness() const {
+    return stiffness_;
+}
 
 template<int D_>
 PoseMeasurement<D_>::PoseMeasurement()

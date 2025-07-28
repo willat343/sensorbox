@@ -6,7 +6,9 @@
 namespace sensorbox {
 
 template<int D_>
-Accelerometer<D_>::Accelerometer(const nlohmann::json& config) : RandomWalkSensor<D_>(config) {}
+Accelerometer<D_>::Accelerometer(const nlohmann::json& config) : RandomWalkSensor<D_>(config) {
+    assert(type() == SensorType::ACCELEROMETER);
+}
 
 template<int D_>
 Accelerometer<D_>::Accelerometer(const double frequency_, const double noise_density_, const double bias_noise_density_,

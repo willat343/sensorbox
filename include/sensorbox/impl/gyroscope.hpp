@@ -6,7 +6,9 @@
 namespace sensorbox {
 
 template<int D_>
-Gyroscope<D_>::Gyroscope(const nlohmann::json& config) : RandomWalkSensor<D_>(config) {}
+Gyroscope<D_>::Gyroscope(const nlohmann::json& config) : RandomWalkSensor<D_>(config) {
+    assert(type() == SensorType::GYROSCOPE);
+}
 
 template<int D_>
 Gyroscope<D_>::Gyroscope(const double frequency_, const double noise_density_, const double bias_noise_density_,
