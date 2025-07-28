@@ -1,9 +1,23 @@
 #ifndef SENSORBOX_IMPL_POSE_HPP
 #define SENSORBOX_IMPL_POSE_HPP
 
+#include <mathbox/stiffness.hpp>
+
 #include "sensorbox/pose.hpp"
+#include "sensorbox/stiffness.hpp"
 
 namespace sensorbox {
+
+template<int D_>
+DirectPoseSensor<D_>::DirectPoseSensor() : Sensor(SensorType::DIRECT_POSE), stiffness_(Stiffness::Identity()) {}
+
+template<int D_>
+DirectPoseSensor<D_>::DirectPoseSensor(const nlohmann::json& config)
+    : Sensor(config), stiffness_(stiffness_from_config(config)) {}
+
+template<int D_>
+DirectPoseSensor<D_>::DirectPoseSensor(const double noise_sigma)
+    : Sensor(SensorType::DIRECT_POSE), stiffness_(math::stiffness_from_sigma<DoF>(noise_sigma)) {}
 
 template<int D_>
 PoseMeasurement<D_>::PoseMeasurement()

@@ -4,9 +4,69 @@
 #include <Eigen/Geometry>
 #include <string>
 
+#include "sensorbox/sensor.hpp"
 #include "sensorbox/unary.hpp"
 
 namespace sensorbox {
+
+template<int D_>
+class DirectPoseSensor : public Sensor {
+public:
+    /**
+     * @brief Dimension D
+     *
+     */
+    static constexpr int D = D_;
+
+    /**
+     * @brief Degrees of Freedom (DoF)
+     *
+     */
+    static constexpr int DoF = D * (D + 1) / 2;
+
+    /**
+     * @brief Covariance matrix
+     *
+     */
+    using Covariance = Eigen::Matrix<double, DoF, DoF>;
+
+    /**
+     * @brief Stiffness matrix
+     *
+     */
+    using Stiffness = Eigen::Matrix<double, DoF, DoF>;
+
+    /**
+     * @brief Construct a new Pose Sensor with identity stiffness.
+     *
+     */
+    explicit DirectPoseSensor();
+
+    /**
+     * @brief Construct an instance of the class from a json config with Sensor structure and one of ["sigma",
+     * "sigmas", "variance", "variances", "covariance"].
+     *
+     * @param config
+     */
+    explicit DirectPoseSensor(const nlohmann::json& config);
+
+    /**
+     * @brief Construct an instance of the class.
+     *
+     * @param noise_sigma
+     */
+    explicit DirectPoseSensor(const double noise_sigma);
+
+    /**
+     * @brief Get stiffness matrix for sensor.
+     *
+     * @return Stiffness
+     */
+    Stiffness stiffness() const;
+
+private:
+    Stiffness stiffness_;
+};
 
 template<int D_>
 class PoseMeasurement : public UnaryMeasurement {

@@ -32,7 +32,7 @@ target_compile_options(${PROJECT_NAME}_tests PRIVATE
 
 # Link Libraries
 target_link_libraries(${PROJECT_NAME}_tests PUBLIC
-    ${PROJECT_NAME}
+    ${LIBRARY_NAME}
     mathbox::mathbox
     Eigen3::Eigen
     gtest_main
