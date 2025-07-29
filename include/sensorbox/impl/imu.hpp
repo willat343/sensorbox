@@ -8,7 +8,7 @@ namespace sensorbox {
 template<int D_>
 Imu<D_>::Imu(const nlohmann::json& config)
     : Sensor(config), accelerometer_(config["accelerometer"]), gyroscope_(config["gyroscope"]) {
-    assert(type() == SensorType::IMU);
+    assert(this->type() == SensorType::IMU);
 }
 
 template<int D_>

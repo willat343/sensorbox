@@ -4,6 +4,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <chrono>
+#include <nlohmann/json.hpp>
 #include <string>
 
 #include "sensorbox/accelerometer.hpp"

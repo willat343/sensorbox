@@ -33,6 +33,9 @@ Eigen::Matrix<double, Rows, Rows> stiffness_from_config(const nlohmann::json& co
         return math::stiffness_from_variances(variances);
     } else if (config.contains("variance")) {
         if constexpr (Rows == Eigen::Dynamic) {
+            if (!config.contains("size")) {
+                throw std::runtime_error("stiffness_from_config: Expected size field for Rows == Eigen::Dynamic.");
+            }
             return math::stiffness_from_variance(config["variance"].template get<double>(),
                     config["size"].template get<int>());
         } else {
@@ -54,6 +57,9 @@ Eigen::Matrix<double, Rows, Rows> stiffness_from_config(const nlohmann::json& co
         return math::stiffness_from_sigmas(sigmas);
     } else if (config.contains("sigma")) {
         if constexpr (Rows == Eigen::Dynamic) {
+            if (!config.contains("size")) {
+                throw std::runtime_error("stiffness_from_config: Expected size field for Rows == Eigen::Dynamic.");
+            }
             return math::stiffness_from_sigma(config["sigma"].template get<double>(),
                     config["size"].template get<int>());
         } else {
@@ -61,7 +67,7 @@ Eigen::Matrix<double, Rows, Rows> stiffness_from_config(const nlohmann::json& co
         }
     } else {
         throw std::runtime_error(
-                "Noise information (field: covariance, variances, variance, sigmas or sigma) missing from config.");
+                "stiffness_from_config: Field covariance, variances, variance, sigmas or sigma missing from config.");
     }
 }
 

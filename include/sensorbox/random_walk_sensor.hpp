@@ -2,6 +2,7 @@
 #define SENSORBOX_RANDOM_WALK_SENSOR_HPP
 
 #include <Eigen/Core>
+#include <nlohmann/json.hpp>
 
 #include "sensorbox/sensor.hpp"
 

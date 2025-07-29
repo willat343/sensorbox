@@ -1,6 +1,8 @@
 #ifndef SENSORBOX_GYROSCOPE_HPP
 #define SENSORBOX_GYROSCOPE_HPP
 
+#include <nlohmann/json.hpp>
+
 #include "sensorbox/random_walk_sensor.hpp"
 
 namespace sensorbox {
@@ -18,6 +20,12 @@ public:
      *
      */
     static constexpr int D = D_;
+
+    /**
+     * @brief Degrees of Freedom (DoF)
+     *
+     */
+    static constexpr int DoF = D * (D - 1) / 2;
 
     /**
      * @brief Construct an instance of the class from a json config with RandomWalkSensor structure.
@@ -39,5 +47,7 @@ public:
 };
 
 }
+
+#include "sensorbox/impl/gyroscope.hpp"
 
 #endif
