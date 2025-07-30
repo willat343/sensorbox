@@ -66,8 +66,9 @@ Eigen::Matrix<double, Rows, Rows> stiffness_from_config(const nlohmann::json& co
             return math::stiffness_from_sigma<Rows>(config["sigma"].template get<double>());
         }
     } else {
-        throw std::runtime_error(
-                "stiffness_from_config: Field covariance, variances, variance, sigmas or sigma missing from config.");
+        throw std::runtime_error("stiffness_from_config: Field covariance, information, variances, variance, sigmas or "
+                                 "sigma missing from config. Config was:\n" +
+                                 config.dump());
     }
 }
 
