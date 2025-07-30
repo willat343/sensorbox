@@ -81,6 +81,10 @@ public:
 
     std::string& child_frame();
 
+    PoseMeasurement inverse() const;
+
+    void invert();
+
     const Pose& pose() const;
 
     Pose& pose();

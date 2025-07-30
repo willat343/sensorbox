@@ -39,6 +39,16 @@ std::string& PoseMeasurement<D_>::child_frame() {
 }
 
 template<int D_>
+inline auto PoseMeasurement<D_>::inverse() const -> PoseMeasurement<D_> {
+    return PoseMeasurement<D_>{timestamp(), child_frame(), frame(), pose().inverse()};
+}
+
+template<int D_>
+inline void PoseMeasurement<D_>::invert() {
+    *this = inverse();
+}
+
+template<int D_>
 inline auto PoseMeasurement<D_>::pose() const -> const Pose& {
     return pose_;
 }
