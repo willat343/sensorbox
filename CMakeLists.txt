@@ -29,7 +29,7 @@ if (DEVELOPER_MODE)
 endif()
 
 # Dependency: cmakebox
-set(CMAKEBOX_VERSION "0.0.3")
+set(CMAKEBOX_VERSION "0.0.5")
 FetchContent_Declare(
     cmakebox
     GIT_REPOSITORY git@github.com:willat343/cmakebox.git
@@ -69,8 +69,8 @@ set(CPPBOX_VERSION "0.1.0")
 import_dependency(
     cppbox
     TARGET cppbox::cppbox
-    VERSION ${CPPBOX_VERSION}
-    USE_FIND_PACKAGE_REQUIRED_VERSION ${CPPBOX_VERSION}
+    METHOD FETCH_GIT
+    FIND_PACKAGE_VERSION ${CPPBOX_VERSION}
     GIT_REPOSITORY git@github.com:willat343/cppbox.git
     GIT_TAG v${CPPBOX_VERSION}
 )
@@ -80,8 +80,8 @@ set(MATHBOX_VERSION "0.6.0")
 import_dependency(
     mathbox
     TARGET mathbox::mathbox
-    VERSION ${MATHBOX_VERSION}
-    USE_FIND_PACKAGE_REQUIRED_VERSION ${MATHBOX_VERSION}
+    METHOD FETCH_GIT
+    FIND_PACKAGE_VERSION ${MATHBOX_VERSION}
     GIT_REPOSITORY git@github.com:willat343/mathbox.git
     GIT_TAG v${MATHBOX_VERSION}
 )
@@ -110,8 +110,8 @@ set(CONVERT_VERSION "0.6.0")
 import_dependency(
     convert
     TARGET convert::convert
-    VERSION ${CONVERT_VERSION}
-    USE_FIND_PACKAGE_REQUIRED_VERSION ${CONVERT_VERSION}
+    METHOD FETCH_GIT
+    FIND_PACKAGE_VERSION ${CONVERT_VERSION}
     GIT_REPOSITORY git@github.com:willat343/convert.git
     GIT_TAG v${CONVERT_VERSION}
 )
