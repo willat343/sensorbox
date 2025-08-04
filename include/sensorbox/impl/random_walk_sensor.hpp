@@ -15,8 +15,8 @@ RandomWalkSensor<DoF_>::RandomWalkSensor(const SensorType type, const double fre
 }
 
 template<int DoF_>
-RandomWalkSensor<DoF_>::RandomWalkSensor(const nlohmann::json& config)
-    : Sensor(config), JsonLoadable<RandomWalkSensorSchemaFilepath, sensorbox_schema_loader>(config) {
+RandomWalkSensor<DoF_>::RandomWalkSensor(const nlohmann::json& config, const bool validate)
+    : Sensor(config, false), JsonLoadable<RandomWalkSensorSchemaFilepath, sensorbox_schema_loader>(config, validate) {
     set_properties(config["frequency"].get<double>(), config["noise_density"].get<double>(),
             config["bias_noise_density"].get<double>());
     initial_noise__ = config["initial_noise"].get<double>();

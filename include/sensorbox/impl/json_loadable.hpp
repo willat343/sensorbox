@@ -15,13 +15,15 @@ constexpr SchemaFilepath<N>::SchemaFilepath(const char (&string)[N]) {
 }
 
 template<std::size_t N>
-constexpr std::string_view SchemaFilepath<N>::filepath() const noexcept {
+constexpr std::string_view SchemaFilepath<N>::string() const noexcept {
     return std::string_view{value.data(), value.size()};
 }
 
 template<SchemaFilepath schema_filepath, SchemaLoader schema_loader>
-JsonLoadable<schema_filepath, schema_loader>::JsonLoadable(const nlohmann::json& json) {
-    validate(json);
+JsonLoadable<schema_filepath, schema_loader>::JsonLoadable(const nlohmann::json& json, const bool validate_) {
+    if (validate_) {
+        validate(json);
+    }
 }
 
 template<SchemaFilepath schema_filepath, SchemaLoader schema_loader>
@@ -31,7 +33,7 @@ nlohmann::json JsonLoadable<schema_filepath, schema_loader>::validate(const nloh
 
 template<SchemaFilepath schema_filepath, SchemaLoader schema_loader>
 const nlohmann::json JsonLoadable<schema_filepath, schema_loader>::schema_ = []() {
-    const std::filesystem::path filepath{schema_filepath.filepath()};
+    const std::filesystem::path filepath{schema_filepath.string()};
     if (!std::filesystem::exists(filepath)) {
         throw std::runtime_error("Schema filepath \"" + filepath.string() + "\" does not exist.");
     }

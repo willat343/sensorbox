@@ -32,8 +32,9 @@ public:
      * ```
      *
      * @param config
+     * @param validate
      */
-    explicit Imu(const nlohmann::json& config);
+    explicit Imu(const nlohmann::json& config, const bool validate = true);
 
     const Accelerometer<D>& accelerometer() const;
 

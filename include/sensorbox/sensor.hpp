@@ -54,8 +54,9 @@ public:
      * @brief Construct an instance of the class from a json according to schema.
      *
      * @param config
+     * @param validate
      */
-    explicit Sensor(const nlohmann::json& config);
+    explicit Sensor(const nlohmann::json& config, const bool validate = true);
 
     SensorType type() const;
 

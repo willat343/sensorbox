@@ -6,8 +6,9 @@
 namespace sensorbox {
 
 template<int D_>
-Accelerometer<D_>::Accelerometer(const nlohmann::json& config)
-    : RandomWalkSensor<D_>(config), JsonLoadable<AccelerometerSchemaFilepath, sensorbox_schema_loader>(config) {
+Accelerometer<D_>::Accelerometer(const nlohmann::json& config, const bool validate)
+    : RandomWalkSensor<D_>(config, false),
+      JsonLoadable<AccelerometerSchemaFilepath, sensorbox_schema_loader>(config, validate) {
     assert(this->type() == SensorType::ACCELEROMETER);
 }
 

@@ -6,11 +6,11 @@
 namespace sensorbox {
 
 template<int D_>
-Imu<D_>::Imu(const nlohmann::json& config)
-    : Sensor(config),
-      JsonLoadable<ImuSchemaFilepath, sensorbox_schema_loader>(config),
-      accelerometer_(config["accelerometer"]),
-      gyroscope_(config["gyroscope"]) {
+Imu<D_>::Imu(const nlohmann::json& config, const bool validate)
+    : Sensor(config, false),
+      JsonLoadable<ImuSchemaFilepath, sensorbox_schema_loader>(config, validate),
+      accelerometer_(config.at("accelerometer"), false),
+      gyroscope_(config.at("gyroscope"), false) {
     assert(this->type() == SensorType::IMU);
 }
 

@@ -42,8 +42,9 @@ public:
      * "sigmas", "variance", "variances", "covariance"].
      *
      * @param config
+     * @param validate
      */
-    explicit DirectPoseSensor(const nlohmann::json& config);
+    explicit DirectPoseSensor(const nlohmann::json& config, const bool validate = true);
 
     /**
      * @brief Get stiffness matrix for sensor.

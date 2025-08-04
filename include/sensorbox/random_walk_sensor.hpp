@@ -40,8 +40,9 @@ public:
      * @brief Construct an instance of the class from a json according to schema.
      *
      * @param config
+     * @param validate
      */
-    explicit RandomWalkSensor(const nlohmann::json& config);
+    explicit RandomWalkSensor(const nlohmann::json& config, const bool validate = true);
 
     /**
      * @brief Bias (random walk) noise density (in sensor units * s^{-1} * Hz^{-1/2})

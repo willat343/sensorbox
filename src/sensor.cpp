@@ -4,8 +4,8 @@ namespace sensorbox {
 
 Sensor::Sensor(const SensorType type_) : type_(type_), make_(""), model_("") {}
 
-Sensor::Sensor(const nlohmann::json& config)
-    : JsonLoadable<SensorSchemaFilepath, sensorbox_schema_loader>(config),
+Sensor::Sensor(const nlohmann::json& config, const bool validate)
+    : JsonLoadable<SensorSchemaFilepath, sensorbox_schema_loader>(config, validate),
       type_(SensorType{config["type"].get<std::string>()}),
       make_(config.contains("make") ? config["make"].get<std::string>() : std::string()),
       model_(config.contains("model") ? config["model"].get<std::string>() : std::string()) {}

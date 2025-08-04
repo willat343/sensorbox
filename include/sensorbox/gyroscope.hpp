@@ -33,8 +33,9 @@ public:
      * @brief Construct an instance of the class from a json config with RandomWalkSensor structure.
      *
      * @param config
+     * @param validate
      */
-    explicit Gyroscope(const nlohmann::json& config);
+    explicit Gyroscope(const nlohmann::json& config, const bool validate = true);
 
     /**
      * @brief Construct an instance of the class
