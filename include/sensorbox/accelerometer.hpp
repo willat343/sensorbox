@@ -3,6 +3,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include "sensorbox/json_loadable.hpp"
 #include "sensorbox/random_walk_sensor.hpp"
 
 namespace sensorbox {
@@ -13,7 +14,8 @@ namespace sensorbox {
  * @tparam D_ dimension (e.g. 3 for 3D)
  */
 template<int D_>
-class Accelerometer : public RandomWalkSensor<D_> {
+class Accelerometer : public RandomWalkSensor<D_>,
+                      public JsonLoadable<AccelerometerSchemaFilepath, sensorbox_schema_loader> {
 public:
     /**
      * @brief Dimension D

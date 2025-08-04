@@ -4,12 +4,13 @@
 #include <Eigen/Core>
 #include <nlohmann/json.hpp>
 
+#include "sensorbox/json_loadable.hpp"
 #include "sensorbox/sensor.hpp"
 
 namespace sensorbox {
 
 template<int DoF_>
-class RandomWalkSensor : public Sensor {
+class RandomWalkSensor : public Sensor, public JsonLoadable<RandomWalkSensorSchemaFilepath, sensorbox_schema_loader> {
 public:
     /**
      * @brief Sensor degrees of freedom
@@ -24,19 +25,6 @@ public:
     using Stiffness = Eigen::Matrix<double, DoF, DoF>;
 
     /**
-     * @brief Construct an instance of the class from a json config with Sensor structure plus:
-     * ```json
-     * "frequency": <double>,
-     * "noise_density": <double>,
-     * "bias_noise_density": <double>,
-     * "initial_noise": <double>
-     * ```
-     *
-     * @param config
-     */
-    explicit RandomWalkSensor(const nlohmann::json& config);
-
-    /**
      * @brief Construct an instance of the class
      *
      * @param type
@@ -47,6 +35,13 @@ public:
      */
     explicit RandomWalkSensor(const SensorType type, const double frequency, const double noise_density,
             const double bias_noise_density, const double initial_noise);
+
+    /**
+     * @brief Construct an instance of the class from a json according to schema.
+     *
+     * @param config
+     */
+    explicit RandomWalkSensor(const nlohmann::json& config);
 
     /**
      * @brief Bias (random walk) noise density (in sensor units * s^{-1} * Hz^{-1/2})

@@ -1,0 +1,17 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "file:///Accelerometer.schema.json",
+    "allOf": [
+        {
+            "$ref": "RandomWalkSensor.schema.json"
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "const": "ACCELEROMETER"
+                }
+            }
+        }
+    ]
+}

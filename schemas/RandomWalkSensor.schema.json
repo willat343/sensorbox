@@ -1,0 +1,42 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "file:///RandomWalkSensor.schema.json",
+    "allOf": [
+        {
+            "$ref": "Sensor.schema.json"
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "enum": [
+                        "ACCELEROMETER",
+                        "GYROSCOPE"
+                    ]
+                },
+                "frequency": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "noise_density": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "bias_noise_density": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
+                "initial_noise": {
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                }
+            },
+            "required": [
+                "frequency",
+                "noise_density",
+                "bias_noise_density",
+                "initial_noise"
+            ]
+        }
+    ]
+}

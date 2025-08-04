@@ -9,13 +9,14 @@
 
 #include "sensorbox/accelerometer.hpp"
 #include "sensorbox/gyroscope.hpp"
+#include "sensorbox/json_loadable.hpp"
 #include "sensorbox/sensor.hpp"
 #include "sensorbox/unary.hpp"
 
 namespace sensorbox {
 
 template<int D_>
-class Imu : public Sensor {
+class Imu : public Sensor, public JsonLoadable<ImuSchemaFilepath, sensorbox_schema_loader> {
 public:
     /**
      * @brief Dimension D

@@ -1,0 +1,28 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "file:///Imu.schema.json",
+    "allOf": [
+        {
+            "$ref": "Sensor.schema.json"
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "const": "IMU"
+                },
+                "accelerometer": {
+                    "$ref": "Accelerometer.schema.json"
+                },
+                "gyroscope": {
+                    "$ref": "Gyroscope.schema.json"
+                }
+            },
+            "required": [
+                "type",
+                "accelerometer",
+                "gyroscope"
+            ]
+        }
+    ]
+}

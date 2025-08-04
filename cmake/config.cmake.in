@@ -4,6 +4,7 @@ check_required_components("@PROJECT_NAME@")
 
 # Find required packages, ensuring that dynamically linked libraries will be found
 find_package(Eigen3 @EIGEN3_VERSION@ REQUIRED)
+find_package(nlohmann_json_schema_validator @NLOHMANN_JSON_SCHEMA_VALIDATOR_VERSION@ REQUIRED)
 find_package(nlohmann_json @NLOHMANN_JSON_VERSION@ REQUIRED)
 find_package(cppbox @CPPBOX_VERSION@ REQUIRED)
 find_package(mathbox @MATHBOX_VERSION@ REQUIRED)

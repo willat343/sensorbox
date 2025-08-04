@@ -7,18 +7,19 @@
 namespace sensorbox {
 
 template<int DoF_>
-RandomWalkSensor<DoF_>::RandomWalkSensor(const nlohmann::json& config) : Sensor(config) {
-    set_properties(config["frequency"].get<double>(), config["noise_density"].get<double>(),
-            config["bias_noise_density"].get<double>());
-    initial_noise__ = config["initial_noise"].get<double>();
-}
-
-template<int DoF_>
 RandomWalkSensor<DoF_>::RandomWalkSensor(const SensorType type, const double frequency_, const double noise_density_,
         const double bias_noise_density_, const double initial_noise_)
     : Sensor(type) {
     set_properties(frequency_, noise_density_, bias_noise_density_);
     initial_noise__ = initial_noise_;
+}
+
+template<int DoF_>
+RandomWalkSensor<DoF_>::RandomWalkSensor(const nlohmann::json& config)
+    : Sensor(config), JsonLoadable<RandomWalkSensorSchemaFilepath, sensorbox_schema_loader>(config) {
+    set_properties(config["frequency"].get<double>(), config["noise_density"].get<double>(),
+            config["bias_noise_density"].get<double>());
+    initial_noise__ = config["initial_noise"].get<double>();
 }
 
 template<int DoF_>

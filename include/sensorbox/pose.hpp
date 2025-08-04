@@ -4,13 +4,14 @@
 #include <Eigen/Geometry>
 #include <string>
 
+#include "sensorbox/json_loadable.hpp"
 #include "sensorbox/sensor.hpp"
 #include "sensorbox/unary.hpp"
 
 namespace sensorbox {
 
 template<int D_>
-class DirectPoseSensor : public Sensor {
+class DirectPoseSensor : public Sensor, public JsonLoadable<DirectPoseSensorSchemaFilepath, sensorbox_schema_loader> {
 public:
     /**
      * @brief Dimension D

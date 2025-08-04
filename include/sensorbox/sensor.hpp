@@ -4,22 +4,31 @@
 #include <cppbox/enum.hpp>
 #include <nlohmann/json.hpp>
 
+#include "sensorbox/json_loadable.hpp"
 #include "sensorbox/measurement.hpp"
 
+#ifndef SENSORBOX_SCHEMAS_DIRECTORY
+#error "SENSORBOX_SCHEMAS_DIRECTORY is not defined."
+#endif
+
 namespace sensorbox {
+
+constexpr SchemaFilepath AccelerometerSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Accelerometer.schema.json"};
+constexpr SchemaFilepath DirectPoseSensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "DirectPoseSensor.schema.json"};
+constexpr SchemaFilepath GyroscopeSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Gyroscope.schema.json"};
+constexpr SchemaFilepath ImuSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Imu.schema.json"};
+constexpr SchemaFilepath RandomWalkSensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "RandomWalkSensor.schema.json"};
+constexpr SchemaFilepath SensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Sensor.schema.json"};
 
 CREATE_SMART_ENUM(SensorTypeBase, ACCELEROMETER, DIRECT_POSE, GYROSCOPE, IMU)
 
 class SensorType : public SensorTypeBase {
 public:
-    SensorType()
-        : SensorTypeBase() {}
+    SensorType() : SensorTypeBase() {}
 
-    SensorType(const SensorTypeBase::Identifiers identifier)
-        : SensorTypeBase(identifier) {}
+    SensorType(const SensorTypeBase::Identifiers identifier) : SensorTypeBase(identifier) {}
 
-    SensorType(const std::string& string)
-        : SensorTypeBase(string) {}
+    SensorType(const std::string& string) : SensorTypeBase(string) {}
 
     inline MeasurementType measurement_type() const {
         switch ((*this)()) {
@@ -37,17 +46,12 @@ public:
     }
 };
 
-class Sensor {
+class Sensor : public JsonLoadable<SensorSchemaFilepath, sensorbox_schema_loader> {
 public:
     explicit Sensor(const SensorType type_);
 
     /**
-     * @brief Construct an instance of the class from a json config with structure:
-     * ```json
-     * "type": <string>,
-     * "make": <string>,
-     * "model": <string>
-     * ```
+     * @brief Construct an instance of the class from a json according to schema.
      *
      * @param config
      */

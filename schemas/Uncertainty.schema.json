@@ -1,0 +1,85 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "file:///Uncertainty.schema.json",
+    "type": "object",
+    "properties": {
+        "sigma": {
+            "type": "number",
+            "exclusiveMinimum": 0.0
+        },
+        "sigmas": {
+            "type": "array",
+            "items": {
+                "type": "number",
+                "minimum": 0.0
+            },
+            "minItems": 1
+        },
+        "variance": {
+            "type": "number",
+            "exclusiveMinimum": 0.0
+        },
+        "variances": {
+            "type": "array",
+            "items": {
+                "type": "number",
+                "minimum": 0.0
+            },
+            "minItems": 1
+        },
+        "covariance": {
+            "type": "array",
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 1
+            },
+            "minItems": 1
+        },
+        "precision": {
+            "type": "array",
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 1
+            },
+            "minItems": 1
+        }
+    },
+    "oneOf": [
+        {
+            "required": [
+                "sigma"
+            ]
+        },
+        {
+            "required": [
+                "sigmas"
+            ]
+        },
+        {
+            "required": [
+                "variance"
+            ]
+        },
+        {
+            "required": [
+                "variances"
+            ]
+        },
+        {
+            "required": [
+                "covariance"
+            ]
+        },
+        {
+            "required": [
+                "precision"
+            ]
+        }
+    ]
+}

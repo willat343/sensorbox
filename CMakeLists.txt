@@ -52,16 +52,15 @@ import_Eigen3(
 )
 
 # Dependency: nlohmann_json (Target: nlohmann_json::nlohmann_json)
-set(NLOHMANN_JSON_VERSION "3.7.3")
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # Note: gcc/g++
-    if (CMAKE_CXX_COMPILER_VERSION_MAJOR GREATER_EQUAL 10)
-        # g++-10 with c++17 requires nlohmann_json >=3.8.0. For further details see issues:
-        #  - https://github.com/nlohmann/json/issues/1912
-        set(NLOHMANN_JSON_VERSION "3.8.0")
-    endif()
-endif()
+set(NLOHMANN_JSON_VERSION "3.8.0")
 import_nlohmann_json(
     VERSION ${NLOHMANN_JSON_VERSION}
+)
+
+# Dependency: nlohmann_json_schema_validator (Target: nlohmann_json_schema_validator::validator)
+set(NLOHMANN_JSON_SCHEMA_VALIDATOR_VERSION "2.3.0")
+import_nlohmann_json_schema_validator(
+    VERSION ${NLOHMANN_JSON_SCHEMA_VALIDATOR_VERSION}
 )
 
 # Dependency: cppbox (Target: cppbox::cppbox)
@@ -120,6 +119,7 @@ import_dependency(
 set(LIBRARY_NAME ${PROJECT_NAME})
 add_library(${LIBRARY_NAME} SHARED
     ${SENSORBOX_ROS_SRC_FILES}
+    src/json_loadable.cpp
     src/ros1_decoder.cpp
     src/sensor.cpp
     src/unary.cpp
@@ -145,12 +145,18 @@ set_target_properties(${LIBRARY_NAME} PROPERTIES
 target_compile_options(${LIBRARY_NAME} PRIVATE
     -Wall -Wextra -Wpedantic
 )
+# Compile Definitions
+target_compile_definitions(${LIBRARY_NAME} PUBLIC
+    $<BUILD_INTERFACE:SENSORBOX_SCHEMAS_DIRECTORY="${CMAKE_CURRENT_SOURCE_DIR}/schemas/">
+    $<INSTALL_INTERFACE:SENSORBOX_SCHEMAS_DIRECTORY="${CMAKE_INSTALL_PREFIX}/schemas/">
+)
 # Link libraries
 target_link_libraries(${LIBRARY_NAME} PUBLIC
     ${SENSORBOX_ROS_LINK_LIBRARIES}
     convert::convert    # May depend on Eigen3::Eigen
     mathbox::mathbox    # Depends on Eigen3::Eigen
     Eigen3::Eigen
+    nlohmann_json_schema_validator::validator # Depends on nlohmann_json::nlohmann_json
     nlohmann_json::nlohmann_json
     cppbox::cppbox
 )
@@ -193,6 +199,12 @@ install(
     FILES_MATCHING
         PATTERN "*.hpp"
         PATTERN "*.h"
+)
+install(
+    DIRECTORY schemas
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/schemas"
+    FILES_MATCHING
+        PATTERN "*.schema.json"
 )
 
 # Build-Tree Export
