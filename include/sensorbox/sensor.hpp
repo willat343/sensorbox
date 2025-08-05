@@ -72,6 +72,4 @@ private:
 
 }
 
-CREATE_SMART_ENUM_FREE_FUNCTIONS(sensorbox::SensorTypeBase)
-
 #endif
