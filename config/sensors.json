@@ -1,0 +1,43 @@
+{
+    "EPSON_M-G365PDF1_accelerometer": {
+        "type": "ACCELEROMETER",
+        "make": "EPSON",
+        "model": "G365PDF1",
+        "frequency": 400.0,
+        "noise_density": 5.5e-4,
+        "bias_noise_density": 4.903325e-5,
+        "initial_noise": 4.903325e-2
+    },
+    "EPSON_M-G365PDF1_gyroscope": {
+        "type": "GYROSCOPE",
+        "make": "EPSON",
+        "model": "G365PDF1",
+        "frequency": 400.0,
+        "noise_density": 2.327105669325773e-5,
+        "bias_noise_density": 5.0e-6,
+        "initial_noise": 1.745329251994330e-3
+    },
+    "EPSON_M-G365PDF1_imu": {
+        "type": "IMU",
+        "make": "EPSON",
+        "model": "G365PDF1",
+        "accelerometer": {
+            "type": "ACCELEROMETER",
+            "make": "EPSON",
+            "model": "G365PDF1",
+            "frequency": 400.0,
+            "noise_density": 5.5e-4,
+            "bias_noise_density": 4.903325e-5,
+            "initial_noise": 4.903325e-2
+        },
+        "gyroscope": {
+            "type": "GYROSCOPE",
+            "make": "EPSON",
+            "model": "G365PDF1",
+            "frequency": 400.0,
+            "noise_density": 2.327105669325773e-5,
+            "bias_noise_density": 5.0e-6,
+            "initial_noise": 1.745329251994330e-3
+        }
+    }
+}
