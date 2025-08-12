@@ -119,6 +119,7 @@ import_dependency(
 set(LIBRARY_NAME ${PROJECT_NAME})
 add_library(${LIBRARY_NAME} SHARED
     ${SENSORBOX_ROS_SRC_FILES}
+    src/contact.cpp
     src/json_loadable.cpp
     src/ros1_decoder.cpp
     src/sensor.cpp

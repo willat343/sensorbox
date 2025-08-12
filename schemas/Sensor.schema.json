@@ -8,6 +8,7 @@
             "description": "Sensor Type",
             "enum": [
                 "ACCELEROMETER",
+                "CONTACTS_CLASSIFIER",
                 "DIRECT_POSE",
                 "GYROSCOPE",
                 "IMU"

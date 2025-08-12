@@ -20,7 +20,7 @@ constexpr SchemaFilepath ImuSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Imu.sche
 constexpr SchemaFilepath RandomWalkSensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "RandomWalkSensor.schema.json"};
 constexpr SchemaFilepath SensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Sensor.schema.json"};
 
-CREATE_SMART_ENUM(SensorTypeBase, ACCELEROMETER, DIRECT_POSE, GYROSCOPE, IMU)
+CREATE_SMART_ENUM(SensorTypeBase, ACCELEROMETER, CONTACTS_CLASSIFIER, DIRECT_POSE, GYROSCOPE, IMU)
 
 class SensorType : public SensorTypeBase {
 public:
@@ -34,6 +34,8 @@ public:
         switch ((*this)()) {
             case ACCELEROMETER:
                 return MeasurementType::LINEAR_ACCELERATION;
+            case CONTACTS_CLASSIFIER:
+                return MeasurementType::CONTACT_CLASSIFICATIONS;
             case DIRECT_POSE:
                 return MeasurementType::POSE;
             case GYROSCOPE:
