@@ -46,13 +46,13 @@ inline void ROS1BytesDecoder::ignore_vector() {
 }
 
 inline constexpr bool ROS1BytesDecoder::is_decodable(const std::string_view& msg_type) {
-    constexpr std::array<std::string_view, 23> decodable_msg_types{"duration", "string", "time", "std_msgs/Duration",
+    constexpr std::array<std::string_view, 24> decodable_msg_types{"duration", "string", "time", "std_msgs/Duration",
             "std_msgs/Header", "std_msgs/String", "std_msgs/Time", "geometry_msgs/Point", "geometry_msgs/Pose",
             "geometry_msgs/PoseStamped", "geometry_msgs/PoseWithCovariance", "geometry_msgs/PoseWithCovarianceStamped",
             "geometry_msgs/Quaternion", "geometry_msgs/Transform", "geometry_msgs/TransformStamped",
             "geometry_msgs/Twist", "geometry_msgs/TwistStamped", "geometry_msgs/TwistWithCovariance",
-            "geometry_msgs/TwistWithCovarianceStamped", "geometry_msgs/Vector3", "nav_msgs/Odometry",
-            "sensor_msgs/Imu", "tf2_msgs/TFMessage"};
+            "geometry_msgs/TwistWithCovarianceStamped", "geometry_msgs/Vector3", "nav_msgs/Odometry", "sensor_msgs/Imu",
+            "tf2_msgs/TFMessage", "anymal_msgs/AnymalState"};
     return std::find(decodable_msg_types.cbegin(), decodable_msg_types.cend(), msg_type) != decodable_msg_types.cend();
 }
 

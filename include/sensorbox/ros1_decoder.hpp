@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "sensorbox/contact.hpp"
 #include "sensorbox/imu.hpp"
 #include "sensorbox/pose.hpp"
 #include "sensorbox/unary.hpp"
@@ -121,6 +122,7 @@ public:
 
     void read_to(Eigen::Isometry3d& out);
 
+    void read_to(ContactClassifications& out);
 
     void read_to(ImuMeasurement<3>& out);
 
@@ -196,6 +198,11 @@ template<>
 struct ROS1DecodabilityTraits<Eigen::Isometry3d> {
     static constexpr std::array<std::string_view, 3> msg_types{"geometry_msgs/Pose", "geometry_msgs/PoseWithCovariance",
             "geometry_msgs/Transform"};
+};
+
+template<>
+struct ROS1DecodabilityTraits<ContactClassifications> {
+    static constexpr std::array<std::string_view, 1> msg_types{"anymal_msgs/AnymalState"};
 };
 
 template<>
