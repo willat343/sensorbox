@@ -68,12 +68,12 @@ void ROS1BytesDecoder::read_to(Eigen::Isometry3d& out) {
 void ROS1BytesDecoder::read_to(ContactClassifications& out) {
     if (msg_type() == "anymal_msgs/AnymalState") {
         create_internal_decoder("std_msgs/Header").read_to(static_cast<UnaryMeasurement&>(out));
-        ignore<int8_t>(9);  // state
+        ignore<int8_t>();  // state
         ignore("geometry_msgs/PoseStamped");  // pose
         ignore("geometry_msgs/TwistStamped");  // twist
         ignore("any_msgs/ExtendedJointState");  // joints
-        const uint32_t size = read<uint32_t>();  // contacts size
-        for (uint32_t i = 0; i < size; ++i) {
+        const uint32_t contacts_size = read<uint32_t>();  // contacts size
+        for (uint32_t i = 0; i < contacts_size; ++i) {
             ignore("std_msgs/Header");  // header
             const std::string name = read<std::string>();
             const uint8_t state = read<uint8_t>();
