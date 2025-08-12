@@ -100,14 +100,6 @@ void ROS1BytesDecoder::read_to(PoseMeasurement<3>& out) {
     }
 }
 
-void ROS1BytesDecoder::read_to(std::vector<PoseMeasurement<3>>& out) {
-    if (msg_type() == "tf2_msgs/TFMessage") {
-        read_vector_to("geometry_msgs/TransformStamped", out);
-    } else {
-        throw std::runtime_error("msg_type " + msg_type() + " cannot be converted to std::vector<PoseMeasurement<3>>.");
-    }
-}
-
 void ROS1BytesDecoder::read_to(UnaryMeasurement& out) {
     if (msg_type() == "std_msgs/Header") {
         ignore<uint32_t>();  // seq
@@ -115,6 +107,14 @@ void ROS1BytesDecoder::read_to(UnaryMeasurement& out) {
         read_to(out.frame());
     } else {
         throw std::runtime_error("msg_type " + msg_type() + " cannot be converted to UnaryMeasurement.");
+    }
+}
+
+void ROS1BytesDecoder::read_to(std::vector<PoseMeasurement<3>>& out) {
+    if (msg_type() == "tf2_msgs/TFMessage") {
+        read_vector_to("geometry_msgs/TransformStamped", out);
+    } else {
+        throw std::runtime_error("msg_type " + msg_type() + " cannot be converted to std::vector<PoseMeasurement<3>>.");
     }
 }
 
@@ -207,13 +207,15 @@ std::size_t ROS1BytesDecoder::internal_msg_size(const std::string& internal_msg_
     return offset - initial_offset;
 }
 
-template<typename T>
-void ROS1BytesDecoder::read_vector_to(const std::string& vector_msg_type, std::vector<T>& out) {
-    // ROS 1 dynamic-sized vectors store the number elements as a uint32_t in the first 4 bytes
-    out.resize(read<uint32_t>());
-    for (T& out_element : out) {
-        create_internal_decoder(vector_msg_type).read_to(out_element);
+std::size_t ROS1BytesDecoder::internal_vector_msg_size(const std::string& internal_msg_type, std::size_t offset) const {
+    const std::size_t initial_offset = offset;
+    // In ROS 1, the vector length in elements is encoded in the first 4 bytes as a uint32
+    const uint32_t size = peak<uint32_t>(offset);
+    offset += sizeof(uint32_t);
+    for (uint32_t i = 0; i < size; ++i) {
+        offset += internal_msg_size(internal_msg_type, offset);
     }
+    return offset - initial_offset;
 }
 
 }

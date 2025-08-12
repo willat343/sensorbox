@@ -28,7 +28,23 @@ public:
     template<typename T>
     T decode_to();
 
+    /**
+     * @brief Ignore a message of known type.
+     *
+     * @param msg_type
+     */
     void ignore(const std::string& msg_type);
+
+    /**
+     * @brief Ignore a vector of messages of known type.
+     *
+     * @param msg_type
+     */
+    void ignore_vector(const std::string& msg_type);
+
+    template<typename T>
+        requires(std::is_trivially_copyable_v<T>)
+    void ignore_vector();
 
     /**
      * @brief Check if there is support for decoding `msg_type`.
@@ -105,20 +121,18 @@ public:
 
     void read_to(Eigen::Isometry3d& out);
 
-    void read_to(UnaryMeasurement& out);
+
+    void read_to(ImuMeasurement<3>& out);
 
     void read_to(PoseMeasurement<3>& out);
 
-    void read_to(std::vector<PoseMeasurement<3>>& out);
+    void read_to(UnaryMeasurement& out);
 
-    void read_to(ImuMeasurement<3>& out);
+    void read_to(std::vector<PoseMeasurement<3>>& out);
 
 protected:
     explicit ROS1BytesDecoder(const std::byte* bytes_, const std::size_t size_, const std::string& msg_type_,
             ROS1BytesDecoder* parent_decoder_);
-
-    template<typename T>
-    void read_vector_to(const std::string& vector_msg_type, std::vector<T>& out);
 
     template<typename T>
         requires(std::is_trivially_copyable_v<T>)
@@ -129,6 +143,15 @@ protected:
     void ignore(const std::size_t num_ignore = 1);
 
     std::size_t internal_msg_size(const std::string& internal_msg_type, std::size_t offset) const;
+
+    std::size_t internal_vector_msg_size(const std::string& internal_msg_type, std::size_t offset) const;
+
+    template<typename T>
+        requires(std::is_trivially_copyable_v<T>)
+    std::size_t internal_vector_msg_size(std::size_t offset) const;
+
+    template<typename T>
+    void read_vector_to(const std::string& vector_msg_type, std::vector<T>& out);
 
 private:
     const std::string msg_type_;
