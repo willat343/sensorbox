@@ -2,6 +2,7 @@
 #define SENSORBOX_SENSOR_HPP
 
 #include <cppbox/enum.hpp>
+#include <cppbox/exceptions.hpp>
 #include <nlohmann/json.hpp>
 
 #include "sensorbox/json_loadable.hpp"
@@ -43,7 +44,7 @@ public:
             case IMU:
                 return MeasurementType::IMU_MEASUREMENT;
             default:
-                throw std::runtime_error("No MeasurementType for SensorType " + std::string(*this) + ".");
+                throw_here("No MeasurementType for SensorType " + std::string(*this) + ".");
         }
     }
 };

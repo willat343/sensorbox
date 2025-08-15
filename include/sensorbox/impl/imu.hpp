@@ -1,6 +1,8 @@
 #ifndef SENSORBOX_IMPL_IMU_HPP
 #define SENSORBOX_IMPL_IMU_HPP
 
+#include <cppbox/exceptions.hpp>
+
 #include "sensorbox/imu.hpp"
 
 namespace sensorbox {
@@ -58,10 +60,8 @@ inline auto ImuMeasurement<D_>::linear_acceleration() -> LinearAcceleration& {
 template<int D_>
 inline auto ImuMeasurement<D_>::transform_to_new_frame(const std::string& new_frame, const Pose& T_N_F) const
         -> ImuMeasurement {
-    if (T_N_F.isApprox(Pose::Identity())) {
-        throw std::runtime_error("Transformation of IMU measurements (with non-identity matrix) not yet implemented. "
-                                 "Must be done very carefully.");
-    }
+    throw_if(T_N_F.isApprox(Pose::Identity()), "Transformation of IMU measurements (with non-identity matrix) not yet "
+                                               "implemented. Must be done very carefully.");
     return ImuMeasurement(timestamp(), new_frame, angular_velocity(), linear_acceleration());
 }
 

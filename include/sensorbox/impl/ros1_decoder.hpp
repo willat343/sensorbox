@@ -1,6 +1,7 @@
 #ifndef SENSOBOX_IMPL_ROS1_DECODER_HPP
 #define SENSOBOX_IMPL_ROS1_DECODER_HPP
 
+#include <cppbox/exceptions.hpp>
 #include <set>
 
 #include "sensorbox/ros1_decoder.hpp"
@@ -14,7 +15,7 @@ inline T ROS1BytesDecoder::decode_to() {
         assert(is_finished());
         return out;
     } else {
-        throw std::runtime_error("ROS1BytesDecoder::decode_to<T>() failed because T cannot be decoded to.");
+        throw_here("ROS1BytesDecoder::decode_to<T>() failed because T cannot be decoded to.");
     }
 }
 

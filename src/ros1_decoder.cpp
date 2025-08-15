@@ -2,6 +2,7 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <cppbox/exceptions.hpp>
 
 namespace sensorbox {
 
@@ -60,7 +61,7 @@ void ROS1BytesDecoder::read_to(Eigen::Isometry3d& out) {
         create_internal_decoder("geometry_msgs/Vector3").read_to(t);
         create_internal_decoder("geometry_msgs/Quaternion").read_to(q);
     } else {
-        throw std::runtime_error("msg_type " + msg_type() + " cannot be converted to Eigen::Isometry3d.");
+        throw_here("msg_type " + msg_type() + " cannot be converted to Eigen::Isometry3d.");
     }
     out = Eigen::Isometry3d::TranslationType{t} * q;
 }
@@ -68,25 +69,25 @@ void ROS1BytesDecoder::read_to(Eigen::Isometry3d& out) {
 void ROS1BytesDecoder::read_to(ContactClassifications& out) {
     if (msg_type() == "anymal_msgs/AnymalState") {
         create_internal_decoder("std_msgs/Header").read_to(static_cast<UnaryMeasurement&>(out));
-        ignore<int8_t>();  // state
-        ignore("geometry_msgs/PoseStamped");  // pose
-        ignore("geometry_msgs/TwistStamped");  // twist
-        ignore("any_msgs/ExtendedJointState");  // joints
+        ignore<int8_t>();                                 // state
+        ignore("geometry_msgs/PoseStamped");              // pose
+        ignore("geometry_msgs/TwistStamped");             // twist
+        ignore("any_msgs/ExtendedJointState");            // joints
         const uint32_t contacts_size = read<uint32_t>();  // contacts size
         for (uint32_t i = 0; i < contacts_size; ++i) {
             ignore("std_msgs/Header");  // header
             const std::string name = read<std::string>();
             const uint8_t state = read<uint8_t>();
             out.set_classication(name, state == 1);
-            ignore("geometry_msgs/Wrench");  // wrench
-            ignore("geometry_msgs/Point");  // position
+            ignore("geometry_msgs/Wrench");   // wrench
+            ignore("geometry_msgs/Point");    // position
             ignore("geometry_msgs/Vector3");  // normal
-            ignore<double>();  // frictionCoefficient
-            ignore<double>();  // restitutionCoefficient
+            ignore<double>();                 // frictionCoefficient
+            ignore<double>();                 // restitutionCoefficient
         }
         ignore_vector("geometry_msgs/TransformStamped");  // frame_transforms
     } else {
-        throw std::runtime_error("msg_type " + msg_type() + " cannot be converted to ContactClassifications.");
+        throw_here("msg_type " + msg_type() + " cannot be converted to ContactClassifications.");
     }
 }
 
@@ -100,7 +101,7 @@ void ROS1BytesDecoder::read_to(ImuMeasurement<3>& out) {
         create_internal_decoder("geometry_msgs/Vector3").read_to(out.linear_acceleration());
         ignore<double>(9);  // orientation_covariance
     } else {
-        throw std::runtime_error("msg_type " + msg_type() + " cannot be converted to ImuMeasurement<3>.");
+        throw_here("msg_type " + msg_type() + " cannot be converted to ImuMeasurement<3>.");
     }
 }
 
@@ -121,7 +122,7 @@ void ROS1BytesDecoder::read_to(PoseMeasurement<3>& out) {
         create_internal_decoder("geometry_msgs/PoseWithCovariance").read_to(out.pose());
         ignore("geometry_msgs/TwistWithCovariance");  // twist
     } else {
-        throw std::runtime_error("msg_type " + msg_type() + " cannot be converted to PoseMeasurement<3>.");
+        throw_here("msg_type " + msg_type() + " cannot be converted to PoseMeasurement<3>.");
     }
 }
 
@@ -131,7 +132,7 @@ void ROS1BytesDecoder::read_to(UnaryMeasurement& out) {
         read_to(out.timestamp());
         read_to(out.frame());
     } else {
-        throw std::runtime_error("msg_type " + msg_type() + " cannot be converted to UnaryMeasurement.");
+        throw_here("msg_type " + msg_type() + " cannot be converted to UnaryMeasurement.");
     }
 }
 
@@ -139,7 +140,7 @@ void ROS1BytesDecoder::read_to(std::vector<PoseMeasurement<3>>& out) {
     if (msg_type() == "tf2_msgs/TFMessage") {
         read_vector_to("geometry_msgs/TransformStamped", out);
     } else {
-        throw std::runtime_error("msg_type " + msg_type() + " cannot be converted to std::vector<PoseMeasurement<3>>.");
+        throw_here("msg_type " + msg_type() + " cannot be converted to std::vector<PoseMeasurement<3>>.");
     }
 }
 
@@ -249,7 +250,7 @@ std::size_t ROS1BytesDecoder::internal_msg_size(const std::string& internal_msg_
         offset += sizeof(double);
         offset += sizeof(double);
     } else {
-        throw std::runtime_error("ROS1 internal msg size for msg_type " + internal_msg_type + " not known.");
+        throw_here("ROS1 internal msg size for msg_type " + internal_msg_type + " not known.");
     }
     return offset - initial_offset;
 }
