@@ -50,17 +50,6 @@ inline void ROS1BytesDecoder::ignore_vector() {
     increment_offset(internal_vector_msg_size<T>(0));
 }
 
-inline constexpr bool ROS1BytesDecoder::is_decodable(const std::string_view& msg_type) {
-    constexpr std::array<std::string_view, 24> decodable_msg_types{"duration", "string", "time", "std_msgs/Duration",
-            "std_msgs/Header", "std_msgs/String", "std_msgs/Time", "geometry_msgs/Point", "geometry_msgs/Pose",
-            "geometry_msgs/PoseStamped", "geometry_msgs/PoseWithCovariance", "geometry_msgs/PoseWithCovarianceStamped",
-            "geometry_msgs/Quaternion", "geometry_msgs/Transform", "geometry_msgs/TransformStamped",
-            "geometry_msgs/Twist", "geometry_msgs/TwistStamped", "geometry_msgs/TwistWithCovariance",
-            "geometry_msgs/TwistWithCovarianceStamped", "geometry_msgs/Vector3", "nav_msgs/Odometry", "sensor_msgs/Imu",
-            "tf2_msgs/TFMessage", "anymal_msgs/AnymalState"};
-    return std::find(decodable_msg_types.cbegin(), decodable_msg_types.cend(), msg_type) != decodable_msg_types.cend();
-}
-
 template<typename T>
 inline constexpr bool ROS1BytesDecoder::is_decodable() {
     return !ROS1DecodabilityTraits<T>::msg_types.empty();
@@ -115,6 +104,12 @@ inline T ROS1BytesDecoder::read_to() {
     return out;
 }
 
+template<typename T>
+    requires(std::is_trivially_copyable_v<T>)
+inline void ROS1BytesDecoder::read_to(T& out) {
+    out = read<T>();
+}
+
 inline void ROS1BytesDecoder::read_to(std::string& out) {
     out = read<std::string>();
 }
@@ -124,6 +119,11 @@ template<typename T>
 inline std::size_t ROS1BytesDecoder::internal_vector_msg_size(std::size_t offset) const {
     // In ROS 1, the vector length in elements is encoded in the first 4 bytes as a uint32
     return sizeof(uint32_t) + peak<uint32_t>(offset) * sizeof(T);
+}
+
+template<typename T>
+void ROS1BytesDecoder::read_to_optional(std::optional<T>& out) {
+    out = read_to<T>();
 }
 
 template<typename T>

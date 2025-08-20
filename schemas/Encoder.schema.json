@@ -1,0 +1,20 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "file:///Encoder.schema.json",
+    "allOf": [
+        {
+            "$ref": "Sensor.schema.json"
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "const": "ENCODER"
+                }
+            }
+        },
+        {
+            "$ref": "Uncertainty.schema.json"
+        }
+    ]
+}

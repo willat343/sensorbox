@@ -13,6 +13,18 @@ ROS1BytesDecoder ROS1BytesDecoder::create_internal_decoder(const std::string& in
     return ROS1BytesDecoder(bytes() + offset(), internal_msg_size(internal_msg_type, 0), internal_msg_type, this);
 }
 
+constexpr bool ROS1BytesDecoder::is_decodable(const std::string_view& msg_type) {
+    constexpr auto decodable_msg_types = std::to_array<std::string_view>({"duration", "string", "time",
+            "std_msgs/Duration", "std_msgs/Header", "std_msgs/String", "std_msgs/Time", "geometry_msgs/Point",
+            "geometry_msgs/Pose", "geometry_msgs/PoseStamped", "geometry_msgs/PoseWithCovariance",
+            "geometry_msgs/PoseWithCovarianceStamped", "geometry_msgs/Quaternion", "geometry_msgs/Transform",
+            "geometry_msgs/TransformStamped", "geometry_msgs/Twist", "geometry_msgs/TwistStamped",
+            "geometry_msgs/TwistWithCovariance", "geometry_msgs/TwistWithCovarianceStamped", "geometry_msgs/Vector3",
+            "nav_msgs/Odometry", "sensor_msgs/Imu", "tf2_msgs/TFMessage", "anymal_msgs/AnymalState",
+            "series_elastic_actuator_msgs/SeActuatorReadings", "series_elastic_actuator_msgs/SeActuatorReading"});
+    return std::find(decodable_msg_types.cbegin(), decodable_msg_types.cend(), msg_type) != decodable_msg_types.cend();
+}
+
 void ROS1BytesDecoder::read_to(std::chrono::nanoseconds& out) {
     // Duration is sec/nsecs as int32_t
     const std::chrono::seconds secs{read<int32_t>()};
@@ -64,6 +76,36 @@ void ROS1BytesDecoder::read_to(Eigen::Isometry3d& out) {
         throw_here("msg_type " + msg_type() + " cannot be converted to Eigen::Isometry3d.");
     }
     out = Eigen::Isometry3d::TranslationType{t} * q;
+}
+
+void ROS1BytesDecoder::read_to(ActuatorMeasurement& out) {
+    if (msg_type() == "series_elastic_actuator_msgs/SeActuatorReading") {
+        ignore("std_msgs/Header");
+        create_internal_decoder("series_elastic_actuator_msgs/SeActuatorState").read_to(out);
+        ignore("series_elastic_actuator_msgs/SeActuatorCommand");
+    } else if (msg_type() == "series_elastic_actuator_msgs/SeActuatorState") {
+        create_internal_decoder("std_msgs/Header").read_to(static_cast<TemporalSpatialMeasurement&>(out));
+        read_to(out.name());
+        out.set_type(ActuatorType::SERIES_ELASTIC);
+        read_to_optional(out.current());
+        read_to_optional(out.motor_position());
+        read_to_optional(out.motor_velocity());
+        read_to_optional(out.joint_position());
+        read_to_optional(out.joint_velocity());
+        ignore<double>();
+        read_to_optional(out.joint_torque());
+        ignore("sensor_msgs/Imu");
+    } else {
+        throw_here("msg_type " + msg_type() + " cannot be converted to ActuatorMeasurement.");
+    }
+}
+
+void ROS1BytesDecoder::read_to(std::vector<ActuatorMeasurement>& out) {
+    if (msg_type() == "series_elastic_actuator_msgs/SeActuatorReadings") {
+        read_vector_to("series_elastic_actuator_msgs/SeActuatorReading", out);
+    } else {
+        throw_here("msg_type " + msg_type() + " cannot be converted to std::vector<ActuatorMeasurement>.");
+    }
 }
 
 void ROS1BytesDecoder::read_to(ContactClassifications& out) {
@@ -126,6 +168,14 @@ void ROS1BytesDecoder::read_to(PoseMeasurement<3>& out) {
     }
 }
 
+void ROS1BytesDecoder::read_to(std::vector<PoseMeasurement<3>>& out) {
+    if (msg_type() == "tf2_msgs/TFMessage") {
+        read_vector_to("geometry_msgs/TransformStamped", out);
+    } else {
+        throw_here("msg_type " + msg_type() + " cannot be converted to std::vector<PoseMeasurement<3>>.");
+    }
+}
+
 void ROS1BytesDecoder::read_to(TemporalMeasurement& out) {
     if (msg_type() == "std_msgs/Header") {
         ignore<uint32_t>();  // seq
@@ -143,14 +193,6 @@ void ROS1BytesDecoder::read_to(TemporalSpatialMeasurement& out) {
         read_to(out.frame());
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to TemporalSpatialMeasurement.");
-    }
-}
-
-void ROS1BytesDecoder::read_to(std::vector<PoseMeasurement<3>>& out) {
-    if (msg_type() == "tf2_msgs/TFMessage") {
-        read_vector_to("geometry_msgs/TransformStamped", out);
-    } else {
-        throw_here("msg_type " + msg_type() + " cannot be converted to std::vector<PoseMeasurement<3>>.");
     }
 }
 
@@ -259,6 +301,35 @@ std::size_t ROS1BytesDecoder::internal_msg_size(const std::string& internal_msg_
         offset += internal_msg_size("geometry_msgs/Vector3", offset);
         offset += sizeof(double);
         offset += sizeof(double);
+    } else if (internal_msg_type == "series_elastic_actuator_msgs/SeActuatorCommand") {
+        offset += internal_msg_size("std_msgs/Header", offset);
+        offset += internal_msg_size("string", offset);
+        offset += sizeof(int16_t);
+        offset += sizeof(double);
+        offset += sizeof(double);
+        offset += sizeof(double);
+        offset += sizeof(double);
+        offset += sizeof(float);
+        offset += sizeof(float);
+        offset += sizeof(float);
+    } else if (internal_msg_type == "series_elastic_actuator_msgs/SeActuatorReadings") {
+        offset += internal_vector_msg_size("series_elastic_actuator_msgs/SeActuatorReading", offset);
+    } else if (internal_msg_type == "series_elastic_actuator_msgs/SeActuatorReading") {
+        offset += internal_msg_size("std_msgs/Header", offset);
+        offset += internal_msg_size("series_elastic_actuator_msgs/SeActuatorState", offset);
+        offset += internal_msg_size("series_elastic_actuator_msgs/SeActuatorCommand", offset);
+    } else if (internal_msg_type == "series_elastic_actuator_msgs/SeActuatorState") {
+        offset += internal_msg_size("std_msgs/Header", offset);
+        offset += internal_msg_size("string", offset);
+        offset += sizeof(uint32_t);
+        offset += sizeof(double);
+        offset += sizeof(double);
+        offset += sizeof(double);
+        offset += sizeof(double);
+        offset += sizeof(double);
+        offset += sizeof(double);
+        offset += sizeof(double);
+        offset += internal_msg_size("sensor_msgs/Imu", offset);
     } else {
         throw_here("ROS1 internal msg size for msg_type " + internal_msg_type + " not known.");
     }

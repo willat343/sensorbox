@@ -15,13 +15,17 @@
 namespace sensorbox {
 
 constexpr SchemaFilepath AccelerometerSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Accelerometer.schema.json"};
+constexpr SchemaFilepath ActuatorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Actuator.schema.json"};
+constexpr SchemaFilepath CurrentSensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "CurrentSensor.schema.json"};
 constexpr SchemaFilepath DirectPoseSensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "DirectPoseSensor.schema.json"};
+constexpr SchemaFilepath EncoderSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Encoder.schema.json"};
 constexpr SchemaFilepath GyroscopeSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Gyroscope.schema.json"};
 constexpr SchemaFilepath ImuSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Imu.schema.json"};
 constexpr SchemaFilepath RandomWalkSensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "RandomWalkSensor.schema.json"};
 constexpr SchemaFilepath SensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Sensor.schema.json"};
 
-CREATE_SMART_ENUM(SensorTypeBase, ACCELEROMETER, CONTACTS_CLASSIFIER, DIRECT_POSE, GYROSCOPE, IMU)
+CREATE_SMART_ENUM(SensorTypeBase, ACCELEROMETER, ACTUATOR, CONTACTS_CLASSIFIER, CURRENT, DIRECT_POSE, ENCODER,
+        GYROSCOPE, IMU)
 
 class SensorType : public SensorTypeBase {
 public:
@@ -35,10 +39,16 @@ public:
         switch ((*this)()) {
             case ACCELEROMETER:
                 return MeasurementType::LINEAR_ACCELERATION;
+            case ACTUATOR:
+                return MeasurementType::ACTUATOR_MEASUREMENT;
             case CONTACTS_CLASSIFIER:
                 return MeasurementType::CONTACT_CLASSIFICATIONS;
+            case CURRENT:
+                return MeasurementType::CURRENT;
             case DIRECT_POSE:
                 return MeasurementType::POSE;
+            case ENCODER:
+                return MeasurementType::ANGLE;
             case GYROSCOPE:
                 return MeasurementType::ANGULAR_VELOCITY;
             case IMU:
@@ -68,8 +78,22 @@ public:
     const std::string& model() const;
 
 private:
+    /**
+     * @brief Sensor type
+     *
+     */
     SensorType type_;
+
+    /**
+     * @brief Make/Company of sensor
+     *
+     */
     std::string make_;
+
+    /**
+     * @brief Sensor model name
+     *
+     */
     std::string model_;
 };
 

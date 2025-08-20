@@ -1,0 +1,43 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "file:///Actuator.schema.json",
+    "allOf": [
+        {
+            "$ref": "Sensor.schema.json"
+        },
+        {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "const": "ENCODER"
+                },
+                "actuator_type": {
+                    "type": "string",
+                    "description": "Actuator type",
+                    "enum": [
+                        "DIRECT_DRIVE",
+                        "GEARED",
+                        "QUASI_DIRECT_DRIVE",
+                        "SERIES_ELASTIC",
+                        "SERVO",
+                        "STEPPER",
+                        "UNSPECIFIED"
+                    ]
+                },
+                "current_sensor": {
+                    "$ref": "CurrentSensor.schema.json"
+                },
+                "motor_encoder": {
+                    "$ref": "Encoder.schema.json"
+                },
+                "joint_encoder": {
+                    "$ref": "Encoder.schema.json"
+                }
+            },
+            "required": [
+                "type",
+                "actuator_type"
+            ]
+        }
+    ]
+}

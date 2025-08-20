@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "sensorbox/actuator.hpp"
 #include "sensorbox/contact.hpp"
 #include "sensorbox/imu.hpp"
 #include "sensorbox/measurement.hpp"
@@ -114,6 +115,10 @@ public:
     template<typename T>
     T read_to();
 
+    template<typename T>
+        requires(std::is_trivially_copyable_v<T>)
+    void read_to(T& out);
+
     void read_to(std::string& out);
 
     void read_to(std::chrono::nanoseconds& out);
@@ -128,17 +133,21 @@ public:
 
     void read_to(Eigen::Isometry3d& out);
 
+    void read_to(ActuatorMeasurement& out);
+
+    void read_to(std::vector<ActuatorMeasurement>& out);
+
     void read_to(ContactClassifications& out);
 
     void read_to(ImuMeasurement<3>& out);
 
     void read_to(PoseMeasurement<3>& out);
 
+    void read_to(std::vector<PoseMeasurement<3>>& out);
+
     void read_to(TemporalMeasurement& out);
 
     void read_to(TemporalSpatialMeasurement& out);
-
-    void read_to(std::vector<PoseMeasurement<3>>& out);
 
 protected:
     explicit ROS1BytesDecoder(const std::byte* bytes_, const std::size_t size_, const std::string& msg_type_,
@@ -159,6 +168,9 @@ protected:
     template<typename T>
         requires(std::is_trivially_copyable_v<T>)
     std::size_t internal_vector_msg_size(std::size_t offset) const;
+
+    template<typename T>
+    void read_to_optional(std::optional<T>& out);
 
     template<typename T>
     void read_vector_to(const std::string& vector_msg_type, std::vector<T>& out);
@@ -206,6 +218,16 @@ template<>
 struct ROS1DecodabilityTraits<Eigen::Isometry3d> {
     static constexpr std::array<std::string_view, 3> msg_types{"geometry_msgs/Pose", "geometry_msgs/PoseWithCovariance",
             "geometry_msgs/Transform"};
+};
+
+template<>
+struct ROS1DecodabilityTraits<ActuatorMeasurement> {
+    static constexpr std::array<std::string_view, 1> msg_types{"series_elastic_actuator_msgs/SeActuatorReading"};
+};
+
+template<>
+struct ROS1DecodabilityTraits<std::vector<ActuatorMeasurement>> {
+    static constexpr std::array<std::string_view, 1> msg_types{"series_elastic_actuator_msgs/SeActuatorReadings"};
 };
 
 template<>
