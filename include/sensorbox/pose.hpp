@@ -6,7 +6,7 @@
 
 #include "sensorbox/json_loadable.hpp"
 #include "sensorbox/sensor.hpp"
-#include "sensorbox/unary.hpp"
+#include "sensorbox/measurement.hpp"
 
 namespace sensorbox {
 
@@ -58,11 +58,11 @@ private:
 };
 
 template<int D_>
-class PoseMeasurement : public UnaryMeasurement {
+class PoseMeasurement : public TemporalSpatialRelationalMeasurement {
 public:
-    using Clock = UnaryMeasurement::Clock;
-    using Duration = UnaryMeasurement::Duration;
-    using Timestamp = UnaryMeasurement::Timestamp;
+    using typename TemporalSpatialRelationalMeasurement::Clock;
+    using typename TemporalSpatialRelationalMeasurement::Duration;
+    using typename TemporalSpatialRelationalMeasurement::Timestamp;
     static constexpr int D = D_;
     using Pose = Eigen::Transform<double, D, Eigen::Isometry>;
 
@@ -78,10 +78,6 @@ public:
      */
     explicit PoseMeasurement(const Timestamp& timestamp_, const std::string& frame_, const std::string& child_frame_,
             const Pose& pose_);
-
-    const std::string& child_frame() const;
-
-    std::string& child_frame();
 
     PoseMeasurement inverse() const;
 
@@ -134,7 +130,6 @@ public:
             const Pose& T_NF_F, const Pose& T_C_NC) const;
 
 private:
-    std::string child_frame_;
     Pose pose_;
 };
 

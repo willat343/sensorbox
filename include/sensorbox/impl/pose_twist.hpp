@@ -6,24 +6,14 @@
 namespace sensorbox {
 
 template<int D_>
-PoseTwistMeasurement<D_>::PoseTwistMeasurement()
-    : PoseTwistMeasurement(Timestamp(Duration::zero()), std::string(), std::string(), Pose::Identity(), Twist::Zero()) {
+inline PoseTwistMeasurement<D_>::PoseTwistMeasurement()
+    : PoseTwistMeasurement(Timestamp{Duration::zero()}, std::string(), std::string(), Pose::Identity(), Twist::Zero()) {
 }
 
 template<int D_>
-PoseTwistMeasurement<D_>::PoseTwistMeasurement(const Timestamp& timestamp_, const std::string& frame_,
+inline PoseTwistMeasurement<D_>::PoseTwistMeasurement(const Timestamp& timestamp_, const std::string& frame_,
         const std::string& child_frame_, const Pose& pose_, const Twist& twist_)
-    : UnaryMeasurement(timestamp_, frame_), child_frame_(child_frame_), pose_(pose_), twist_(twist_) {}
-
-template<int D_>
-const std::string& PoseTwistMeasurement<D_>::child_frame() const {
-    return child_frame_;
-}
-
-template<int D_>
-std::string& PoseTwistMeasurement<D_>::child_frame() {
-    return const_cast<std::string&>(std::as_const(*this).child_frame());
-}
+    : TemporalSpatialRelationalMeasurement(timestamp_, frame_, child_frame_), pose_(pose_), twist_(twist_) {}
 
 template<int D_>
 inline auto PoseTwistMeasurement<D_>::pose() const -> const Pose& {

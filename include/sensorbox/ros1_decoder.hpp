@@ -9,8 +9,8 @@
 
 #include "sensorbox/contact.hpp"
 #include "sensorbox/imu.hpp"
+#include "sensorbox/measurement.hpp"
 #include "sensorbox/pose.hpp"
-#include "sensorbox/unary.hpp"
 
 namespace sensorbox {
 
@@ -28,6 +28,12 @@ public:
      */
     template<typename T>
     T decode_to();
+
+    /**
+     * @brief Ignore a string message.
+     *
+     */
+    void ignore_string();
 
     /**
      * @brief Ignore a message of known type.
@@ -128,7 +134,9 @@ public:
 
     void read_to(PoseMeasurement<3>& out);
 
-    void read_to(UnaryMeasurement& out);
+    void read_to(TemporalMeasurement& out);
+
+    void read_to(TemporalSpatialMeasurement& out);
 
     void read_to(std::vector<PoseMeasurement<3>>& out);
 
@@ -222,7 +230,12 @@ struct ROS1DecodabilityTraits<std::vector<PoseMeasurement<3>>> {
 };
 
 template<>
-struct ROS1DecodabilityTraits<UnaryMeasurement> {
+struct ROS1DecodabilityTraits<TemporalMeasurement> {
+    static constexpr std::array<std::string_view, 1> msg_types{"std_msgs/Header"};
+};
+
+template<>
+struct ROS1DecodabilityTraits<TemporalSpatialMeasurement> {
     static constexpr std::array<std::string_view, 1> msg_types{"std_msgs/Header"};
 };
 

@@ -10,8 +10,8 @@
 #include "sensorbox/accelerometer.hpp"
 #include "sensorbox/gyroscope.hpp"
 #include "sensorbox/json_loadable.hpp"
+#include "sensorbox/measurement.hpp"
 #include "sensorbox/sensor.hpp"
-#include "sensorbox/unary.hpp"
 
 namespace sensorbox {
 
@@ -46,11 +46,11 @@ private:
 };
 
 template<int D_>
-class ImuMeasurement : public UnaryMeasurement {
+class ImuMeasurement : public TemporalSpatialMeasurement {
 public:
-    using Clock = UnaryMeasurement::Clock;
-    using Duration = UnaryMeasurement::Duration;
-    using Timestamp = UnaryMeasurement::Timestamp;
+    using typename TemporalSpatialMeasurement::Clock;
+    using typename TemporalSpatialMeasurement::Duration;
+    using typename TemporalSpatialMeasurement::Timestamp;
     static constexpr int D = D_;
     static constexpr int AccelDoF = D;
     static constexpr int GyroDoF = D * (D - 1) / 2;

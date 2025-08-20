@@ -27,13 +27,13 @@ inline auto Imu<D_>::gyroscope() const -> const Gyroscope<D>& {
 }
 
 template<int D_>
-ImuMeasurement<D_>::ImuMeasurement()
-    : ImuMeasurement(Timestamp(Duration::zero()), std::string(), AngularVelocity::Zero(), LinearAcceleration::Zero()) {}
+inline ImuMeasurement<D_>::ImuMeasurement()
+    : ImuMeasurement(Timestamp{Duration::zero()}, std::string(), AngularVelocity::Zero(), LinearAcceleration::Zero()) {}
 
 template<int D_>
-ImuMeasurement<D_>::ImuMeasurement(const Timestamp& timestamp_, const std::string& frame_,
+inline ImuMeasurement<D_>::ImuMeasurement(const Timestamp& timestamp_, const std::string& frame_,
         const AngularVelocity& angular_velocity_, const LinearAcceleration& linear_acceleration_)
-    : UnaryMeasurement(timestamp_, frame_),
+    : TemporalSpatialMeasurement(timestamp_, frame_),
       angular_velocity_(angular_velocity_),
       linear_acceleration_(linear_acceleration_) {}
 

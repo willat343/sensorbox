@@ -22,23 +22,13 @@ inline const typename DirectPoseSensor<D_>::Stiffness& DirectPoseSensor<D_>::sti
 }
 
 template<int D_>
-PoseMeasurement<D_>::PoseMeasurement()
-    : PoseMeasurement(Timestamp(Duration::zero()), std::string(), std::string(), Pose::Identity()) {}
+inline PoseMeasurement<D_>::PoseMeasurement()
+    : PoseMeasurement(Timestamp{Duration::zero()}, std::string(), std::string(), Pose::Identity()) {}
 
 template<int D_>
-PoseMeasurement<D_>::PoseMeasurement(const Timestamp& timestamp_, const std::string& frame_,
+inline PoseMeasurement<D_>::PoseMeasurement(const Timestamp& timestamp_, const std::string& frame_,
         const std::string& child_frame_, const Pose& pose_)
-    : UnaryMeasurement(timestamp_, frame_), child_frame_(child_frame_), pose_(pose_) {}
-
-template<int D_>
-const std::string& PoseMeasurement<D_>::child_frame() const {
-    return child_frame_;
-}
-
-template<int D_>
-std::string& PoseMeasurement<D_>::child_frame() {
-    return const_cast<std::string&>(std::as_const(*this).child_frame());
-}
+    : TemporalSpatialRelationalMeasurement(timestamp_, frame_, child_frame_), pose_(pose_) {}
 
 template<int D_>
 inline auto PoseMeasurement<D_>::inverse() const -> PoseMeasurement<D_> {

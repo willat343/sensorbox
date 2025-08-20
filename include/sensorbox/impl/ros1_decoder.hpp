@@ -25,6 +25,10 @@ inline void ROS1BytesDecoder::ignore(const std::size_t num_ignore) {
     cppbox::BytesDecoder::ignore<T>(num_ignore);
 }
 
+inline void ROS1BytesDecoder::ignore_string() {
+    ignore("string");
+}
+
 template<typename T>
     requires(std::is_same_v<T, std::string>)
 inline void ROS1BytesDecoder::ignore(const std::size_t num_ignore) {

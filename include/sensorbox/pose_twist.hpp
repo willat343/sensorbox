@@ -4,16 +4,16 @@
 #include <Eigen/Geometry>
 #include <string>
 
-#include "sensorbox/unary.hpp"
+#include "sensorbox/measurement.hpp"
 
 namespace sensorbox {
 
 template<int D_>
-class PoseTwistMeasurement : public UnaryMeasurement {
+class PoseTwistMeasurement : public TemporalSpatialRelationalMeasurement {
 public:
-    using Clock = UnaryMeasurement::Clock;
-    using Duration = UnaryMeasurement::Duration;
-    using Timestamp = UnaryMeasurement::Timestamp;
+    using typename TemporalSpatialRelationalMeasurement::Clock;
+    using typename TemporalSpatialRelationalMeasurement::Duration;
+    using typename TemporalSpatialRelationalMeasurement::Timestamp;
     static constexpr int D = D_;
     using Pose = Eigen::Transform<double, D, Eigen::Isometry>;
     static constexpr int PoseDoF = D * (D + 1) / 2;
@@ -33,10 +33,6 @@ public:
     explicit PoseTwistMeasurement(const Timestamp& timestamp_, const std::string& frame_,
             const std::string& child_frame_, const Pose& pose_, const Twist& twist_);
 
-    const std::string& child_frame() const;
-
-    std::string& child_frame();
-
     const Pose& pose() const;
 
     Pose& pose();
@@ -46,7 +42,6 @@ public:
     Twist& twist();
 
 private:
-    std::string child_frame_;
     Pose pose_;
     Twist twist_;
 };

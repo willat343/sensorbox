@@ -68,7 +68,7 @@ void ROS1BytesDecoder::read_to(Eigen::Isometry3d& out) {
 
 void ROS1BytesDecoder::read_to(ContactClassifications& out) {
     if (msg_type() == "anymal_msgs/AnymalState") {
-        create_internal_decoder("std_msgs/Header").read_to(static_cast<UnaryMeasurement&>(out));
+        create_internal_decoder("std_msgs/Header").read_to(static_cast<TemporalMeasurement&>(out));
         ignore<int8_t>();                                 // state
         ignore("geometry_msgs/PoseStamped");              // pose
         ignore("geometry_msgs/TwistStamped");             // twist
@@ -93,7 +93,7 @@ void ROS1BytesDecoder::read_to(ContactClassifications& out) {
 
 void ROS1BytesDecoder::read_to(ImuMeasurement<3>& out) {
     if (msg_type() == "sensor_msgs/Imu") {
-        create_internal_decoder("std_msgs/Header").read_to(static_cast<UnaryMeasurement&>(out));
+        create_internal_decoder("std_msgs/Header").read_to(static_cast<TemporalSpatialMeasurement&>(out));
         ignore("geometry_msgs/Quaternion");  // orientation
         ignore<double>(9);                   // orientation_covariance
         create_internal_decoder("geometry_msgs/Vector3").read_to(out.angular_velocity());
@@ -107,17 +107,17 @@ void ROS1BytesDecoder::read_to(ImuMeasurement<3>& out) {
 
 void ROS1BytesDecoder::read_to(PoseMeasurement<3>& out) {
     if (msg_type() == "geometry_msgs/PoseStamped") {
-        create_internal_decoder("std_msgs/Header").read_to(static_cast<UnaryMeasurement&>(out));
+        create_internal_decoder("std_msgs/Header").read_to(static_cast<TemporalSpatialMeasurement&>(out));
         create_internal_decoder("geometry_msgs/Pose").read_to(out.pose());
     } else if (msg_type() == "geometry_msgs/PoseWithCovarianceStamped") {
-        create_internal_decoder("std_msgs/Header").read_to(static_cast<UnaryMeasurement&>(out));
+        create_internal_decoder("std_msgs/Header").read_to(static_cast<TemporalSpatialMeasurement&>(out));
         create_internal_decoder("geometry_msgs/PoseWithCovariance").read_to(out.pose());
     } else if (msg_type() == "geometry_msgs/TransformStamped") {
-        create_internal_decoder("std_msgs/Header").read_to(static_cast<UnaryMeasurement&>(out));
+        create_internal_decoder("std_msgs/Header").read_to(static_cast<TemporalSpatialMeasurement&>(out));
         read_to(out.child_frame());
         create_internal_decoder("geometry_msgs/Transform").read_to(out.pose());
     } else if (msg_type() == "nav_msgs/Odometry") {
-        create_internal_decoder("std_msgs/Header").read_to(static_cast<UnaryMeasurement&>(out));
+        create_internal_decoder("std_msgs/Header").read_to(static_cast<TemporalSpatialMeasurement&>(out));
         read_to(out.child_frame());
         create_internal_decoder("geometry_msgs/PoseWithCovariance").read_to(out.pose());
         ignore("geometry_msgs/TwistWithCovariance");  // twist
@@ -126,13 +126,23 @@ void ROS1BytesDecoder::read_to(PoseMeasurement<3>& out) {
     }
 }
 
-void ROS1BytesDecoder::read_to(UnaryMeasurement& out) {
+void ROS1BytesDecoder::read_to(TemporalMeasurement& out) {
+    if (msg_type() == "std_msgs/Header") {
+        ignore<uint32_t>();  // seq
+        read_to(out.timestamp());
+        ignore_string();  // frame_id
+    } else {
+        throw_here("msg_type " + msg_type() + " cannot be converted to TemporalMeasurement.");
+    }
+}
+
+void ROS1BytesDecoder::read_to(TemporalSpatialMeasurement& out) {
     if (msg_type() == "std_msgs/Header") {
         ignore<uint32_t>();  // seq
         read_to(out.timestamp());
         read_to(out.frame());
     } else {
-        throw_here("msg_type " + msg_type() + " cannot be converted to UnaryMeasurement.");
+        throw_here("msg_type " + msg_type() + " cannot be converted to TemporalSpatialMeasurement.");
     }
 }
 

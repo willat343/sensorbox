@@ -3,24 +3,22 @@
 
 #include <unordered_map>
 
+#include "sensorbox/measurement.hpp"
 #include "sensorbox/sensor.hpp"
-#include "sensorbox/unary.hpp"
 
 namespace sensorbox {
 
-class ContactClassifications : public UnaryMeasurement {
+class ContactClassifications : public TemporalMeasurement {
 public:
-    using Clock = UnaryMeasurement::Clock;
-    using Duration = UnaryMeasurement::Duration;
-    using Timestamp = UnaryMeasurement::Timestamp;
+    using typename TemporalMeasurement::Clock;
+    using typename TemporalMeasurement::Duration;
+    using typename TemporalMeasurement::Timestamp;
 
     explicit ContactClassifications();
 
     /**
      * @brief Construct a contact classifications measurement, representing the boolean (binary) contact states of
      * links.
-     *
-     * The frame of UnaryMeasurement is left empty.
      *
      * @param timestamp_ timestamp
      */
@@ -46,5 +44,7 @@ private:
 };
 
 }
+
+#include "sensorbox/impl/contact.hpp"
 
 #endif
