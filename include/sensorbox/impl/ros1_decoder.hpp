@@ -15,8 +15,23 @@ inline T ROS1BytesDecoder::decode_to() {
         assert(is_finished());
         return out;
     } else {
-        throw_here("ROS1BytesDecoder::decode_to<T>() failed because T cannot be decoded to.");
+        throw_here("Decoding failed because T cannot be decoded to.");
     }
+}
+
+template<typename T>
+inline void ROS1BytesDecoder::decode_to(T& out) {
+    if constexpr (is_decodable<T>()) {
+        read_to(out);
+        assert(is_finished());
+    } else {
+        throw_here("Decoding failed because T cannot be decoded to.");
+    }
+}
+
+template<typename T>
+void ROS1BytesDecoder::decode_to_optional(std::optional<T>& out) {
+    out = decode_to<T>();
 }
 
 template<typename T>
@@ -114,6 +129,24 @@ inline void ROS1BytesDecoder::read_to(std::string& out) {
     out = read<std::string>();
 }
 
+inline ROS1BytesDecoder ROS1BytesDecoder::create_internal_decoder(const std::string& internal_msg_type) {
+    return ROS1BytesDecoder(bytes() + offset(), internal_msg_size(internal_msg_type, 0), internal_msg_type, this);
+}
+
+template<typename T>
+inline void ROS1BytesDecoder::decode_internal_to(const std::string& internal_msg_type, T& out) {
+    return create_internal_decoder(internal_msg_type).decode_to(out);
+}
+
+template<typename T>
+inline void ROS1BytesDecoder::decode_vector_to(const std::string& vector_msg_type, std::vector<T>& out) {
+    // ROS 1 dynamic-sized vectors store the number elements as a uint32_t in the first 4 bytes
+    out.resize(read<uint32_t>());
+    for (T& out_element : out) {
+        decode_internal_to(vector_msg_type, out_element);
+    }
+}
+
 template<typename T>
     requires(std::is_trivially_copyable_v<T>)
 inline std::size_t ROS1BytesDecoder::internal_vector_msg_size(std::size_t offset) const {
@@ -124,15 +157,6 @@ inline std::size_t ROS1BytesDecoder::internal_vector_msg_size(std::size_t offset
 template<typename T>
 void ROS1BytesDecoder::read_to_optional(std::optional<T>& out) {
     out = read_to<T>();
-}
-
-template<typename T>
-inline void ROS1BytesDecoder::read_vector_to(const std::string& vector_msg_type, std::vector<T>& out) {
-    // ROS 1 dynamic-sized vectors store the number elements as a uint32_t in the first 4 bytes
-    out.resize(read<uint32_t>());
-    for (T& out_element : out) {
-        create_internal_decoder(vector_msg_type).read_to(out_element);
-    }
 }
 
 }

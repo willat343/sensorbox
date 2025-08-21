@@ -9,10 +9,6 @@ namespace sensorbox {
 ROS1BytesDecoder::ROS1BytesDecoder(const std::byte* bytes_, const std::size_t size_, const std::string& msg_type_)
     : ROS1BytesDecoder(bytes_, size_, msg_type_, nullptr) {}
 
-ROS1BytesDecoder ROS1BytesDecoder::create_internal_decoder(const std::string& internal_msg_type) {
-    return ROS1BytesDecoder(bytes() + offset(), internal_msg_size(internal_msg_type, 0), internal_msg_type, this);
-}
-
 constexpr bool ROS1BytesDecoder::is_decodable(const std::string_view& msg_type) {
     constexpr auto decodable_msg_types = std::to_array<std::string_view>({"duration", "string", "time",
             "std_msgs/Duration", "std_msgs/Header", "std_msgs/String", "std_msgs/Time", "geometry_msgs/Point",
@@ -63,15 +59,15 @@ void ROS1BytesDecoder::read_to(Eigen::Isometry3d& out) {
     Eigen::Vector3d t;
     Eigen::Quaterniond q;
     if (msg_type() == "geometry_msgs/Pose") {
-        create_internal_decoder("geometry_msgs/Point").read_to(t);
-        create_internal_decoder("geometry_msgs/Quaternion").read_to(q);
+        decode_internal_to("geometry_msgs/Point", t);
+        decode_internal_to("geometry_msgs/Quaternion", q);
     } else if (msg_type() == "geometry_msgs/PoseWithCovariance") {
-        create_internal_decoder("geometry_msgs/Point").read_to(t);
-        create_internal_decoder("geometry_msgs/Quaternion").read_to(q);
+        decode_internal_to("geometry_msgs/Point", t);
+        decode_internal_to("geometry_msgs/Quaternion", q);
         ignore<double>(36);  // covariance
     } else if (msg_type() == "geometry_msgs/Transform") {
-        create_internal_decoder("geometry_msgs/Vector3").read_to(t);
-        create_internal_decoder("geometry_msgs/Quaternion").read_to(q);
+        decode_internal_to("geometry_msgs/Vector3", t);
+        decode_internal_to("geometry_msgs/Quaternion", q);
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to Eigen::Isometry3d.");
     }
@@ -81,17 +77,18 @@ void ROS1BytesDecoder::read_to(Eigen::Isometry3d& out) {
 void ROS1BytesDecoder::read_to(ActuatorMeasurement& out) {
     if (msg_type() == "series_elastic_actuator_msgs/SeActuatorReading") {
         ignore("std_msgs/Header");
-        create_internal_decoder("series_elastic_actuator_msgs/SeActuatorState").read_to(out);
+        decode_internal_to("series_elastic_actuator_msgs/SeActuatorState", out);
         ignore("series_elastic_actuator_msgs/SeActuatorCommand");
     } else if (msg_type() == "series_elastic_actuator_msgs/SeActuatorState") {
-        create_internal_decoder("std_msgs/Header").read_to(static_cast<TemporalSpatialMeasurement&>(out));
+        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
         read_to(out.name());
         out.set_type(ActuatorType::SERIES_ELASTIC);
-        read_to_optional(out.current());
-        read_to_optional(out.motor_position());
-        read_to_optional(out.motor_velocity());
-        read_to_optional(out.joint_position());
-        read_to_optional(out.joint_velocity());
+        ignore<uint32_t>();  // statusword
+        read_to_optional<double>(out.current());
+        read_to_optional<double>(out.motor_position());
+        read_to_optional<double>(out.motor_velocity());
+        read_to_optional<double>(out.joint_position());
+        read_to_optional<double>(out.joint_velocity());
         ignore<double>();
         read_to_optional(out.joint_torque());
         ignore("sensor_msgs/Imu");
@@ -102,7 +99,7 @@ void ROS1BytesDecoder::read_to(ActuatorMeasurement& out) {
 
 void ROS1BytesDecoder::read_to(std::vector<ActuatorMeasurement>& out) {
     if (msg_type() == "series_elastic_actuator_msgs/SeActuatorReadings") {
-        read_vector_to("series_elastic_actuator_msgs/SeActuatorReading", out);
+        decode_vector_to("series_elastic_actuator_msgs/SeActuatorReading", out);
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to std::vector<ActuatorMeasurement>.");
     }
@@ -110,7 +107,7 @@ void ROS1BytesDecoder::read_to(std::vector<ActuatorMeasurement>& out) {
 
 void ROS1BytesDecoder::read_to(ContactClassifications& out) {
     if (msg_type() == "anymal_msgs/AnymalState") {
-        create_internal_decoder("std_msgs/Header").read_to(static_cast<TemporalMeasurement&>(out));
+        decode_internal_to("std_msgs/Header", static_cast<TemporalMeasurement&>(out));
         ignore<int8_t>();                                 // state
         ignore("geometry_msgs/PoseStamped");              // pose
         ignore("geometry_msgs/TwistStamped");             // twist
@@ -135,12 +132,12 @@ void ROS1BytesDecoder::read_to(ContactClassifications& out) {
 
 void ROS1BytesDecoder::read_to(ImuMeasurement<3>& out) {
     if (msg_type() == "sensor_msgs/Imu") {
-        create_internal_decoder("std_msgs/Header").read_to(static_cast<TemporalSpatialMeasurement&>(out));
+        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
         ignore("geometry_msgs/Quaternion");  // orientation
         ignore<double>(9);                   // orientation_covariance
-        create_internal_decoder("geometry_msgs/Vector3").read_to(out.angular_velocity());
+        decode_internal_to("geometry_msgs/Vector3", out.angular_velocity());
         ignore<double>(9);  // orientation_covariance
-        create_internal_decoder("geometry_msgs/Vector3").read_to(out.linear_acceleration());
+        decode_internal_to("geometry_msgs/Vector3", out.linear_acceleration());
         ignore<double>(9);  // orientation_covariance
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to ImuMeasurement<3>.");
@@ -149,19 +146,19 @@ void ROS1BytesDecoder::read_to(ImuMeasurement<3>& out) {
 
 void ROS1BytesDecoder::read_to(PoseMeasurement<3>& out) {
     if (msg_type() == "geometry_msgs/PoseStamped") {
-        create_internal_decoder("std_msgs/Header").read_to(static_cast<TemporalSpatialMeasurement&>(out));
-        create_internal_decoder("geometry_msgs/Pose").read_to(out.pose());
+        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
+        decode_internal_to("geometry_msgs/Pose", out.pose());
     } else if (msg_type() == "geometry_msgs/PoseWithCovarianceStamped") {
-        create_internal_decoder("std_msgs/Header").read_to(static_cast<TemporalSpatialMeasurement&>(out));
-        create_internal_decoder("geometry_msgs/PoseWithCovariance").read_to(out.pose());
+        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
+        decode_internal_to("geometry_msgs/PoseWithCovariance", out.pose());
     } else if (msg_type() == "geometry_msgs/TransformStamped") {
-        create_internal_decoder("std_msgs/Header").read_to(static_cast<TemporalSpatialMeasurement&>(out));
+        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
         read_to(out.child_frame());
-        create_internal_decoder("geometry_msgs/Transform").read_to(out.pose());
+        decode_internal_to("geometry_msgs/Transform", out.pose());
     } else if (msg_type() == "nav_msgs/Odometry") {
-        create_internal_decoder("std_msgs/Header").read_to(static_cast<TemporalSpatialMeasurement&>(out));
+        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
         read_to(out.child_frame());
-        create_internal_decoder("geometry_msgs/PoseWithCovariance").read_to(out.pose());
+        decode_internal_to("geometry_msgs/PoseWithCovariance", out.pose());
         ignore("geometry_msgs/TwistWithCovariance");  // twist
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to PoseMeasurement<3>.");
@@ -170,7 +167,7 @@ void ROS1BytesDecoder::read_to(PoseMeasurement<3>& out) {
 
 void ROS1BytesDecoder::read_to(std::vector<PoseMeasurement<3>>& out) {
     if (msg_type() == "tf2_msgs/TFMessage") {
-        read_vector_to("geometry_msgs/TransformStamped", out);
+        decode_vector_to("geometry_msgs/TransformStamped", out);
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to std::vector<PoseMeasurement<3>>.");
     }

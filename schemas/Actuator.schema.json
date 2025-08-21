@@ -9,7 +9,7 @@
             "type": "object",
             "properties": {
                 "type": {
-                    "const": "ENCODER"
+                    "const": "ACTUATOR"
                 },
                 "actuator_type": {
                     "type": "string",

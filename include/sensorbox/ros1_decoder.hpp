@@ -19,8 +19,6 @@ class ROS1BytesDecoder : public cppbox::BytesDecoder {
 public:
     explicit ROS1BytesDecoder(const std::byte* bytes_, const std::size_t size_, const std::string& msg_type_);
 
-    ROS1BytesDecoder create_internal_decoder(const std::string& internal_msg_type);
-
     /**
      * @brief Decode all bytes to a T object.
      *
@@ -29,6 +27,24 @@ public:
      */
     template<typename T>
     T decode_to();
+
+    /**
+     * @brief Decode all bytes to a T object.
+     *
+     * @tparam T
+     * @param out
+     */
+    template<typename T>
+    void decode_to(T& out);
+
+    /**
+     * @brief Decode all bytes to an optional T object.
+     *
+     * @tparam T
+     * @param out
+     */
+    template<typename T>
+    void decode_to_optional(std::optional<T>& out);
 
     /**
      * @brief Ignore a string message.
@@ -50,6 +66,11 @@ public:
      */
     void ignore_vector(const std::string& msg_type);
 
+    /**
+     * @brief Ignore a vector of trivial type messages.
+     *
+     * @tparam T
+     */
     template<typename T>
         requires(std::is_trivially_copyable_v<T>)
     void ignore_vector();
@@ -94,12 +115,31 @@ public:
     template<typename T>
     bool is_decodable_to();
 
+    /**
+     * @brief Get the message type.
+     *
+     * @return const std::string&
+     */
     const std::string& msg_type() const;
 
+    /**
+     * @brief Read data at the current offset plus optional extra offset without changing internal offsets used during
+     * reading.
+     *
+     * @tparam T
+     * @param extra_offset
+     */
     template<typename T>
         requires(std::is_trivially_copyable_v<T>)
     T peak(const std::size_t extra_offset = 0) const;
 
+    /**
+     * @brief Read data at the current offset plus optional extra offset without changing internal offsets used during
+     * reading.
+     *
+     * @tparam T
+     * @param extra_offset
+     */
     template<typename T>
         requires(std::is_same_v<T, std::string>)
     T peak(const std::size_t extra_offset = 0) const;
@@ -153,6 +193,14 @@ protected:
     explicit ROS1BytesDecoder(const std::byte* bytes_, const std::size_t size_, const std::string& msg_type_,
             ROS1BytesDecoder* parent_decoder_);
 
+    ROS1BytesDecoder create_internal_decoder(const std::string& internal_msg_type);
+
+    template<typename T>
+    void decode_internal_to(const std::string& internal_msg_type, T& out);
+
+    template<typename T>
+    void decode_vector_to(const std::string& vector_msg_type, std::vector<T>& out);
+
     template<typename T>
         requires(std::is_trivially_copyable_v<T>)
     void ignore(const std::size_t num_ignore = 1);
@@ -171,9 +219,6 @@ protected:
 
     template<typename T>
     void read_to_optional(std::optional<T>& out);
-
-    template<typename T>
-    void read_vector_to(const std::string& vector_msg_type, std::vector<T>& out);
 
 private:
     const std::string msg_type_;
