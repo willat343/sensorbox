@@ -37,19 +37,19 @@ private:
 
     /**
      * @brief Embedded current sensor if available.
-     * 
+     *
      */
     std::optional<CurrentSensor> current_sensor_;
 
     /**
      * @brief Motor-side encoder if available.
-     * 
+     *
      */
     std::optional<Encoder> motor_encoder_;
 
     /**
      * @brief Joint-side (output-side) encoder if available.
-     * 
+     *
      */
     std::optional<Encoder> joint_encoder_;
 

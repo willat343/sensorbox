@@ -5,8 +5,8 @@
 #include <string>
 
 #include "sensorbox/json_loadable.hpp"
-#include "sensorbox/sensor.hpp"
 #include "sensorbox/measurement.hpp"
+#include "sensorbox/sensor.hpp"
 
 namespace sensorbox {
 

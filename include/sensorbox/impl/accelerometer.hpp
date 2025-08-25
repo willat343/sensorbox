@@ -13,8 +13,8 @@ inline Accelerometer<D_>::Accelerometer(const nlohmann::json& config, const bool
 }
 
 template<int D_>
-inline Accelerometer<D_>::Accelerometer(const double frequency_, const double noise_density_, const double bias_noise_density_,
-        const double initial_noise_)
+inline Accelerometer<D_>::Accelerometer(const double frequency_, const double noise_density_,
+        const double bias_noise_density_, const double initial_noise_)
     : RandomWalkSensor<D_>(SensorType::ACCELEROMETER, frequency_, noise_density_, bias_noise_density_, initial_noise_) {
 }
 

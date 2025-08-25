@@ -7,8 +7,8 @@
 namespace sensorbox {
 
 template<int DoF_>
-inline RandomWalkSensor<DoF_>::RandomWalkSensor(const SensorType type, const double frequency_, const double noise_density_,
-        const double bias_noise_density_, const double initial_noise_)
+inline RandomWalkSensor<DoF_>::RandomWalkSensor(const SensorType type, const double frequency_,
+        const double noise_density_, const double bias_noise_density_, const double initial_noise_)
     : Sensor(type) {
     set_properties(frequency_, noise_density_, bias_noise_density_);
     initial_noise__ = initial_noise_;
