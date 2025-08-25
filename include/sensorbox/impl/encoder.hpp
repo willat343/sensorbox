@@ -17,4 +17,12 @@ inline auto Encoder::stiffness() const -> const Stiffness {
 
 }
 
+#if !SENSORBOX_HEADER_ONLY
+namespace sensorbox {
+
+extern template class JsonLoadable<EncoderSchemaFilepath, sensorbox_schema_loader>;
+
+}
+#endif
+
 #endif

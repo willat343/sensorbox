@@ -6,17 +6,28 @@
 namespace sensorbox {
 
 template<int D_>
-Gyroscope<D_>::Gyroscope(const nlohmann::json& config, const bool validate)
+inline Gyroscope<D_>::Gyroscope(const nlohmann::json& config, const bool validate)
     : RandomWalkSensor<D_*(D_ - 1) / 2>(config, false),
       JsonLoadable<GyroscopeSchemaFilepath, sensorbox_schema_loader>(config, validate) {
     assert(this->type() == SensorType::GYROSCOPE);
 }
 
 template<int D_>
-Gyroscope<D_>::Gyroscope(const double frequency_, const double noise_density_, const double bias_noise_density_,
+inline Gyroscope<D_>::Gyroscope(const double frequency_, const double noise_density_, const double bias_noise_density_,
         const double initial_noise_)
-    : RandomWalkSensor<D_>(SensorType::GYROSCOPE, frequency_, noise_density_, bias_noise_density_, initial_noise_) {}
+    : RandomWalkSensor<D_*(D_ - 1) / 2>(SensorType::GYROSCOPE, frequency_, noise_density_, bias_noise_density_,
+              initial_noise_) {}
 
 }
+
+#if !SENSORBOX_HEADER_ONLY
+namespace sensorbox {
+
+extern template class Gyroscope<2>;
+extern template class Gyroscope<3>;
+extern template class JsonLoadable<GyroscopeSchemaFilepath, sensorbox_schema_loader>;
+
+}
+#endif
 
 #endif

@@ -7,7 +7,7 @@
 namespace sensorbox {
 
 template<int DoF_>
-RandomWalkSensor<DoF_>::RandomWalkSensor(const SensorType type, const double frequency_, const double noise_density_,
+inline RandomWalkSensor<DoF_>::RandomWalkSensor(const SensorType type, const double frequency_, const double noise_density_,
         const double bias_noise_density_, const double initial_noise_)
     : Sensor(type) {
     set_properties(frequency_, noise_density_, bias_noise_density_);
@@ -15,7 +15,7 @@ RandomWalkSensor<DoF_>::RandomWalkSensor(const SensorType type, const double fre
 }
 
 template<int DoF_>
-RandomWalkSensor<DoF_>::RandomWalkSensor(const nlohmann::json& config, const bool validate)
+inline RandomWalkSensor<DoF_>::RandomWalkSensor(const nlohmann::json& config, const bool validate)
     : Sensor(config, false), JsonLoadable<RandomWalkSensorSchemaFilepath, sensorbox_schema_loader>(config, validate) {
     set_properties(config["frequency"].get<double>(), config["noise_density"].get<double>(),
             config["bias_noise_density"].get<double>());
@@ -93,5 +93,16 @@ inline void RandomWalkSensor<DoF_>::update_stiffness() {
 }
 
 }
+
+#if !SENSORBOX_HEADER_ONLY
+namespace sensorbox {
+
+extern template class RandomWalkSensor<1>;
+extern template class RandomWalkSensor<2>;
+extern template class RandomWalkSensor<3>;
+extern template class JsonLoadable<RandomWalkSensorSchemaFilepath, sensorbox_schema_loader>;
+
+}
+#endif
 
 #endif

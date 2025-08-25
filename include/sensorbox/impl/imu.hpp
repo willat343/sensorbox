@@ -8,7 +8,7 @@
 namespace sensorbox {
 
 template<int D_>
-Imu<D_>::Imu(const nlohmann::json& config, const bool validate)
+inline Imu<D_>::Imu(const nlohmann::json& config, const bool validate)
     : Sensor(config, false),
       JsonLoadable<ImuSchemaFilepath, sensorbox_schema_loader>(config, validate),
       accelerometer_(config.at("accelerometer"), false),
@@ -66,5 +66,18 @@ inline auto ImuMeasurement<D_>::transform_to_new_frame(const std::string& new_fr
 }
 
 }
+
+#if !SENSORBOX_HEADER_ONLY
+namespace sensorbox {
+
+extern template class Imu<2>;
+extern template class Imu<3>;
+extern template class JsonLoadable<ImuSchemaFilepath, sensorbox_schema_loader>;
+
+extern template class ImuMeasurement<2>;
+extern template class ImuMeasurement<3>;
+
+}
+#endif
 
 #endif

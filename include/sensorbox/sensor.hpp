@@ -14,15 +14,17 @@
 
 namespace sensorbox {
 
-constexpr SchemaFilepath AccelerometerSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Accelerometer.schema.json"};
-constexpr SchemaFilepath ActuatorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Actuator.schema.json"};
-constexpr SchemaFilepath CurrentSensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "CurrentSensor.schema.json"};
-constexpr SchemaFilepath DirectPoseSensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "DirectPoseSensor.schema.json"};
-constexpr SchemaFilepath EncoderSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Encoder.schema.json"};
-constexpr SchemaFilepath GyroscopeSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Gyroscope.schema.json"};
-constexpr SchemaFilepath ImuSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Imu.schema.json"};
-constexpr SchemaFilepath RandomWalkSensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "RandomWalkSensor.schema.json"};
-constexpr SchemaFilepath SensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Sensor.schema.json"};
+inline constexpr SchemaFilepath AccelerometerSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Accelerometer.schema.json"};
+inline constexpr SchemaFilepath ActuatorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Actuator.schema.json"};
+inline constexpr SchemaFilepath CurrentSensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "CurrentSensor.schema.json"};
+inline constexpr SchemaFilepath DirectPoseSensorSchemaFilepath{
+        SENSORBOX_SCHEMAS_DIRECTORY "DirectPoseSensor.schema.json"};
+inline constexpr SchemaFilepath EncoderSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Encoder.schema.json"};
+inline constexpr SchemaFilepath GyroscopeSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Gyroscope.schema.json"};
+inline constexpr SchemaFilepath ImuSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Imu.schema.json"};
+inline constexpr SchemaFilepath RandomWalkSensorSchemaFilepath{
+        SENSORBOX_SCHEMAS_DIRECTORY "RandomWalkSensor.schema.json"};
+inline constexpr SchemaFilepath SensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Sensor.schema.json"};
 
 CREATE_SMART_ENUM(SensorTypeBase, ACCELEROMETER, ACTUATOR, CONTACTS_CLASSIFIER, CURRENT, DIRECT_POSE, ENCODER,
         GYROSCOPE, IMU)
@@ -98,5 +100,7 @@ private:
 };
 
 }
+
+#include "sensorbox/impl/sensor.hpp"
 
 #endif

@@ -8,6 +8,10 @@
 
 namespace sensorbox {
 
+inline ROS1BytesDecoder::ROS1BytesDecoder(const std::byte* bytes_, const std::size_t size_,
+        const std::string& msg_type_)
+    : ROS1BytesDecoder(bytes_, size_, msg_type_, nullptr) {}
+
 template<typename T>
 inline T ROS1BytesDecoder::decode_to() {
     if constexpr (is_decodable<T>()) {
@@ -30,7 +34,7 @@ inline void ROS1BytesDecoder::decode_to(T& out) {
 }
 
 template<typename T>
-void ROS1BytesDecoder::decode_to_optional(std::optional<T>& out) {
+inline void ROS1BytesDecoder::decode_to_optional(std::optional<T>& out) {
     out = decode_to<T>();
 }
 
@@ -155,10 +159,14 @@ inline std::size_t ROS1BytesDecoder::internal_vector_msg_size(std::size_t offset
 }
 
 template<typename T>
-void ROS1BytesDecoder::read_to_optional(std::optional<T>& out) {
+inline void ROS1BytesDecoder::read_to_optional(std::optional<T>& out) {
     out = read_to<T>();
 }
 
 }
+
+#if SENSORBOX_HEADER_ONLY
+#include "sensorbox/impl/ros1_decoder.impl.hpp"
+#endif
 
 #endif

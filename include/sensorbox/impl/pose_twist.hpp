@@ -37,4 +37,13 @@ inline auto PoseTwistMeasurement<D_>::twist() -> Twist& {
 
 }
 
+#if !SENSORBOX_HEADER_ONLY
+namespace sensorbox {
+
+extern template class PoseTwistMeasurement<2>;
+extern template class PoseTwistMeasurement<3>;
+
+}
+#endif
+
 #endif

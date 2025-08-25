@@ -115,4 +115,12 @@ inline const ActuatorType ActuatorMeasurement::type() const {
 
 }
 
+#if !SENSORBOX_HEADER_ONLY
+namespace sensorbox {
+
+extern template class JsonLoadable<ActuatorSchemaFilepath, sensorbox_schema_loader>;
+
+}
+#endif
+
 #endif

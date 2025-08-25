@@ -9,7 +9,7 @@
 namespace sensorbox {
 
 template<int D_>
-DirectPoseSensor<D_>::DirectPoseSensor(const nlohmann::json& config, const bool validate)
+inline DirectPoseSensor<D_>::DirectPoseSensor(const nlohmann::json& config, const bool validate)
     : Sensor(config, false),
       JsonLoadable<DirectPoseSensorSchemaFilepath, sensorbox_schema_loader>(config, validate),
       stiffness_(stiffness_from_config<DoF>(config)) {
@@ -69,5 +69,18 @@ inline auto PoseMeasurement<D_>::transform_to_new_frames(const std::string& new_
 }
 
 }
+
+#if !SENSORBOX_HEADER_ONLY
+namespace sensorbox {
+
+extern template class DirectPoseSensor<2>;
+extern template class DirectPoseSensor<3>;
+extern template class JsonLoadable<DirectPoseSensorSchemaFilepath, sensorbox_schema_loader>;
+
+extern template class PoseMeasurement<2>;
+extern template class PoseMeasurement<3>;
+
+}
+#endif
 
 #endif

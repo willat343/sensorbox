@@ -11,24 +11,24 @@
 namespace sensorbox {
 
 template<std::size_t N>
-constexpr SchemaFilepath<N>::SchemaFilepath(const char (&string)[N]) {
+inline constexpr SchemaFilepath<N>::SchemaFilepath(const char (&string)[N]) {
     std::copy_n(string, N, value.begin());
 }
 
 template<std::size_t N>
-constexpr std::string_view SchemaFilepath<N>::string() const noexcept {
+inline constexpr std::string_view SchemaFilepath<N>::string() const noexcept {
     return std::string_view{value.data(), value.size()};
 }
 
 template<SchemaFilepath schema_filepath, SchemaLoader schema_loader>
-JsonLoadable<schema_filepath, schema_loader>::JsonLoadable(const nlohmann::json& json, const bool validate_) {
+inline JsonLoadable<schema_filepath, schema_loader>::JsonLoadable(const nlohmann::json& json, const bool validate_) {
     if (validate_) {
         validate(json);
     }
 }
 
 template<SchemaFilepath schema_filepath, SchemaLoader schema_loader>
-nlohmann::json JsonLoadable<schema_filepath, schema_loader>::validate(const nlohmann::json& json) {
+inline nlohmann::json JsonLoadable<schema_filepath, schema_loader>::validate(const nlohmann::json& json) {
     return validator_.validate(json);
 }
 
@@ -44,6 +44,11 @@ const nlohmann::json JsonLoadable<schema_filepath, schema_loader>::schema_ = [](
 template<SchemaFilepath schema_filepath, SchemaLoader schema_loader>
 const nlohmann::json_schema::json_validator JsonLoadable<schema_filepath, schema_loader>::validator_ =
         []() { return nlohmann::json_schema::json_validator{schema_, schema_loader}; }();
+
 }
+
+#if SENSORBOX_HEADER_ONLY
+#include "sensorbox/impl/json_loadable.impl.hpp"
+#endif
 
 #endif

@@ -17,8 +17,10 @@ include(CMakePackageConfigHelpers)
 
 # General Options
 option(BUILD_DOCUMENTATION "Build Doxygen Documentation" OFF)
+option(BUILD_SHARED_LIBS "Build shared library (if SENSORBOX_HEADER_ONLY=OFF)" OFF)
 option(BUILD_SENSORBOX_ROS "Build sensorbox ROS 1 conversion functions" OFF)
 option(DEVELOPER_MODE "Use local versions of cmakebox, cppbox, mathbox, and convert" OFF)
+option(SENSORBOX_HEADER_ONLY "Build library as header-only" OFF)
 
 # Configure FetchContent source directories for DEVELOPER_MODE
 if (DEVELOPER_MODE)
@@ -64,7 +66,7 @@ import_nlohmann_json_schema_validator(
 )
 
 # Dependency: cppbox (Target: cppbox::cppbox)
-set(CPPBOX_VERSION "0.1.2")
+set(CPPBOX_VERSION "0.1.4")
 import_dependency(
     cppbox
     TARGET cppbox::cppbox
@@ -75,7 +77,7 @@ import_dependency(
 )
 
 # Dependency: mathbox (Target: mathbox::mathbox)
-set(MATHBOX_VERSION "0.6.0")
+set(MATHBOX_VERSION "0.6.2")
 import_dependency(
     mathbox
     TARGET mathbox::mathbox
@@ -117,40 +119,66 @@ import_dependency(
 
 # Build library
 set(LIBRARY_NAME ${PROJECT_NAME})
-add_library(${LIBRARY_NAME} SHARED
-    ${SENSORBOX_ROS_SRC_FILES}
-    src/json_loadable.cpp
-    src/ros1_decoder.cpp
-    src/sensor.cpp
-)
+if (SENSORBOX_HEADER_ONLY)
+    # Interface Library
+    add_library(${LIBRARY_NAME} INTERFACE)
+    set(PUBLIC_OR_INTERFACE INTERFACE)
+else()
+    # Shared/Static Library (determined by BUILD_SHARED_LIBS)
+    add_library(${LIBRARY_NAME}
+        ${SENSORBOX_ROS_SRC_FILES}
+        src/accelerometer.cpp
+        src/actuator.cpp
+        src/current.cpp
+        src/encoder.cpp
+        src/gyroscope.cpp
+        src/imu.cpp
+        src/json_loadable.cpp
+        src/pose_twist.cpp
+        src/pose.cpp
+        src/random_walk_sensor.cpp
+        src/ros1_decoder.cpp
+        src/sensor.cpp
+        src/stiffness.cpp
+    )
+    set(PUBLIC_OR_INTERFACE PUBLIC)
+
+    # Private Compile Options
+    target_compile_options(${LIBRARY_NAME} PRIVATE
+        -Wall -Wextra -Wpedantic
+    )
+endif()
 add_library(${PROJECT_NAME}::${LIBRARY_NAME} ALIAS ${LIBRARY_NAME})
+
 # Include directories
-target_include_directories(${LIBRARY_NAME} PUBLIC
+target_include_directories(${LIBRARY_NAME} ${PUBLIC_OR_INTERFACE}
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
+
 # System include directories
 if (SENSORBOX_ROS_SYSTEM_INCLUDE_DIRECTORIES)
-    target_include_directories(${LIBRARY_NAME} PUBLIC SYSTEM
+    target_include_directories(${LIBRARY_NAME} ${PUBLIC_OR_INTERFACE} SYSTEM
         ${SENSORBOX_ROS_SYSTEM_INCLUDE_DIRECTORIES}
     )
 endif()
+
 # Properties
 set_target_properties(${LIBRARY_NAME} PROPERTIES
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
+    POSITION_INDEPENDENT_CODE ON
 )
-# Compile options
-target_compile_options(${LIBRARY_NAME} PRIVATE
-    -Wall -Wextra -Wpedantic
-)
+
 # Compile Definitions
-target_compile_definitions(${LIBRARY_NAME} PUBLIC
+target_compile_definitions(${LIBRARY_NAME} ${PUBLIC_OR_INTERFACE}
+    SENSORBOX_HEADER_ONLY=$<IF:$<BOOL:${SENSORBOX_HEADER_ONLY}>,1,0>
     $<BUILD_INTERFACE:SENSORBOX_SCHEMAS_DIRECTORY="${CMAKE_CURRENT_SOURCE_DIR}/schemas/">
     $<INSTALL_INTERFACE:SENSORBOX_SCHEMAS_DIRECTORY="${CMAKE_INSTALL_PREFIX}/schemas/">
 )
+
 # Link libraries
-target_link_libraries(${LIBRARY_NAME} PUBLIC
+target_link_libraries(${LIBRARY_NAME} ${PUBLIC_OR_INTERFACE}
     ${SENSORBOX_ROS_LINK_LIBRARIES}
     convert::convert    # May depend on Eigen3::Eigen
     mathbox::mathbox    # Depends on Eigen3::Eigen
@@ -217,11 +245,6 @@ export(PACKAGE ${PROJECT_NAME})
 # Uninstallation
 create_uninstall_target()
 
-# Build Tests
-if(BUILD_TESTING)
-    add_subdirectory(test)
-endif()
-
 # Build Documentation
 if (BUILD_DOCUMENTATION)
     find_package(Doxygen REQUIRED)
@@ -233,4 +256,9 @@ if (BUILD_DOCUMENTATION)
         COMMENT "Generating documentation with doxygen."
         VERBATIM
     )
+endif()
+
+# Build Tests
+if(BUILD_TESTING)
+    add_subdirectory(test)
 endif()
