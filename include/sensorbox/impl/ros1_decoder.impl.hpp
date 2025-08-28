@@ -10,18 +10,6 @@
 
 namespace sensorbox {
 
-SENSORBOX_INLINE constexpr bool ROS1BytesDecoder::is_decodable(const std::string_view msg_type) {
-    constexpr auto decodable_msg_types = std::to_array<std::string_view>({"duration", "string", "time",
-            "std_msgs/Duration", "std_msgs/Header", "std_msgs/String", "std_msgs/Time", "geometry_msgs/Point",
-            "geometry_msgs/Pose", "geometry_msgs/PoseStamped", "geometry_msgs/PoseWithCovariance",
-            "geometry_msgs/PoseWithCovarianceStamped", "geometry_msgs/Quaternion", "geometry_msgs/Transform",
-            "geometry_msgs/TransformStamped", "geometry_msgs/Twist", "geometry_msgs/TwistStamped",
-            "geometry_msgs/TwistWithCovariance", "geometry_msgs/TwistWithCovarianceStamped", "geometry_msgs/Vector3",
-            "nav_msgs/Odometry", "sensor_msgs/Imu", "tf2_msgs/TFMessage", "anymal_msgs/AnymalState",
-            "series_elastic_actuator_msgs/SeActuatorReadings", "series_elastic_actuator_msgs/SeActuatorReading"});
-    return std::find(decodable_msg_types.cbegin(), decodable_msg_types.cend(), msg_type) != decodable_msg_types.cend();
-}
-
 SENSORBOX_INLINE void ROS1BytesDecoder::read_to(std::chrono::nanoseconds& out) {
     // Duration is sec/nsecs as int32_t
     const std::chrono::seconds secs{read<int32_t>()};
@@ -192,90 +180,6 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(TemporalSpatialMeasurement& out)
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to TemporalSpatialMeasurement.");
     }
-}
-
-SENSORBOX_INLINE constexpr std::string_view ROS1BytesDecoder::starts_with(const std::string_view msg_type) {
-    // All message types from the following packages are included in the map:
-    //  - std_msgs
-    //  - geometry_msgs
-    //  - nav_msgs
-    //  - sensor_msgs
-    //  - tf2_msgs
-    //  - any_msgs (ANYbotics)
-    //  - anymal_msgs (ANYbotics)
-    //  - series_elastic_actuator_msgs (ANYbotics)
-    constexpr auto map = std::to_array<std::pair<std::string_view, std::string_view>>({{"std_msgs/Bool", "bool"},
-            {"std_msgs/Byte", "byte"}, {"std_msgs/ByteMultiArray", "std_msgs/MultiArrayLayout"},
-            {"std_msgs/Char", "char"}, {"std_msgs/ColorRGBA", "float32"}, {"std_msgs/Duration", "duration"},
-            {"std_msgs/Empty", ""}, {"std_msgs/Float32", "float32"},
-            {"std_msgs/Float32MultiArray", "std_msgs/MultiArrayLayout"}, {"std_msgs/Float64", "float64"},
-            {"std_msgs/Float64MultiArray", "std_msgs/MultiArrayLayout"}, {"std_msgs/Header", "uint32"},
-            {"std_msgs/Int16", "int16"}, {"std_msgs/Int16MultiArray", "std_msgs/MultiArrayLayout"},
-            {"std_msgs/Int32", "int32"}, {"std_msgs/Int32MultiArray", "std_msgs/MultiArrayLayout"},
-            {"std_msgs/Int64", "int64"}, {"std_msgs/Int64MultiArray", "std_msgs/MultiArrayLayout"},
-            {"std_msgs/Int8", "int8"}, {"std_msgs/Int8MultiArray", "std_msgs/MultiArrayLayout"},
-            {"std_msgs/MultiArrayDimension", "string"}, {"std_msgs/MultiArrayLayout", "std_msgs/MultiArrayDimension[]"},
-            {"std_msgs/String", "string"}, {"std_msgs/Time", "time"}, {"std_msgs/UInt16", "uint16"},
-            {"std_msgs/UInt16MultiArray", "std_msgs/MultiArrayLayout"}, {"std_msgs/UInt32", "uint32"},
-            {"std_msgs/UInt32MultiArray", "std_msgs/MultiArrayLayout"}, {"std_msgs/UInt64", "uint64"},
-            {"std_msgs/UInt64MultiArray", "std_msgs/MultiArrayLayout"}, {"std_msgs/UInt8", "uint8"},
-            {"geometry_msgs/Accel", "geometry_msgs/Vector3"}, {"geometry_msgs/AccelStamped", "std_msgs/Header"},
-            {"geometry_msgs/AccelWithCovariance", "geometry_msgs/Accel"},
-            {"geometry_msgs/AccelWithCovarianceStamped", "std_msgs/Header"}, {"geometry_msgs/Inertia", "float64"},
-            {"geometry_msgs/InertiaStamped", "std_msgs/Header"}, {"geometry_msgs/Point", "float64"},
-            {"geometry_msgs/Point32", "float32"}, {"geometry_msgs/PointStamped", "std_msgs/Header"},
-            {"geometry_msgs/Polygon", "geometry_msgs/Point32[]"}, {"geometry_msgs/PolygonStamped", "std_msgs/Header"},
-            {"geometry_msgs/Pose", "geometry_msgs/Point"}, {"geometry_msgs/Pose2D", "float64"},
-            {"geometry_msgs/PoseArray", "std_msgs/Header"}, {"geometry_msgs/PoseStamped", "std_msgs/Header"},
-            {"geometry_msgs/PoseWithCovariance", "geometry_msgs/Pose"},
-            {"geometry_msgs/PoseWithCovarianceStamped", "std_msgs/Header"}, {"geometry_msgs/Quaternion", "float64"},
-            {"geometry_msgs/QuaternionStamped", "std_msgs/Header"},
-            {"geometry_msgs/Transform", "geometry_msgs/Vector3"}, {"geometry_msgs/TransformStamped", "std_msgs/Header"},
-            {"geometry_msgs/Twist", "geometry_msgs/Vector3"}, {"geometry_msgs/TwistStamped", "std_msgs/Header"},
-            {"geometry_msgs/TwistWithCovariance", "geometry_msgs/Twist"},
-            {"geometry_msgs/TwistWithCovarianceStamped", "std_msgs/Header"}, {"geometry_msgs/Vector3", "float64"},
-            {"geometry_msgs/Vector3Stamped", "std_msgs/Header"}, {"geometry_msgs/Wrench", "geometry_msgs/Vector3"},
-            {"geometry_msgs/WrenchStamped", "std_msgs/Header"}, {"nav_msgs/GridCells", "std_msgs/Header"},
-            {"nav_msgs/MapMetaData", "time"}, {"nav_msgs/OccupancyGrid", "std_msgs/Header"},
-            {"nav_msgs/Odometry", "std_msgs/Header"}, {"nav_msgs/Path", "std_msgs/Header"},
-            {"sensor_msgs_msgs/BatteryState", "std_msgs/Header"}, {"sensor_msgs_msgs/CameraInfo", "std_msgs/Header"},
-            {"sensor_msgs_msgs/ChannelFloat32", "string"}, {"sensor_msgs_msgs/CompressedImage", "std_msgs/Header"},
-            {"sensor_msgs_msgs/FluidPressure", "std_msgs/Header"}, {"sensor_msgs_msgs/Illuminance", "std_msgs/Header"},
-            {"sensor_msgs_msgs/Image", "std_msgs/Header"}, {"sensor_msgs_msgs/Imu", "std_msgs/Header"},
-            {"sensor_msgs_msgs/JointState", "std_msgs/Header"}, {"sensor_msgs_msgs/Joy", "std_msgs/Header"},
-            {"sensor_msgs_msgs/JoyFeedback", "uint8"},
-            {"sensor_msgs_msgs/JoyFeedbackArray", "sensor_msgs_msgs/JoyFeedback[]"},
-            {"sensor_msgs_msgs/LaserEcho", "float32[]"}, {"sensor_msgs_msgs/LaserScan", "std_msgs/Header"},
-            {"sensor_msgs_msgs/MagneticField", "std_msgs/Header"},
-            {"sensor_msgs_msgs/MultiDOFJointState", "std_msgs/Header"},
-            {"sensor_msgs_msgs/MultiEchoLaserScan", "std_msgs/Header"},
-            {"sensor_msgs_msgs/NavSatFix", "std_msgs/Header"}, {"sensor_msgs_msgs/NavSatStatus", "int8"},
-            {"sensor_msgs_msgs/PointCloud", "std_msgs/Header"}, {"sensor_msgs_msgs/PointCloud2", "std_msgs/Header"},
-            {"sensor_msgs_msgs/PointField", "string"}, {"sensor_msgs_msgs/Range", "std_msgs/Header"},
-            {"sensor_msgs_msgs/RegionOfInterest", "uint32"}, {"sensor_msgs_msgs/RelativeHumidity", "std_msgs/Header"},
-            {"sensor_msgs_msgs/Temperature", "std_msgs/Header"}, {"sensor_msgs_msgs/TimeReference", "std_msgs/Header"},
-            {"tf2_msgs/TF2Error", "uint8"}, {"tf2_msgs/TFMessage", "geometry_msgs/TransformStamped[]"},
-            {"any_msgs/BoolStamped", "std_msgs/Header"}, {"any_msgs/Event", "time"},
-            {"any_msgs/ExtendedJointState", "std_msgs/Header"}, {"any_msgs/Float64Stamped", "std_msgs/Header"},
-            {"any_msgs/ImuWithTrigger", "sensor_msgs/Imu"}, {"any_msgs/PointContact", "std_msgs/Header"},
-            {"any_msgs/SensorTimeInfo", "std_msgs/Header"}, {"any_msgs/State", "time"},
-            {"any_msgs/UserInteractionOption", "string"}, {"anymal_msgs/AnymalState", "std_msgs/Header"},
-            {"anymal_msgs/BMSState", "uint16[]"}, {"anymal_msgs/Contact", "std_msgs/Header"},
-            {"anymal_msgs/Contacts", "anymal_msgs/Contact[]"}, {"anymal_msgs/GaitPattern", "float64"},
-            {"anymal_msgs/GaitPatterns", "std_msgs/Header"}, {"anymal_msgs/LegAttributes", "bool[4]"},
-            {"series_elastic_actuator_msgs/SeActuatorCommand", "std_msgs/Header"},
-            {"series_elastic_actuator_msgs/SeActuatorCommands", "series_elastic_actuator_msgs/SeActuatorCommand[]"},
-            {"series_elastic_actuator_msgs/SeActuatorReading", "std_msgs/Header"},
-            {"series_elastic_actuator_msgs/SeActuatorReadingExtended", "std_msgs/Header"},
-            {"series_elastic_actuator_msgs/SeActuatorReadings", "series_elastic_actuator_msgs/SeActuatorReading[]"},
-            {"series_elastic_actuator_msgs/SeActuatorReadingsExtended",
-                    "series_elastic_actuator_msgs/SeActuatorReadingExtended[]"},
-            {"series_elastic_actuator_msgs/SeActuatorState", "std_msgs/Header"},
-            {"series_elastic_actuator_msgs/SeActuatorStateExtended", "std_msgs/Header"},
-            {"series_elastic_actuator_msgs/SeActuatorStates", "series_elastic_actuator_msgs/SeActuatorState[]"}});
-    const auto it =
-            std::find_if(map.cbegin(), map.cend(), [msg_type](const auto& pair) { return pair.first == msg_type; });
-    return it != map.cend() ? it->second : std::string_view();
 }
 
 SENSORBOX_INLINE ROS1BytesDecoder::ROS1BytesDecoder(const std::byte* bytes_, const std::size_t size_,
