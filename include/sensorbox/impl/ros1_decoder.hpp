@@ -14,22 +14,25 @@ inline ROS1BytesDecoder::ROS1BytesDecoder(const std::byte* bytes_, const std::si
 
 template<typename T>
 inline T ROS1BytesDecoder::decode_to() {
-    if constexpr (is_decodable<T>()) {
-        const T out = read_to<T>();
-        assert(is_finished());
-        return out;
-    } else {
-        throw_here("Decoding failed because T cannot be decoded to.");
-    }
+    T out;
+    decode_to<T>(out);
+    return out;
 }
 
 template<typename T>
 inline void ROS1BytesDecoder::decode_to(T& out) {
     if constexpr (is_decodable<T>()) {
-        read_to(out);
+        if (is_directly_decodable_to<T>()) {
+            read_to(out);
+        } else if (is_start_decodable_to<T>()) {
+            create_internal_decoder(std::string(this->starts_with())).template decode_to<T>(out);
+            ignore_remaining();
+        } else {
+            throw_here("Decoding failed because T cannot be decoded to.");
+        }
         assert(is_finished());
     } else {
-        throw_here("Decoding failed because T cannot be decoded to.");
+        throw_here("Decoding failed because T is not decodable.");
     }
 }
 
@@ -55,11 +58,11 @@ inline void ROS1BytesDecoder::ignore(const std::size_t num_ignore) {
     cppbox::BytesDecoder::ignore<std::string>(cppbox::BytesDecoder::read<uint32_t>());
 }
 
-inline void ROS1BytesDecoder::ignore(const std::string& msg_type) {
+inline void ROS1BytesDecoder::ignore(const std::string_view msg_type) {
     increment_offset(internal_msg_size(msg_type, 0));
 }
 
-inline void ROS1BytesDecoder::ignore_vector(const std::string& msg_type) {
+inline void ROS1BytesDecoder::ignore_vector(const std::string_view msg_type) {
     increment_offset(internal_vector_msg_size(msg_type, 0));
 }
 
@@ -75,14 +78,34 @@ inline constexpr bool ROS1BytesDecoder::is_decodable() {
 }
 
 template<typename T>
-inline constexpr bool ROS1BytesDecoder::is_decodable_to(const std::string_view& msg_type) {
-    constexpr auto decodable_msg_types = ROS1DecodabilityTraits<T>::msg_types;
+inline constexpr bool ROS1BytesDecoder::is_decodable_to(const std::string_view msg_type) {
+    return is_directly_decodable_to<T>(msg_type) || is_start_decodable_to<T>(msg_type);
+}
+
+template<typename T>
+inline bool ROS1BytesDecoder::is_decodable_to() const {
+    return is_decodable_to<T>(this->msg_type());
+}
+
+template<typename T>
+inline constexpr bool ROS1BytesDecoder::is_directly_decodable_to(const std::string_view msg_type) {
+    constexpr auto& decodable_msg_types = ROS1DecodabilityTraits<T>::msg_types;
     return std::find(decodable_msg_types.cbegin(), decodable_msg_types.cend(), msg_type) != decodable_msg_types.cend();
 }
 
 template<typename T>
-inline bool ROS1BytesDecoder::is_decodable_to() {
-    return is_decodable_to<T>(msg_type());
+inline bool ROS1BytesDecoder::is_directly_decodable_to() const {
+    return is_directly_decodable_to<T>(this->msg_type());
+}
+
+template<typename T>
+inline constexpr bool ROS1BytesDecoder::is_start_decodable_to(const std::string_view msg_type) {
+    return is_directly_decodable_to<T>(starts_with(msg_type));
+}
+
+template<typename T>
+inline bool ROS1BytesDecoder::is_start_decodable_to() const {
+    return is_start_decodable_to<T>(this->msg_type());
 }
 
 inline const std::string& ROS1BytesDecoder::msg_type() const {
@@ -133,6 +156,20 @@ inline void ROS1BytesDecoder::read_to(std::string& out) {
     out = read<std::string>();
 }
 
+template<typename T>
+inline void ROS1BytesDecoder::read_to_optional(std::optional<T>& out) {
+    out = read_to<T>();
+}
+
+inline std::string_view ROS1BytesDecoder::starts_with() {
+    return starts_with(msg_type());
+}
+
+inline constexpr bool ROS1BytesDecoder::starts_with(const std::string_view msg_type,
+        const std::string_view start_msg_type) {
+    return starts_with(msg_type) == start_msg_type;
+}
+
 inline ROS1BytesDecoder ROS1BytesDecoder::create_internal_decoder(const std::string& internal_msg_type) {
     return ROS1BytesDecoder(bytes() + offset(), internal_msg_size(internal_msg_type, 0), internal_msg_type, this);
 }
@@ -156,11 +193,6 @@ template<typename T>
 inline std::size_t ROS1BytesDecoder::internal_vector_msg_size(std::size_t offset) const {
     // In ROS 1, the vector length in elements is encoded in the first 4 bytes as a uint32
     return sizeof(uint32_t) + peak<uint32_t>(offset) * sizeof(T);
-}
-
-template<typename T>
-inline void ROS1BytesDecoder::read_to_optional(std::optional<T>& out) {
-    out = read_to<T>();
 }
 
 }
