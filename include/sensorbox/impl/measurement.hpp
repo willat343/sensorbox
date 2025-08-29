@@ -45,7 +45,7 @@ inline const std::string& TemporalSpatialRelationalMeasurement::child_frame() co
 }
 
 inline std::string& TemporalSpatialRelationalMeasurement::child_frame() {
-    return const_cast<std::string&>(std::as_const(*this).frame());
+    return const_cast<std::string&>(std::as_const(*this).child_frame());
 }
 
 }
