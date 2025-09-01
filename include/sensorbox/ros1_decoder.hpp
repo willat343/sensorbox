@@ -314,79 +314,81 @@ struct ROS1DecodabilityTraits {
 
 template<>
 struct ROS1DecodabilityTraits<std::string> {
-    static constexpr std::array<std::string_view, 2> msg_types{"string", "std_msgs/String"};
+    static constexpr auto msg_types = std::to_array<std::string_view>({"string", "std_msgs/String"});
 };
 
 template<>
 struct ROS1DecodabilityTraits<std::chrono::nanoseconds> {
-    static constexpr std::array<std::string_view, 2> msg_types{"duration", "std_msgs/Duration"};
+    static constexpr auto msg_types = std::to_array<std::string_view>({"duration", "std_msgs/Duration"});
 };
 
 template<>
 struct ROS1DecodabilityTraits<std::chrono::steady_clock::time_point> {
-    static constexpr std::array<std::string_view, 2> msg_types{"time", "std_msgs/Time"};
+    static constexpr auto msg_types = std::to_array<std::string_view>({"time", "std_msgs/Time"});
 };
 
 template<>
 struct ROS1DecodabilityTraits<std::chrono::system_clock::time_point> {
-    static constexpr std::array<std::string_view, 2> msg_types{"time", "std_msgs/Time"};
+    static constexpr auto msg_types = std::to_array<std::string_view>({"time", "std_msgs/Time"});
 };
 
 template<>
 struct ROS1DecodabilityTraits<Eigen::Vector3d> {
-    static constexpr std::array<std::string_view, 2> msg_types{"geometry_msgs/Point", "geometry_msgs/Vector3"};
+    static constexpr auto msg_types = std::to_array<std::string_view>({"geometry_msgs/Point", "geometry_msgs/Vector3"});
 };
 
 template<>
 struct ROS1DecodabilityTraits<Eigen::Quaterniond> {
-    static constexpr std::array<std::string_view, 1> msg_types{"geometry_msgs/Quaternion"};
+    static constexpr auto msg_types = std::to_array<std::string_view>({"geometry_msgs/Quaternion"});
 };
 
 template<>
 struct ROS1DecodabilityTraits<Eigen::Isometry3d> {
-    static constexpr std::array<std::string_view, 3> msg_types{"geometry_msgs/Pose", "geometry_msgs/PoseWithCovariance",
-            "geometry_msgs/Transform"};
+    static constexpr auto msg_types = std::to_array<std::string_view>(
+            {"geometry_msgs/Pose", "geometry_msgs/PoseWithCovariance", "geometry_msgs/Transform"});
 };
 
 template<>
 struct ROS1DecodabilityTraits<ActuatorMeasurement> {
-    static constexpr std::array<std::string_view, 1> msg_types{"series_elastic_actuator_msgs/SeActuatorReading"};
+    static constexpr auto msg_types = std::to_array<std::string_view>(
+            {"series_elastic_actuator_msgs/SeActuatorReading", "series_elastic_actuator_msgs/SeActuatorState"});
 };
 
 template<>
 struct ROS1DecodabilityTraits<std::vector<ActuatorMeasurement>> {
-    static constexpr std::array<std::string_view, 1> msg_types{"series_elastic_actuator_msgs/SeActuatorReadings"};
+    static constexpr auto msg_types =
+            std::to_array<std::string_view>({"series_elastic_actuator_msgs/SeActuatorReadings"});
 };
 
 template<>
 struct ROS1DecodabilityTraits<ContactClassifications> {
-    static constexpr std::array<std::string_view, 1> msg_types{"anymal_msgs/AnymalState"};
+    static constexpr auto msg_types = std::to_array<std::string_view>({"anymal_msgs/AnymalState"});
 };
 
 template<>
 struct ROS1DecodabilityTraits<ImuMeasurement<3>> {
-    static constexpr std::array<std::string_view, 1> msg_types{"sensor_msgs/Imu"};
+    static constexpr auto msg_types = std::to_array<std::string_view>({"sensor_msgs/Imu"});
 };
 
 template<>
 struct ROS1DecodabilityTraits<PoseMeasurement<3>> {
-    static constexpr std::array<std::string_view, 4> msg_types{"geometry_msgs/PoseStamped",
-            "geometry_msgs/PoseWithCovarianceStamped", "geometry_msgs/TransformStamped", "nav_msgs/Odometry"};
+    static constexpr auto msg_types = std::to_array<std::string_view>({"geometry_msgs/PoseStamped",
+            "geometry_msgs/PoseWithCovarianceStamped", "geometry_msgs/TransformStamped", "nav_msgs/Odometry"});
 };
 
 template<>
 struct ROS1DecodabilityTraits<std::vector<PoseMeasurement<3>>> {
-    static constexpr std::array<std::string_view, 1> msg_types{"tf2_msgs/TFMessage"};
+    static constexpr auto msg_types = std::to_array<std::string_view>({"tf2_msgs/TFMessage"});
 };
 
 template<>
 struct ROS1DecodabilityTraits<TemporalMeasurement> {
-    static constexpr std::array<std::string_view, 1> msg_types{"std_msgs/Header"};
+    static constexpr auto msg_types = std::to_array<std::string_view>({"std_msgs/Header"});
 };
 
 template<>
 struct ROS1DecodabilityTraits<TemporalSpatialMeasurement> {
-    static constexpr std::array<std::string_view, 1> msg_types{"std_msgs/Header"};
+    static constexpr auto msg_types = std::to_array<std::string_view>({"std_msgs/Header"});
 };
 
 }

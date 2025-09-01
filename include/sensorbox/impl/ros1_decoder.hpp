@@ -28,11 +28,11 @@ inline void ROS1BytesDecoder::decode_to(T& out) {
             create_internal_decoder(std::string(this->starts_with())).template decode_to<T>(out);
             ignore_remaining();
         } else {
-            throw_here("Decoding failed because T cannot be decoded to.");
+            throw_here("Decoding failed because T cannot be decoded to from message type " + msg_type() + ".");
         }
         assert(is_finished());
     } else {
-        throw_here("Decoding failed because T is not decodable.");
+        throw_here("Decoding failed because T is not decodable from any message type.");
     }
 }
 
