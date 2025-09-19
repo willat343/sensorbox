@@ -250,7 +250,7 @@ if (BUILD_DOCUMENTATION)
     find_package(Doxygen REQUIRED)
     set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
     configure_file(Doxyfile.in ${DOXYGEN_OUT})
-    add_custom_target(documentation ALL
+    add_custom_target(${PROJECT_NAME}_documentation ALL
         COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating documentation with doxygen."
