@@ -1,0 +1,18 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "file:///Pose3D.schema.json",
+    "type": "object",
+    "properties": {
+        "position": {
+            "$ref": "Vector3D.schema.json"
+        },
+        "orientation": {
+            "$ref": "Quaternion.schema.json"
+        }
+    },
+    "required": [
+        "position",
+        "orientation"
+    ],
+    "additionalProperties": false
+}

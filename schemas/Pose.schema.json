@@ -1,0 +1,12 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "file:///Pose.schema.json",
+    "oneOf": [
+        {
+            "$ref": "Pose2D.schema.json"
+        },
+        {
+            "$ref": "Pose3d.schema.json"
+        }
+    ]
+}

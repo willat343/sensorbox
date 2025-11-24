@@ -1,0 +1,19 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "file:///Pose2D.schema.json",
+    "type": "object",
+    "properties": {
+        "position": {
+            "$ref": "Vector2D.schema.json"
+        },
+        "orientation": {
+            "type": "number",
+            "description": "Angle (rad)."
+        }
+    },
+    "required": [
+        "position",
+        "orientation"
+    ],
+    "additionalProperties": false
+}
