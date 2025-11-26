@@ -6,6 +6,11 @@
 
 namespace sensorbox {
 
+// TODO: Consider replacing both these functions with uncertainty_from_config, where uncertainty holds the stddev,
+// variance, covariance, stiffness, information, etc. quantities
+template<int Rows = Eigen::Dynamic>
+Eigen::Matrix<double, Rows, Rows> covariance_from_config(const nlohmann::json& config);
+
 /**
  * @brief Get a stiffness matrix from json config containing one of the following:
  *  - "covariance": covariance matrix as square vector of vectors
