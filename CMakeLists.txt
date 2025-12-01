@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 project(sensorbox
-    VERSION 0.6.3
+    VERSION 0.6.4
     DESCRIPTION "Sensor Toolbox"
     LANGUAGES CXX
 )
@@ -77,7 +77,7 @@ import_dependency(
 )
 
 # Dependency: mathbox (Target: mathbox::mathbox)
-set(MATHBOX_VERSION "0.6.2")
+set(MATHBOX_VERSION "0.6.3")
 import_dependency(
     mathbox
     TARGET mathbox::mathbox
