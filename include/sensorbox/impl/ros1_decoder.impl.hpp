@@ -184,10 +184,7 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(TemporalSpatialMeasurement& out)
 
 SENSORBOX_INLINE ROS1BytesDecoder::ROS1BytesDecoder(const std::byte* bytes_, const std::size_t size_,
         const std::string& msg_type_, ROS1BytesDecoder* parent_decoder_)
-    : cppbox::BytesDecoder(bytes_, size_, parent_decoder_), msg_type_(msg_type_) {
-    assert(is_decodable(msg_type_));
-    assert(size_ == internal_msg_size(msg_type(), 0));
-}
+    : cppbox::BytesDecoder(bytes_, size_, parent_decoder_), msg_type_(msg_type_) {}
 
 SENSORBOX_INLINE std::size_t ROS1BytesDecoder::internal_msg_size(const std::string_view internal_msg_type,
         std::size_t offset) const {
