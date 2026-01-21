@@ -9,11 +9,11 @@ A package for processing sensor data.
 | **Dependency** | **Version** | **Description** |
 |----------------|-------------|-----------------|
 | CMake | >= 3.21 | CMake Build Tool |
-| [cmakebox](https://github.com/willat343/cmakebox) | >= 0.0.1 | CMake Functions and Utilities |
-| [cppbox](https://github.com/willat343/cppbox) | >= 0.1.0 | C++ Package |
+| [cmakebox](https://github.com/willat343/cmakebox) | >= 0.0.9 | CMake Functions and Utilities |
+| [cppbox](https://github.com/willat343/cppbox) | >= 0.1.5 | C++ Package |
 | Eigen3 | >= 3.4.0 | Linear Algebra Package |
 | nlohmann_json | >= 3.7.3 (< g++-10) or >= 3.8.0 (>= g++-10) | JSON Package |
-| [mathbox](https://github.com/willat343/mathbox) | 0.6.0 | Math Package |
+| [mathbox](https://github.com/willat343/mathbox) | 0.7.0 | Math Package |
 
 There are several ways to include `sensorbox` within your project:
 - [Preferred] Via `FetchContent` allowing package to be built as a submodule.
@@ -23,7 +23,7 @@ There are several ways to include `sensorbox` within your project:
 
 It is recommended to leverage the functionality of [cmakebox](https://github.com/willat343/cmakebox) by including the following lines in the `CMakeLists.txt` (replace `X.Y.Z` with version):
 ```CMake
-set(CMAKEBOX_VERSION "0.0.1")
+set(CMAKEBOX_VERSION "0.0.9")
 FetchContent_Declare(
     cmakebox
     GIT_REPOSITORY git@github.com:willat343/cmakebox.git
