@@ -57,6 +57,7 @@ public:
      * @brief Construct a temporal measurement.
      *
      * @param timestamp_ timestamp
+     * @param frame_ frame
      */
     explicit TemporalSpatialMeasurement(const Timestamp& timestamp_, const std::string& frame_);
 
@@ -89,6 +90,8 @@ public:
      * @brief Construct a temporal measurement.
      *
      * @param timestamp_ timestamp
+     * @param frame_ frame
+     * @param child_frame_ child frame
      */
     explicit TemporalSpatialRelationalMeasurement(const Timestamp& timestamp_, const std::string& frame_,
             const std::string& child_frame_);

@@ -29,6 +29,10 @@ inline constexpr SchemaFilepath SensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY
 CREATE_SMART_ENUM(SensorTypeBase, ACCELEROMETER, ACTUATOR, CONTACTS_CLASSIFIER, CURRENT, DIRECT_POSE, ENCODER,
         GYROSCOPE, IMU)
 
+/**
+ * @brief Sensor type, each of which is associated with a measurement type.
+ *
+ */
 class SensorType : public SensorTypeBase {
 public:
     SensorType() : SensorTypeBase() {}
@@ -61,6 +65,10 @@ public:
     }
 };
 
+/**
+ * @brief Sensor class
+ *
+ */
 class Sensor : public JsonLoadable<SensorSchemaFilepath, sensorbox_schema_loader> {
 public:
     explicit Sensor(const SensorType type_);

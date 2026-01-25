@@ -159,8 +159,8 @@ private:
     /**
      * @brief Motor-side torque [Nm]
      *
-     * Usually computed as \f$\tau_m = K \cdot I\f$ where \f$K\f$ is the motor torque constant [Nm/A] and \f$I\f$ is
-     * current. Accuracy depends on quality of current sensing as well as actuator type:
+     * Usually computed as \f$ \tau_m = K \cdot I \f$ where \f$ K \f$ is the motor torque constant [Nm/A] and \f$ I \f$
+     * is current. Accuracy depends on quality of current sensing as well as actuator type:
      *  DIRECT_DRIVE: very accurate
      *  GEARED: limited accuracy due to friction and backlash
      *  QUASI_DIRECT_DRIVE: almost as accurate as DIRECT_DRIVE
@@ -191,13 +191,14 @@ private:
      * @brief Joint-side torque [Nm]
      *
      * Usually computed in the following ways for the different actuator types:
-     *  DIRECT_DRIVE: \f$\tau_j = \tau_m\f$, same as motor-side torque
-     *  GEARED: \f$\tau_j \approx \eta \cdot N \cdot \tau_m\f$, where \f$\eta\f$ is gear efficiency and \f$N\f$ is the
-     *      gear ratio, but additional losses due to friction, backlash and stiction
-     *  QUASI_DIRECT_DRIVE: f$\tau_j = \eta \cdot N \cdot \tau_m\f$ wutg \f$\eta \approx 1\f$ and usually minimal losses
-     *  SERIES_ELASTIC: \f$\tau_j = k_s \cdot (\theta_m - \theta_j)\f$ where \f$k_s\f$ is the spring stiffness constant
-     *      and the spring deflection \f$\theta_s = \theta_m - \theta_j\f$ is the difference between the motor and joint
-     *      positions
+     *  DIRECT_DRIVE: \f$ \tau_j = \tau_m \f$, same as motor-side torque
+     *  GEARED: \f$ \tau_j \approx \eta \cdot N \cdot \tau_m \f$, where \f$ \eta \f$ is gear efficiency and \f$ N \f$ is
+     *      the gear ratio, but additional losses due to friction, backlash and stiction
+     *  QUASI_DIRECT_DRIVE: \f$ \tau_j = \eta \cdot N \cdot \tau_m \f$ where \f$ \eta \approx 1 \f$ and usually minimal
+     *      losses
+     *  SERIES_ELASTIC: \f$ \tau_j = k_s \cdot (\theta_m - \theta_j) \f$ where \f$ k_s \f$ is the spring stiffness
+     *      constant and the spring deflection \f$ \theta_s = \theta_m - \theta_j \f$ is the difference between the
+     *      motor and joint positions
      *  SERVO: Same as GEARED and rarely done
      *  STEPPER: rarely done, torque is non-linear function of phase current
      *
