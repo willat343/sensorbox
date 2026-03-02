@@ -12,6 +12,7 @@
                 "CONTACTS_CLASSIFIER",
                 "CURRENT",
                 "DIRECT_POSE",
+                "DIRECT_POSITION",
                 "ENCODER",
                 "GYROSCOPE",
                 "IMU"
