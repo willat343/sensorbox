@@ -136,6 +136,7 @@ else()
         src/json_loadable.cpp
         src/pose_twist.cpp
         src/pose.cpp
+        src/position.cpp
         src/random_walk_sensor.cpp
         src/ros1_decoder.cpp
         src/sensor.cpp

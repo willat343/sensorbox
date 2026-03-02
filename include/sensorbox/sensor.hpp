@@ -19,6 +19,8 @@ inline constexpr SchemaFilepath ActuatorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTO
 inline constexpr SchemaFilepath CurrentSensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "CurrentSensor.schema.json"};
 inline constexpr SchemaFilepath DirectPoseSensorSchemaFilepath{
         SENSORBOX_SCHEMAS_DIRECTORY "DirectPoseSensor.schema.json"};
+inline constexpr SchemaFilepath DirectPositionSensorSchemaFilepath{
+        SENSORBOX_SCHEMAS_DIRECTORY "DirectPositionSensor.schema.json"};
 inline constexpr SchemaFilepath EncoderSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Encoder.schema.json"};
 inline constexpr SchemaFilepath GyroscopeSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Gyroscope.schema.json"};
 inline constexpr SchemaFilepath ImuSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Imu.schema.json"};
@@ -26,8 +28,8 @@ inline constexpr SchemaFilepath RandomWalkSensorSchemaFilepath{
         SENSORBOX_SCHEMAS_DIRECTORY "RandomWalkSensor.schema.json"};
 inline constexpr SchemaFilepath SensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Sensor.schema.json"};
 
-CREATE_SMART_ENUM(SensorTypeBase, ACCELEROMETER, ACTUATOR, CONTACTS_CLASSIFIER, CURRENT, DIRECT_POSE, ENCODER,
-        GYROSCOPE, IMU)
+CREATE_SMART_ENUM(SensorTypeBase, ACCELEROMETER, ACTUATOR, CONTACTS_CLASSIFIER, CURRENT, DIRECT_POSE, DIRECT_POSITION,
+        ENCODER, GYROSCOPE, IMU)
 
 /**
  * @brief Sensor type, each of which is associated with a measurement type.
@@ -53,6 +55,8 @@ public:
                 return MeasurementType::CURRENT;
             case DIRECT_POSE:
                 return MeasurementType::POSE;
+            case DIRECT_POSITION:
+                return MeasurementType::POSITION;
             case ENCODER:
                 return MeasurementType::ANGLE;
             case GYROSCOPE:
