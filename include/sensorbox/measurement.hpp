@@ -102,7 +102,7 @@ public:
 
 private:
     /**
-     * @brief Spatial childe frame of the relational measurement.
+     * @brief Spatial child frame of the relational measurement.
      *
      */
     std::string child_frame_;

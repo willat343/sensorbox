@@ -125,9 +125,9 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(ImuMeasurement<3>& out) {
         ignore("geometry_msgs/Quaternion");  // orientation
         ignore<double>(9);                   // orientation_covariance
         decode_internal_to("geometry_msgs/Vector3", out.angular_velocity());
-        ignore<double>(9);  // orientation_covariance
+        ignore<double>(9);  // angular_velocity_covariance
         decode_internal_to("geometry_msgs/Vector3", out.linear_acceleration());
-        ignore<double>(9);  // orientation_covariance
+        ignore<double>(9);  // linear_acceleration_covariance
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to ImuMeasurement<3>.");
     }
@@ -150,7 +150,7 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(PoseMeasurement<3>& out) {
         decode_internal_to("geometry_msgs/PoseWithCovariance", out.pose());
         ignore("geometry_msgs/TwistWithCovariance");  // twist
     } else {
-        throw_here("msg_type " + msg_type() + " cannot be converted to Pose<3>.");
+        throw_here("msg_type " + msg_type() + " cannot be converted to PoseMeasurement<3>.");
     }
 }
 
