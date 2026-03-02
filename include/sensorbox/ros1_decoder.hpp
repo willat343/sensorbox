@@ -12,6 +12,7 @@
 #include "sensorbox/imu.hpp"
 #include "sensorbox/measurement.hpp"
 #include "sensorbox/pose.hpp"
+#include "sensorbox/position.hpp"
 
 namespace sensorbox {
 
@@ -237,6 +238,8 @@ public:
 
     void read_to(std::vector<PoseMeasurement<3>>& out);
 
+    void read_to(PositionMeasurement<3>& out);
+
     void read_to(TemporalMeasurement& out);
 
     void read_to(TemporalSpatialMeasurement& out);
@@ -374,6 +377,13 @@ template<>
 struct ROS1DecodabilityTraits<PoseMeasurement<3>> {
     static constexpr auto msg_types = std::to_array<std::string_view>({"geometry_msgs/PoseStamped",
             "geometry_msgs/PoseWithCovarianceStamped", "geometry_msgs/TransformStamped", "nav_msgs/Odometry"});
+};
+
+template<>
+struct ROS1DecodabilityTraits<PositionMeasurement<3>> {
+    static constexpr auto msg_types = std::to_array<std::string_view>(
+            {"geometry_msgs/PointStamped", "geometry_msgs/Vector3Stamped", "geometry_msgs/PoseStamped",
+                    "geometry_msgs/PoseWithCovarianceStamped", "geometry_msgs/TransformStamped", "nav_msgs/Odometry"});
 };
 
 template<>

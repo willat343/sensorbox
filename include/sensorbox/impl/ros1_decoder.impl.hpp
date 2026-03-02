@@ -158,7 +158,34 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(std::vector<PoseMeasurement<3>>&
     if (msg_type() == "tf2_msgs/TFMessage") {
         decode_vector_to("geometry_msgs/TransformStamped", out);
     } else {
-        throw_here("msg_type " + msg_type() + " cannot be converted to std::vector<Pose<3>>.");
+        throw_here("msg_type " + msg_type() + " cannot be converted to std::vector<PoseMeasurement<3>>.");
+    }
+}
+
+SENSORBOX_INLINE void ROS1BytesDecoder::read_to(PositionMeasurement<3>& out) {
+    if (msg_type() == "geometry_msgs/PointStamped") {
+        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
+        decode_internal_to("geometry_msgs/Point", out.position());
+    } else if (msg_type() == "geometry_msgs/Vector3Stamped") {
+        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
+        decode_internal_to("geometry_msgs/Vector3", out.position());
+    } else if (msg_type() == "geometry_msgs/PoseStamped") {
+        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
+        decode_internal_to("geometry_msgs/Pose", out.position());
+    } else if (msg_type() == "geometry_msgs/PoseWithCovarianceStamped") {
+        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
+        decode_internal_to("geometry_msgs/PoseWithCovariance", out.position());
+    } else if (msg_type() == "geometry_msgs/TransformStamped") {
+        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
+        read_to(out.child_frame());
+        decode_internal_to("geometry_msgs/Transform", out.position());
+    } else if (msg_type() == "nav_msgs/Odometry") {
+        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
+        read_to(out.child_frame());
+        decode_internal_to("geometry_msgs/PoseWithCovariance", out.position());
+        ignore("geometry_msgs/TwistWithCovariance");  // twist
+    } else {
+        throw_here("msg_type " + msg_type() + " cannot be converted to PositionMeasurement<3>.");
     }
 }
 
