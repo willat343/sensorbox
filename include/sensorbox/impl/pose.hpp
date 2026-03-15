@@ -68,6 +68,27 @@ inline auto PoseMeasurement<D_>::transform_to_new_frames(const std::string& new_
     return PoseMeasurement(timestamp(), new_frame, new_child_frame, T_NF_F * pose() * T_C_NC);
 }
 
+template<int D_>
+inline PoseMeasurements<D_>::PoseMeasurements() : PoseMeasurements(Timestamp{Duration::zero()}) {}
+
+template<int D_>
+inline PoseMeasurements<D_>::PoseMeasurements(const Timestamp& timestamp_) : TemporalMeasurement(timestamp_) {}
+
+template<int D_>
+inline PoseMeasurements<D_>::PoseMeasurements(const Timestamp& timestamp_,
+        const std::vector<PoseMeasurement<D>>& measurements_)
+    : TemporalMeasurement(timestamp_), measurements_(measurements_) {}
+
+template<int D_>
+inline auto PoseMeasurements<D_>::measurements() const -> const std::vector<PoseMeasurement<D>>& {
+    return measurements_;
+}
+
+template<int D_>
+inline auto PoseMeasurements<D_>::measurements() -> std::vector<PoseMeasurement<D>>& {
+    return const_cast<std::vector<PoseMeasurement<D>>&>(std::as_const(*this).measurements());
+}
+
 }
 
 #if !SENSORBOX_HEADER_ONLY
@@ -79,6 +100,9 @@ extern template class JsonLoadable<DirectPoseSensorSchemaFilepath, sensorbox_sch
 
 extern template class PoseMeasurement<2>;
 extern template class PoseMeasurement<3>;
+
+extern template class PoseMeasurements<2>;
+extern template class PoseMeasurements<3>;
 
 }
 #endif

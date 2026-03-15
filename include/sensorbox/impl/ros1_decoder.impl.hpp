@@ -165,8 +165,24 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(PoseMeasurement<3>& out) {
 }
 
 SENSORBOX_INLINE void ROS1BytesDecoder::read_to(std::vector<PoseMeasurement<3>>& out) {
-    if (msg_type() == "tf2_msgs/TFMessage") {
+    if (msg_type() == "nav_msgs/Path") {
+        ignore("std_msgs/Header");  // header
+        decode_vector_to("geometry_msgs/PoseStamped", out);
+    } else if (msg_type() == "tf2_msgs/TFMessage") {
         decode_vector_to("geometry_msgs/TransformStamped", out);
+    } else {
+        throw_here("msg_type " + msg_type() + " cannot be converted to std::vector<PoseMeasurement<3>>.");
+    }
+}
+
+SENSORBOX_INLINE void ROS1BytesDecoder::read_to(PoseMeasurements<3>& out) {
+    if (msg_type() == "nav_msgs/Path") {
+        decode_internal_to("std_msgs/Header", static_cast<TemporalMeasurement&>(out));
+        decode_vector_to("geometry_msgs/PoseStamped", out.measurements());
+    } else if (msg_type() == "tf2_msgs/TFMessage") {
+        decode_vector_to("geometry_msgs/TransformStamped", out.measurements());
+        out.timestamp() =
+                out.measurements().empty() ? PoseMeasurements<3>::Timestamp() : out.measurements().front().timestamp();
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to std::vector<PoseMeasurement<3>>.");
     }

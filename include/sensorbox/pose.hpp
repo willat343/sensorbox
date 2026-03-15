@@ -133,6 +133,29 @@ private:
     Pose pose_;
 };
 
+template<int D_>
+class PoseMeasurements : public TemporalMeasurement {
+public:
+    using typename TemporalMeasurement::Clock;
+    using typename TemporalMeasurement::Duration;
+    using typename TemporalMeasurement::Timestamp;
+    static constexpr int D = D_;
+    using Pose = Eigen::Transform<double, D, Eigen::Isometry>;
+
+    explicit PoseMeasurements();
+
+    explicit PoseMeasurements(const Timestamp& timestamp_);
+
+    explicit PoseMeasurements(const Timestamp& timestamp_, const std::vector<PoseMeasurement<D>>& measurements_);
+
+    const std::vector<PoseMeasurement<D>>& measurements() const;
+
+    std::vector<PoseMeasurement<D>>& measurements();
+
+private:
+    std::vector<PoseMeasurement<D>> measurements_;
+};
+
 }
 
 #include "sensorbox/impl/pose.hpp"

@@ -240,6 +240,8 @@ public:
 
     void read_to(std::vector<PoseMeasurement<3>>& out);
 
+    void read_to(PoseMeasurements<3>& out);
+
     void read_to(PositionMeasurement<3>& out);
 
     void read_to(TemporalMeasurement& out);
@@ -396,7 +398,12 @@ struct ROS1DecodabilityTraits<PositionMeasurement<3>> {
 
 template<>
 struct ROS1DecodabilityTraits<std::vector<PoseMeasurement<3>>> {
-    static constexpr auto msg_types = std::to_array<std::string_view>({"tf2_msgs/TFMessage"});
+    static constexpr auto msg_types = std::to_array<std::string_view>({"nav_msgs/Path", "tf2_msgs/TFMessage"});
+};
+
+template<>
+struct ROS1DecodabilityTraits<PoseMeasurements<3>> {
+    static constexpr auto msg_types = std::to_array<std::string_view>({"nav_msgs/Path", "tf2_msgs/TFMessage"});
 };
 
 template<>
