@@ -40,6 +40,9 @@ private:
     Timestamp timestamp_;
 };
 
+template<typename T>
+concept IsTemporalMeasurement = std::is_base_of_v<TemporalMeasurement, T>;
+
 class TemporalSpatialMeasurement : public TemporalMeasurement {
 public:
     using typename TemporalMeasurement::Clock;
@@ -72,6 +75,9 @@ private:
      */
     std::string frame_;
 };
+
+template<typename T>
+concept IsTemporalSpatialMeasurement = std::is_base_of_v<TemporalSpatialMeasurement, T>;
 
 class TemporalSpatialRelationalMeasurement : public TemporalSpatialMeasurement {
 public:
@@ -107,6 +113,9 @@ private:
      */
     std::string child_frame_;
 };
+
+template<typename T>
+concept IsTemporalSpatialRelationalMeasurement = std::is_base_of_v<TemporalSpatialRelationalMeasurement, T>;
 
 }
 
