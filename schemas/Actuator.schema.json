@@ -9,7 +9,10 @@
             "type": "object",
             "properties": {
                 "type": {
-                    "const": "ACTUATOR"
+                    "enum": [
+                        "ACTUATOR",
+                        "ACTUATORS"
+                    ]
                 },
                 "actuator_type": {
                     "type": "string",

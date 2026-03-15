@@ -206,6 +206,28 @@ private:
     std::optional<double> joint_torque_;
 };
 
+class ActuatorMeasurements : public TemporalMeasurement {
+public:
+    using typename TemporalMeasurement::Clock;
+    using typename TemporalMeasurement::Duration;
+    using typename TemporalMeasurement::Timestamp;
+
+    explicit ActuatorMeasurements();
+
+    explicit ActuatorMeasurements(const Timestamp& timestamp_);
+
+    explicit ActuatorMeasurements(const Timestamp& timestamp_, const std::vector<ActuatorMeasurement>& measurements_);
+
+    const std::vector<ActuatorMeasurement>& measurements() const;
+
+    std::vector<ActuatorMeasurement>& measurements();
+
+    void overwrite_names(const std::vector<std::string>& new_names);
+
+private:
+    std::vector<ActuatorMeasurement> measurements_;
+};
+
 }
 
 #include "sensorbox/impl/actuator.hpp"

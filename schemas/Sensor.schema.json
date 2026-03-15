@@ -9,6 +9,7 @@
             "enum": [
                 "ACCELEROMETER",
                 "ACTUATOR",
+                "ACTUATORS",
                 "CONTACTS_CLASSIFIER",
                 "CURRENT",
                 "DIRECT_POSE",

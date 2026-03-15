@@ -113,6 +113,29 @@ inline const ActuatorType ActuatorMeasurement::type() const {
     return type_;
 }
 
+inline ActuatorMeasurements::ActuatorMeasurements() : ActuatorMeasurements(Timestamp{Duration::zero()}) {}
+
+inline ActuatorMeasurements::ActuatorMeasurements(const Timestamp& timestamp_) : TemporalMeasurement(timestamp_) {}
+
+inline ActuatorMeasurements::ActuatorMeasurements(const Timestamp& timestamp_,
+        const std::vector<ActuatorMeasurement>& measurements_)
+    : TemporalMeasurement(timestamp_), measurements_(measurements_) {}
+
+inline const std::vector<ActuatorMeasurement>& ActuatorMeasurements::measurements() const {
+    return measurements_;
+}
+
+inline std::vector<ActuatorMeasurement>& ActuatorMeasurements::measurements() {
+    return const_cast<std::vector<ActuatorMeasurement>&>(std::as_const(*this).measurements());
+}
+
+inline void ActuatorMeasurements::overwrite_names(const std::vector<std::string>& new_names) {
+    throw_if(measurements().size() != new_names.size(), "Size mismatch when overwriting names.");
+    for (std::size_t i = 0; i < measurements().size(); ++i) {
+        measurements()[i].name() = new_names[i];
+    }
+}
+
 }
 
 #if !SENSORBOX_HEADER_ONLY

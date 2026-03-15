@@ -230,6 +230,8 @@ public:
 
     void read_to(std::vector<ActuatorMeasurement>& out);
 
+    void read_to(ActuatorMeasurements& out);
+
     void read_to(ContactClassifications& out);
 
     void read_to(ImuMeasurement<3>& out);
@@ -359,6 +361,12 @@ struct ROS1DecodabilityTraits<ActuatorMeasurement> {
 
 template<>
 struct ROS1DecodabilityTraits<std::vector<ActuatorMeasurement>> {
+    static constexpr auto msg_types =
+            std::to_array<std::string_view>({"series_elastic_actuator_msgs/SeActuatorReadings"});
+};
+
+template<>
+struct ROS1DecodabilityTraits<ActuatorMeasurements> {
     static constexpr auto msg_types =
             std::to_array<std::string_view>({"series_elastic_actuator_msgs/SeActuatorReadings"});
 };

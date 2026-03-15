@@ -28,8 +28,8 @@ inline constexpr SchemaFilepath RandomWalkSensorSchemaFilepath{
         SENSORBOX_SCHEMAS_DIRECTORY "RandomWalkSensor.schema.json"};
 inline constexpr SchemaFilepath SensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Sensor.schema.json"};
 
-CREATE_SMART_ENUM(SensorTypeBase, ACCELEROMETER, ACTUATOR, CONTACTS_CLASSIFIER, CURRENT, DIRECT_POSE, DIRECT_POSITION,
-        ENCODER, GYROSCOPE, IMU)
+CREATE_SMART_ENUM(SensorTypeBase, ACCELEROMETER, ACTUATOR, ACTUATORS, CONTACTS_CLASSIFIER, CURRENT, DIRECT_POSE,
+        DIRECT_POSITION, ENCODER, GYROSCOPE, IMU)
 
 /**
  * @brief Sensor type, each of which is associated with a measurement type.
@@ -49,6 +49,8 @@ public:
                 return MeasurementType::LINEAR_ACCELERATION;
             case ACTUATOR:
                 return MeasurementType::ACTUATOR_MEASUREMENT;
+            case ACTUATORS:
+                return MeasurementType::ACTUATOR_MEASUREMENTS;
             case CONTACTS_CLASSIFIER:
                 return MeasurementType::CONTACT_CLASSIFICATIONS;
             case CURRENT:

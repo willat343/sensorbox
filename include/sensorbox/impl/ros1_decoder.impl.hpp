@@ -65,9 +65,9 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(Eigen::Isometry3d& out) {
 
 SENSORBOX_INLINE void ROS1BytesDecoder::read_to(ActuatorMeasurement& out) {
     if (msg_type() == "series_elastic_actuator_msgs/SeActuatorReading") {
-        ignore("std_msgs/Header");
+        ignore("std_msgs/Header");  // header
         decode_internal_to("series_elastic_actuator_msgs/SeActuatorState", out);
-        ignore("series_elastic_actuator_msgs/SeActuatorCommand");
+        ignore("series_elastic_actuator_msgs/SeActuatorCommand");  // command
     } else if (msg_type() == "series_elastic_actuator_msgs/SeActuatorState") {
         decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
         read_to(out.name());
@@ -78,9 +78,9 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(ActuatorMeasurement& out) {
         read_to_optional<double>(out.motor_velocity());
         read_to_optional<double>(out.joint_position());
         read_to_optional<double>(out.joint_velocity());
-        ignore<double>();
+        ignore<double>();  // joint_acceleration
         read_to_optional(out.joint_torque());
-        ignore("sensor_msgs/Imu");
+        ignore("sensor_msgs/Imu");  // imu
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to ActuatorMeasurement.");
     }
@@ -91,6 +91,16 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(std::vector<ActuatorMeasurement>
         decode_vector_to("series_elastic_actuator_msgs/SeActuatorReading", out);
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to std::vector<ActuatorMeasurement>.");
+    }
+}
+
+SENSORBOX_INLINE void ROS1BytesDecoder::read_to(ActuatorMeasurements& out) {
+    if (msg_type() == "series_elastic_actuator_msgs/SeActuatorReadings") {
+        decode_vector_to("series_elastic_actuator_msgs/SeActuatorReading", out.measurements());
+        out.timestamp() =
+                out.measurements().empty() ? ActuatorMeasurements::Timestamp() : out.measurements().front().timestamp();
+    } else {
+        throw_here("msg_type " + msg_type() + " cannot be converted to ActuatorMeasurements.");
     }
 }
 
