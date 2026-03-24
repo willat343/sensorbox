@@ -127,6 +127,7 @@ else()
     # Shared/Static Library (determined by BUILD_SHARED_LIBS)
     add_library(${LIBRARY_NAME}
         ${SENSORBOX_ROS_SRC_FILES}
+        src/json/convert.cpp
         src/accelerometer.cpp
         src/actuator.cpp
         src/current.cpp
