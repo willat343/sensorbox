@@ -1,0 +1,36 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "file::///TemporalBinaryClassifications.schema.json",
+    "type": "object",
+    "description": "Temporal key-boolean pairs.",
+    "properties": {
+        "timestamp": {
+            "type": "integer",
+            "description": "Timestamp (nanoseconds)"
+        },
+        "values": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "key",
+                    "value"
+                ]
+            }
+        }
+    },
+    "required": [
+        "timestamp",
+        "values"
+    ],
+    "additionalProperties": false
+}
