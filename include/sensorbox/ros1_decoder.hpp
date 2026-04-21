@@ -371,14 +371,14 @@ struct ROS1DecodabilityTraits<ActuatorMeasurement> {
 
 template<>
 struct ROS1DecodabilityTraits<std::vector<ActuatorMeasurement>> {
-    static constexpr auto msg_types =
-            std::to_array<std::string_view>({"series_elastic_actuator_msgs/SeActuatorReadings"});
+    static constexpr auto msg_types = std::to_array<std::string_view>({"anymal_msgs/AnymalState",
+            "any_msgs/ExtendedJointState", "series_elastic_actuator_msgs/SeActuatorReadings"});
 };
 
 template<>
 struct ROS1DecodabilityTraits<ActuatorMeasurements> {
-    static constexpr auto msg_types =
-            std::to_array<std::string_view>({"series_elastic_actuator_msgs/SeActuatorReadings"});
+    static constexpr auto msg_types = std::to_array<std::string_view>({"anymal_msgs/AnymalState",
+            "any_msgs/ExtendedJointState", "series_elastic_actuator_msgs/SeActuatorReadings"});
 };
 
 template<>

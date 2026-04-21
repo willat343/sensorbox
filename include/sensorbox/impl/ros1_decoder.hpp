@@ -81,8 +81,9 @@ inline constexpr bool ROS1BytesDecoder::is_decodable(const std::string_view msg_
             "geometry_msgs/Transform", "geometry_msgs/TransformStamped", "geometry_msgs/Twist",
             "geometry_msgs/TwistStamped", "geometry_msgs/TwistWithCovariance",
             "geometry_msgs/TwistWithCovarianceStamped", "geometry_msgs/Vector3", "geometry_msgs/Vector3Stamped",
-            "nav_msgs/Odometry", "nav_msgs/Path", "sensor_msgs/Imu", "tf2_msgs/TFMessage", "anymal_msgs/AnymalState",
-            "series_elastic_actuator_msgs/SeActuatorReadings", "series_elastic_actuator_msgs/SeActuatorReading"});
+            "nav_msgs/Odometry", "nav_msgs/Path", "sensor_msgs/Imu", "tf2_msgs/TFMessage",
+            "any_msgs/ExtendedJointState", "anymal_msgs/AnymalState", "series_elastic_actuator_msgs/SeActuatorReadings",
+            "series_elastic_actuator_msgs/SeActuatorReading"});
     return std::find(decodable_msg_types.cbegin(), decodable_msg_types.cend(), msg_type) != decodable_msg_types.cend();
 }
 

@@ -66,7 +66,42 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(ActuatorMeasurement& out) {
 }
 
 SENSORBOX_INLINE void ROS1BytesDecoder::read_to(std::vector<ActuatorMeasurement>& out) {
-    if (msg_type() == "series_elastic_actuator_msgs/SeActuatorReadings") {
+    if (msg_type() == "anymal_msgs/AnymalState") {
+        ignore("std_msgs/Header");             // header
+        ignore<int8_t>();                      // state
+        ignore("geometry_msgs/PoseStamped");   // pose
+        ignore("geometry_msgs/TwistStamped");  // twist
+        decode_internal_to("any_msgs/ExtendedJointState", out);
+        ignore_vector("anymal_msgs/Contact");             // contacts
+        ignore_vector("geometry_msgs/TransformStamped");  // frame_transforms
+    } else if (msg_type() == "any_msgs/ExtendedJointState") {
+        ignore<uint32_t>();  // seq
+        const typename ActuatorMeasurement::Timestamp timestamp = read_to<typename ActuatorMeasurement::Timestamp>();
+        const std::string frame = read_to<std::string>();
+        const uint32_t names_size = read<uint32_t>();
+        out.resize(names_size);
+        for (uint32_t i = 0; i < names_size; ++i) {
+            out[i].timestamp() = timestamp;
+            out[i].frame() = frame;
+            read_to(out[i].name());
+        }
+        const uint32_t position_size = read<uint32_t>();
+        throw_if(position_size != position_size, "Size mismatch in any_msgs/ExtendedJointState arrays.");
+        for (uint32_t i = 0; i < position_size; ++i) {
+            read_to_optional<double>(out[i].joint_position());
+        }
+        const uint32_t velocity_size = read<uint32_t>();
+        throw_if(velocity_size != velocity_size, "Size mismatch in any_msgs/ExtendedJointState arrays.");
+        for (uint32_t i = 0; i < velocity_size; ++i) {
+            read_to_optional<double>(out[i].joint_velocity());
+        }
+        ignore_vector<double>();  // acceleration
+        const uint32_t effort_size = read<uint32_t>();
+        throw_if(effort_size != effort_size, "Size mismatch in any_msgs/ExtendedJointState arrays.");
+        for (uint32_t i = 0; i < effort_size; ++i) {
+            read_to_optional<double>(out[i].joint_torque());
+        }
+    } else if (msg_type() == "series_elastic_actuator_msgs/SeActuatorReadings") {
         decode_vector_to("series_elastic_actuator_msgs/SeActuatorReading", out);
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to std::vector<ActuatorMeasurement>.");
@@ -74,8 +109,19 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(std::vector<ActuatorMeasurement>
 }
 
 SENSORBOX_INLINE void ROS1BytesDecoder::read_to(ActuatorMeasurements& out) {
-    if (msg_type() == "series_elastic_actuator_msgs/SeActuatorReadings") {
-        decode_vector_to("series_elastic_actuator_msgs/SeActuatorReading", out.measurements());
+    if (msg_type() == "anymal_msgs/AnymalState") {
+        ignore("std_msgs/Header");             // header
+        ignore<int8_t>();                      // state
+        ignore("geometry_msgs/PoseStamped");   // pose
+        ignore("geometry_msgs/TwistStamped");  // twist
+        decode_internal_to("any_msgs/ExtendedJointState", out);
+        ignore_vector("anymal_msgs/Contact");             // contacts
+        ignore_vector("geometry_msgs/TransformStamped");  // frame_transforms
+    } else if (msg_type() == "any_msgs/ExtendedJointState") {
+        out.timestamp() = peak<typename ActuatorMeasurements::Timestamp>(sizeof(uint32_t));  // (peak past header.seq)
+        read_to(out.measurements());
+    } else if (msg_type() == "series_elastic_actuator_msgs/SeActuatorReadings") {
+        read_to(out.measurements());
         out.timestamp() =
                 out.measurements().empty() ? ActuatorMeasurements::Timestamp() : out.measurements().front().timestamp();
     } else {
