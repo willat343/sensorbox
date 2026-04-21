@@ -127,7 +127,7 @@ inline const std::string& ROS1BytesDecoder::msg_type() const {
 }
 
 template<typename T>
-    requires(std::is_trivially_copyable_v<T>)
+    requires(std::is_trivially_copyable_v<T> && !cppbox::IsTimePoint<T> && !cppbox::IsDuration<T>)
 inline T ROS1BytesDecoder::peak(const std::size_t extra_offset) const {
     return cppbox::BytesDecoder::peak<T>(extra_offset);
 }
@@ -140,8 +140,24 @@ inline T ROS1BytesDecoder::peak(const std::size_t extra_offset) const {
             extra_offset + sizeof(uint32_t));
 }
 
+template<cppbox::IsDuration T>
+inline T ROS1BytesDecoder::peak(const std::size_t extra_offset) const {
+    // Time is sec/nsecs as int32_t
+    const std::chrono::seconds secs{peak<int32_t>(extra_offset)};
+    const std::chrono::nanoseconds nsecs{peak<int32_t>(extra_offset + sizeof(int32_t))};
+    return T{secs + nsecs};
+}
+
+template<cppbox::IsTimePoint T>
+inline T ROS1BytesDecoder::peak(const std::size_t extra_offset) const {
+    // Time is sec/nsecs as uint32_t
+    const std::chrono::seconds secs{peak<uint32_t>(extra_offset)};
+    const std::chrono::nanoseconds nsecs{peak<uint32_t>(extra_offset + sizeof(uint32_t))};
+    return T{secs + nsecs};
+}
+
 template<typename T>
-    requires(std::is_trivially_copyable_v<T>)
+    requires(std::is_trivially_copyable_v<T> && !cppbox::IsTimePoint<T> && !cppbox::IsDuration<T>)
 inline T ROS1BytesDecoder::read() {
     return cppbox::BytesDecoder::read<T>();
 }
@@ -161,13 +177,29 @@ inline T ROS1BytesDecoder::read_to() {
 }
 
 template<typename T>
-    requires(std::is_trivially_copyable_v<T>)
+    requires(std::is_trivially_copyable_v<T> && !cppbox::IsTimePoint<T> && !cppbox::IsDuration<T>)
 inline void ROS1BytesDecoder::read_to(T& out) {
     out = read<T>();
 }
 
 inline void ROS1BytesDecoder::read_to(std::string& out) {
     out = read<std::string>();
+}
+
+template<cppbox::IsDuration T>
+inline void ROS1BytesDecoder::read_to(T& out) {
+    // Duration is sec/nsecs as int32_t
+    const std::chrono::seconds secs{read<int32_t>()};
+    const std::chrono::nanoseconds nsecs{read<int32_t>()};
+    out = T{secs + nsecs};
+}
+
+template<cppbox::IsTimePoint T>
+inline void ROS1BytesDecoder::read_to(T& out) {
+    // Time is sec/nsecs as uint32_t
+    const std::chrono::seconds secs{read<uint32_t>()};
+    const std::chrono::nanoseconds nsecs{read<uint32_t>()};
+    out = T{secs + nsecs};
 }
 
 template<typename T>

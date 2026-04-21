@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "cppbox/time.hpp"
 #include "sensorbox/actuator.hpp"
 #include "sensorbox/contact.hpp"
 #include "sensorbox/imu.hpp"
@@ -183,7 +184,7 @@ public:
      * @param extra_offset
      */
     template<typename T>
-        requires(std::is_trivially_copyable_v<T>)
+        requires(std::is_trivially_copyable_v<T> && !cppbox::IsTimePoint<T> && !cppbox::IsDuration<T>)
     T peak(const std::size_t extra_offset = 0) const;
 
     /**
@@ -197,8 +198,14 @@ public:
         requires(std::is_same_v<T, std::string>)
     T peak(const std::size_t extra_offset = 0) const;
 
+    template<cppbox::IsDuration T>
+    T peak(const std::size_t extra_offset = 0) const;
+
+    template<cppbox::IsTimePoint T>
+    T peak(const std::size_t extra_offset = 0) const;
+
     template<typename T>
-        requires(std::is_trivially_copyable_v<T>)
+        requires(std::is_trivially_copyable_v<T> && !cppbox::IsTimePoint<T> && !cppbox::IsDuration<T>)
     T read();
 
     template<typename T>
@@ -209,16 +216,16 @@ public:
     T read_to();
 
     template<typename T>
-        requires(std::is_trivially_copyable_v<T>)
+        requires(std::is_trivially_copyable_v<T> && !cppbox::IsTimePoint<T> && !cppbox::IsDuration<T>)
     void read_to(T& out);
 
     void read_to(std::string& out);
 
-    void read_to(std::chrono::nanoseconds& out);
+    template<cppbox::IsDuration T>
+    void read_to(T& out);
 
-    void read_to(std::chrono::steady_clock::time_point& out);
-
-    void read_to(std::chrono::system_clock::time_point& out);
+    template<cppbox::IsTimePoint T>
+    void read_to(T& out);
 
     void read_to(Eigen::Ref<Eigen::Vector3d> out);
 
@@ -330,18 +337,13 @@ struct ROS1DecodabilityTraits<std::string> {
     static constexpr auto msg_types = std::to_array<std::string_view>({"string", "std_msgs/String"});
 };
 
-template<>
-struct ROS1DecodabilityTraits<std::chrono::nanoseconds> {
+template<cppbox::IsDuration T>
+struct ROS1DecodabilityTraits<T> {
     static constexpr auto msg_types = std::to_array<std::string_view>({"duration", "std_msgs/Duration"});
 };
 
-template<>
-struct ROS1DecodabilityTraits<std::chrono::steady_clock::time_point> {
-    static constexpr auto msg_types = std::to_array<std::string_view>({"time", "std_msgs/Time"});
-};
-
-template<>
-struct ROS1DecodabilityTraits<std::chrono::system_clock::time_point> {
+template<cppbox::IsTimePoint T>
+struct ROS1DecodabilityTraits<T> {
     static constexpr auto msg_types = std::to_array<std::string_view>({"time", "std_msgs/Time"});
 };
 

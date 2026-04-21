@@ -10,27 +10,6 @@
 
 namespace sensorbox {
 
-SENSORBOX_INLINE void ROS1BytesDecoder::read_to(std::chrono::nanoseconds& out) {
-    // Duration is sec/nsecs as int32_t
-    const std::chrono::seconds secs{read<int32_t>()};
-    const std::chrono::nanoseconds nsecs{read<int32_t>()};
-    out = secs + nsecs;
-}
-
-SENSORBOX_INLINE void ROS1BytesDecoder::read_to(std::chrono::steady_clock::time_point& out) {
-    // Time is sec/nsecs as uint32_t
-    const std::chrono::seconds secs{read<uint32_t>()};
-    const std::chrono::nanoseconds nsecs{read<uint32_t>()};
-    out = std::chrono::steady_clock::time_point{secs + nsecs};
-}
-
-SENSORBOX_INLINE void ROS1BytesDecoder::read_to(std::chrono::system_clock::time_point& out) {
-    // Time is sec/nsecs as uint32_t
-    const std::chrono::seconds secs{read<uint32_t>()};
-    const std::chrono::nanoseconds nsecs{read<uint32_t>()};
-    out = std::chrono::system_clock::time_point{secs + nsecs};
-}
-
 SENSORBOX_INLINE void ROS1BytesDecoder::read_to(Eigen::Ref<Eigen::Vector3d> out) {
     out[0] = read<double>();
     out[1] = read<double>();
@@ -107,11 +86,11 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(ActuatorMeasurements& out) {
 SENSORBOX_INLINE void ROS1BytesDecoder::read_to(ContactClassifications& out) {
     if (msg_type() == "anymal_msgs/AnymalState") {
         decode_internal_to("std_msgs/Header", static_cast<TemporalMeasurement&>(out));
-        ignore<int8_t>();                                 // state
-        ignore("geometry_msgs/PoseStamped");              // pose
-        ignore("geometry_msgs/TwistStamped");             // twist
-        ignore("any_msgs/ExtendedJointState");            // joints
-        const uint32_t contacts_size = read<uint32_t>();  // contacts size
+        ignore<int8_t>();                       // state
+        ignore("geometry_msgs/PoseStamped");    // pose
+        ignore("geometry_msgs/TwistStamped");   // twist
+        ignore("any_msgs/ExtendedJointState");  // joints
+        const uint32_t contacts_size = read<uint32_t>();
         for (uint32_t i = 0; i < contacts_size; ++i) {
             ignore("std_msgs/Header");  // header
             const std::string name = read<std::string>();
