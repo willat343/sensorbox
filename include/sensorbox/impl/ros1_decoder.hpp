@@ -272,7 +272,14 @@ inline ROS1BytesDecoder ROS1BytesDecoder::create_internal_decoder(const std::str
 
 template<typename T>
 inline void ROS1BytesDecoder::decode_internal_to(const std::string& internal_msg_type, T& out) {
-    return create_internal_decoder(internal_msg_type).decode_to(out);
+    create_internal_decoder(internal_msg_type).decode_to(out);
+}
+
+template<typename T>
+inline T ROS1BytesDecoder::decode_internal_to(const std::string& internal_msg_type) {
+    T out;
+    decode_internal_to(internal_msg_type, out);
+    return out;
 }
 
 template<typename T>
@@ -282,6 +289,13 @@ inline void ROS1BytesDecoder::decode_vector_to(const std::string& vector_msg_typ
     for (T& out_element : out) {
         decode_internal_to(vector_msg_type, out_element);
     }
+}
+
+template<typename T>
+inline std::vector<T> ROS1BytesDecoder::decode_vector_to(const std::string& internal_msg_type) {
+    std::vector<T> out;
+    decode_vector_to(internal_msg_type, out);
+    return out;
 }
 
 template<typename T>

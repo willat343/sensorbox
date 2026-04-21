@@ -286,7 +286,13 @@ protected:
     void decode_internal_to(const std::string& internal_msg_type, T& out);
 
     template<typename T>
+    T decode_internal_to(const std::string& internal_msg_type);
+
+    template<typename T>
     void decode_vector_to(const std::string& vector_msg_type, std::vector<T>& out);
+
+    template<typename T>
+    std::vector<T> decode_vector_to(const std::string& vector_msg_type);
 
     template<typename T>
         requires(std::is_trivially_copyable_v<T>)
