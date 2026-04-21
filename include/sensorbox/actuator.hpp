@@ -218,11 +218,21 @@ public:
 
     explicit ActuatorMeasurements(const Timestamp& timestamp_, const std::vector<ActuatorMeasurement>& measurements_);
 
+    bool equal_joint_positions(const ActuatorMeasurements& other) const;
+
+    bool equal_joint_velocities(const ActuatorMeasurements& other) const;
+
+    bool equal_joint_torques(const ActuatorMeasurements& other) const;
+
+    bool equal_joint_measurements(const ActuatorMeasurements& other) const;
+
     const std::vector<ActuatorMeasurement>& measurements() const;
 
     std::vector<ActuatorMeasurement>& measurements();
 
     void overwrite_names(const std::vector<std::string>& new_names);
+
+    std::size_t size() const;
 
 private:
     std::vector<ActuatorMeasurement> measurements_;

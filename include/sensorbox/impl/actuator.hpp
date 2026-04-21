@@ -121,6 +121,34 @@ inline ActuatorMeasurements::ActuatorMeasurements(const Timestamp& timestamp_,
         const std::vector<ActuatorMeasurement>& measurements_)
     : TemporalMeasurement(timestamp_), measurements_(measurements_) {}
 
+inline bool ActuatorMeasurements::equal_joint_positions(const ActuatorMeasurements& other) const {
+    return size() == other.size() &&
+           std::equal(measurements().cbegin(), measurements().cend(), other.measurements().cbegin(),
+                   [](const ActuatorMeasurement& lhs, const ActuatorMeasurement& rhs) -> bool {
+                       return lhs.joint_position() == rhs.joint_position();
+                   });
+}
+
+inline bool ActuatorMeasurements::equal_joint_velocities(const ActuatorMeasurements& other) const {
+    return size() == other.size() &&
+           std::equal(measurements().cbegin(), measurements().cend(), other.measurements().cbegin(),
+                   [](const ActuatorMeasurement& lhs, const ActuatorMeasurement& rhs) -> bool {
+                       return lhs.joint_velocity() == rhs.joint_velocity();
+                   });
+}
+
+inline bool ActuatorMeasurements::equal_joint_torques(const ActuatorMeasurements& other) const {
+    return size() == other.size() &&
+           std::equal(measurements().cbegin(), measurements().cend(), other.measurements().cbegin(),
+                   [](const ActuatorMeasurement& lhs, const ActuatorMeasurement& rhs) -> bool {
+                       return lhs.joint_torque() == rhs.joint_torque();
+                   });
+}
+
+inline bool ActuatorMeasurements::equal_joint_measurements(const ActuatorMeasurements& other) const {
+    return equal_joint_positions(other) && equal_joint_velocities(other) && equal_joint_torques(other);
+}
+
 inline const std::vector<ActuatorMeasurement>& ActuatorMeasurements::measurements() const {
     return measurements_;
 }
@@ -134,6 +162,10 @@ inline void ActuatorMeasurements::overwrite_names(const std::vector<std::string>
     for (std::size_t i = 0; i < measurements().size(); ++i) {
         measurements()[i].name() = new_names[i];
     }
+}
+
+inline std::size_t ActuatorMeasurements::size() const {
+    return measurements().size();
 }
 
 }
