@@ -31,9 +31,13 @@ public:
 
     std::unordered_map<std::string, bool>& classifications();
 
+    bool empty() const;
+
     bool has_classication(const std::string& link) const;
 
     void set_classication(const std::string& link, const bool classification_);
+
+    std::size_t size() const;
 
 private:
     /**

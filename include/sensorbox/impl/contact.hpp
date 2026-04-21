@@ -22,12 +22,20 @@ inline std::unordered_map<std::string, bool>& ContactClassifications::classifica
     return const_cast<std::unordered_map<std::string, bool>&>(std::as_const(*this).classifications());
 }
 
+inline bool ContactClassifications::empty() const {
+    return classifications().empty();
+}
+
 inline bool ContactClassifications::has_classication(const std::string& link) const {
     return classifications().contains(link);
 }
 
 inline void ContactClassifications::set_classication(const std::string& link, const bool classification_) {
     classifications()[link] = classification_;
+}
+
+inline std::size_t ContactClassifications::size() const {
+    return classifications().size();
 }
 
 }
