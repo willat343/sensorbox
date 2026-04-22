@@ -149,6 +149,23 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(ContactClassifications& out) {
             ignore<double>();                 // restitutionCoefficient
         }
         ignore_vector("geometry_msgs/TransformStamped");  // frame_transforms
+    } else if (msg_type() == "anymal_msgs/Contacts") {
+        const uint32_t contacts_size = read<uint32_t>();
+        if (contacts_size > 0) {
+            out.timestamp() =
+                    peak<typename ContactClassifications::Timestamp>(sizeof(uint32_t));  // (peak past header.seq)
+        }
+        for (uint32_t i = 0; i < contacts_size; ++i) {
+            ignore("std_msgs/Header");  // header
+            const std::string name = read<std::string>();
+            const uint8_t state = read<uint8_t>();
+            out.set_classication(name, state == 1);
+            ignore("geometry_msgs/Wrench");   // wrench
+            ignore("geometry_msgs/Point");    // position
+            ignore("geometry_msgs/Vector3");  // normal
+            ignore<double>();                 // frictionCoefficient
+            ignore<double>();                 // restitutionCoefficient
+        }
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to ContactClassifications.");
     }

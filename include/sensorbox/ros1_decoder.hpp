@@ -383,7 +383,8 @@ struct ROS1DecodabilityTraits<ActuatorMeasurements> {
 
 template<>
 struct ROS1DecodabilityTraits<ContactClassifications> {
-    static constexpr auto msg_types = std::to_array<std::string_view>({"anymal_msgs/AnymalState"});
+    static constexpr auto msg_types =
+            std::to_array<std::string_view>({"anymal_msgs/AnymalState", "anymal_msgs/Contacts"});
 };
 
 template<>
