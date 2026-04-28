@@ -160,14 +160,75 @@ public:
     /**
      * @brief Check if the first message type of `msg_type` is decodable to type `T`.
      *
-     * See static version of this function for more details.
-     *
      * @tparam T
      * @return true
      * @return false
      */
     template<typename T>
     bool is_start_decodable_to() const;
+
+    /**
+     * @brief Check if the first message type of `msg_type`, or its first message type recursively, is decodable to type
+     * `T`, using the `msg_types` of the `ROS1DecodabilityTraits<T>`.
+     *
+     * @tparam T
+     * @param msg_type
+     * @return true
+     * @return false
+     */
+    template<typename T>
+    static constexpr bool is_start_recursively_decodable_to(const std::string_view msg_type);
+
+    /**
+     * @brief Check if the first message type of `msg_type`, or its first message type recursively, is decodable to type
+     * `T`.
+     *
+     * @tparam T
+     * @return true
+     * @return false
+     */
+    template<typename T>
+    bool is_start_recursively_decodable_to() const;
+
+    /**
+     * @brief Check if `msg_type` is a vector of elements (ends with "[]") that are decodable to type `T`, or the first
+     * message of `msg_type` is, checking recursively.
+     *
+     * @tparam T
+     * @param msg_type
+     * @return true
+     * @return false
+     */
+    template<typename T>
+    static constexpr bool is_vector_or_start_recursively_decodable_to(const std::string_view msg_type);
+
+    /**
+     * @brief Check if `msg_type` is a vector of elements (ends with "[]") that are decodable to type `T`, or the first
+     * message of `msg_type` is, checking recursively.
+     *
+     * @tparam T
+     * @return true
+     * @return false
+     */
+    template<typename T>
+    bool is_vector_or_start_recursively_decodable_to() const;
+
+    /**
+     * @brief Check if `msg_type` is a vector of elements (ends with "[]").
+     *
+     * @param msg_type
+     * @return true
+     * @return false
+     */
+    static constexpr bool is_vector_type(const std::string_view msg_type);
+
+    /**
+     * @brief Get the `msg_type` of a vector of elements (ends with "[]") or return `msg_type` if not a vector type.
+     *
+     * @param msg_type
+     * @return constexpr std::string_view
+     */
+    static constexpr std::string_view vector_type(const std::string_view msg_type);
 
     /**
      * @brief Get the message type.

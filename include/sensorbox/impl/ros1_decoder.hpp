@@ -22,19 +22,19 @@ inline T ROS1BytesDecoder::decode_to() {
 
 template<typename T>
 inline void ROS1BytesDecoder::decode_to(T& out) {
-    if constexpr (is_decodable<T>()) {
-        if (is_directly_decodable_to<T>()) {
-            read_to(out);
-        } else if (is_start_decodable_to<T>()) {
-            create_internal_decoder(std::string(this->starts_with())).template decode_to<T>(out);
-            ignore_remaining();
-        } else {
-            throw_here("Decoding failed because T cannot be decoded to from message type " + msg_type() + ".");
+    if (is_directly_decodable_to<T>()) {
+        read_to(out);
+    } else if (is_vector_or_start_recursively_decodable_to<T>()) {
+        std::string_view starts_with_ = starts_with();
+        if (is_vector_type(starts_with_)) {
+            throw_if(this->template read<uint32_t>() == 0, "Decoding of vector failed because vector was empty.");
         }
-        assert(is_finished());
+        create_internal_decoder(std::string(vector_type(starts_with_))).template decode_to<T>(out);
+        ignore_remaining();
     } else {
-        throw_here("Decoding failed because T is not decodable from any message type.");
+        throw_here("Decoding failed because T cannot be decoded to, from message type " + msg_type() + ".");
     }
+    assert(is_finished());
 }
 
 template<typename T>
@@ -94,7 +94,7 @@ inline constexpr bool ROS1BytesDecoder::is_decodable() {
 
 template<typename T>
 inline constexpr bool ROS1BytesDecoder::is_decodable_to(const std::string_view msg_type) {
-    return is_directly_decodable_to<T>(msg_type) || is_start_decodable_to<T>(msg_type);
+    return is_directly_decodable_to<T>(msg_type) || is_vector_or_start_recursively_decodable_to<T>(msg_type);
 }
 
 template<typename T>
@@ -121,6 +121,41 @@ inline constexpr bool ROS1BytesDecoder::is_start_decodable_to(const std::string_
 template<typename T>
 inline bool ROS1BytesDecoder::is_start_decodable_to() const {
     return is_start_decodable_to<T>(this->msg_type());
+}
+
+template<typename T>
+inline constexpr bool ROS1BytesDecoder::is_start_recursively_decodable_to(const std::string_view msg_type) {
+    return msg_type != std::string_view() && (is_directly_decodable_to<T>(starts_with(msg_type)) ||
+                                                     is_start_recursively_decodable_to<T>(starts_with(msg_type)));
+}
+
+template<typename T>
+inline bool ROS1BytesDecoder::is_start_recursively_decodable_to() const {
+    return is_start_recursively_decodable_to<T>(this->msg_type());
+}
+
+template<typename T>
+inline constexpr bool ROS1BytesDecoder::is_vector_or_start_recursively_decodable_to(const std::string_view msg_type) {
+    return msg_type != std::string_view() &&
+           ((is_vector_type(msg_type) &&
+                    (is_directly_decodable_to<T>(vector_type(msg_type)) ||
+                            is_vector_or_start_recursively_decodable_to<T>(vector_type(msg_type)))) ||
+                   (!is_vector_type(msg_type) &&
+                           (is_directly_decodable_to<T>(starts_with(msg_type)) ||
+                                   is_vector_or_start_recursively_decodable_to<T>(starts_with(msg_type)))));
+}
+
+template<typename T>
+inline bool ROS1BytesDecoder::is_vector_or_start_recursively_decodable_to() const {
+    return is_vector_or_start_recursively_decodable_to<T>(this->msg_type());
+}
+
+inline constexpr bool ROS1BytesDecoder::is_vector_type(const std::string_view msg_type) {
+    return msg_type.ends_with("[]");
+}
+
+inline constexpr std::string_view ROS1BytesDecoder::vector_type(const std::string_view msg_type) {
+    return is_vector_type(msg_type) ? msg_type.substr(0, msg_type.size() - 2) : msg_type;
 }
 
 inline const std::string& ROS1BytesDecoder::msg_type() const {
