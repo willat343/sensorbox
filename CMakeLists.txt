@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 project(sensorbox
-    VERSION 0.6.5
+    VERSION 0.7.0
     DESCRIPTION "Sensor Toolbox"
     LANGUAGES CXX
 )
@@ -31,7 +31,7 @@ if (DEVELOPER_MODE)
 endif()
 
 # Dependency: cmakebox
-set(CMAKEBOX_VERSION "0.0.5")
+set(CMAKEBOX_VERSION "0.0.11")
 FetchContent_Declare(
     cmakebox
     GIT_REPOSITORY git@github.com:willat343/cmakebox.git
@@ -66,7 +66,7 @@ import_nlohmann_json_schema_validator(
 )
 
 # Dependency: cppbox (Target: cppbox::cppbox)
-set(CPPBOX_VERSION "0.1.4")
+set(CPPBOX_VERSION "0.2.0")
 import_dependency(
     cppbox
     TARGET cppbox::cppbox
@@ -77,7 +77,7 @@ import_dependency(
 )
 
 # Dependency: mathbox (Target: mathbox::mathbox)
-set(MATHBOX_VERSION "0.6.3")
+set(MATHBOX_VERSION "0.8.0")
 import_dependency(
     mathbox
     TARGET mathbox::mathbox
@@ -107,7 +107,7 @@ if (BUILD_SENSORBOX_ROS)
         ${sensor_msgs_LIBRARIES}
     )
 endif()
-set(CONVERT_VERSION "0.6.0")
+set(CONVERT_VERSION "0.7.0")
 import_dependency(
     convert
     TARGET convert::convert

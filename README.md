@@ -9,11 +9,12 @@ A package for processing sensor data.
 | **Dependency** | **Version** | **Description** |
 |----------------|-------------|-----------------|
 | CMake | >= 3.21 | CMake Build Tool |
-| [cmakebox](https://github.com/willat343/cmakebox) | >= 0.0.9 | CMake Functions and Utilities |
-| [cppbox](https://github.com/willat343/cppbox) | >= 0.1.5 | C++ Package |
+| [cmakebox](https://github.com/willat343/cmakebox) | >= 0.0.11 | CMake Functions and Utilities |
+| [cppbox](https://github.com/willat343/cppbox) | >= 0.2.0 | C++ Package |
 | Eigen3 | >= 3.4.0 | Linear Algebra Package |
 | nlohmann_json | >= 3.7.3 (< g++-10) or >= 3.8.0 (>= g++-10) | JSON Package |
-| [mathbox](https://github.com/willat343/mathbox) | 0.7.0 | Math Package |
+| [mathbox](https://github.com/willat343/mathbox) | 0.8.0 | Math Package |
+| [convert](https://github.com/willat343/convert) | >= 0.7.0 | General Conversion Package |
 
 There are several ways to include `sensorbox` within your project:
 - [Preferred] Via `FetchContent` allowing package to be built as a submodule.
@@ -21,9 +22,9 @@ There are several ways to include `sensorbox` within your project:
 
 ## Include via FetchContent
 
-It is recommended to leverage the functionality of [cmakebox](https://github.com/willat343/cmakebox) by including the following lines in the `CMakeLists.txt` (replace `X.Y.Z` with version):
+It is recommended to leverage the functionality of [cmakebox](https://github.com/willat343/cmakebox) by including the following lines in the `CMakeLists.txt` (replace `X.Y.Z` with versions):
 ```CMake
-set(CMAKEBOX_VERSION "0.0.9")
+set(CMAKEBOX_VERSION "X.Y.Z")
 FetchContent_Declare(
     cmakebox
     GIT_REPOSITORY git@github.com:willat343/cmakebox.git
@@ -67,12 +68,12 @@ cd sensorbox
 
 For system install:
 ```bash
-cmake -S . -B build
+cmake -G Ninja -S . -B build
 ```
 
 For local install:
 ```bash
-cmake -S . -B build -DCMAKE_INSTALL_DIR=$HOME/.local
+cmake -G Ninja -S . -B build -DCMAKE_INSTALL_DIR=$HOME/.local
 ```
 
 ### Build
