@@ -1,17 +1,16 @@
-#ifndef SENSORBOX_ROS1_DECODER_HPP
-#define SENSORBOX_ROS1_DECODER_HPP
+#ifndef SENSORBOX_ROS2_DECODER_HPP
+#define SENSORBOX_ROS2_DECODER_HPP
 
 #include <Eigen/Core>
 #include <array>
-#include <chrono>
 #include <cppbox/array.hpp>
 #include <cppbox/bytes.hpp>
 #include <cppbox/time.hpp>
+#include <numeric>
+#include <optional>
+#include <span>
 #include <string>
-#include <vector>
 
-#include "sensorbox/actuator.hpp"
-#include "sensorbox/contact.hpp"
 #include "sensorbox/imu.hpp"
 #include "sensorbox/measurement.hpp"
 #include "sensorbox/message_decoder.hpp"
@@ -20,12 +19,15 @@
 
 namespace sensorbox {
 
-struct ROS1MessagesTypes {
+struct ROS2MessagesTypes {
+    /**
+     * @brief In ROS 2, (top-level) messages start with CDR header (assumed little-endian).
+     *
+     */
+    static constexpr std::array<std::byte, 4> cdr_header{
+            {std::byte{0x00}, std::byte{0x01}, std::byte{0x00}, std::byte{0x00}}};
+
     struct fundamental {
-        /**
-         * @brief Fundamental type sizes, see https://wiki.ros.org/msg for serialization information.
-         *
-         */
         static constexpr auto sizes = std::to_array<MessageSize>({
                 {"bool", sizeof(bool)},
                 {"byte", sizeof(uint8_t)},
@@ -41,20 +43,72 @@ struct ROS1MessagesTypes {
                 {"uint64", sizeof(uint64_t)},
                 {"float32", sizeof(float)},
                 {"float64", sizeof(double)},
-                {"duration", 2 * sizeof(int32_t)},
-                {"time", 2 * sizeof(uint32_t)},
         });
 
         /**
-         * @brief In ROS 1, data is packed with no padding or alignment.
+         * @brief Compute the ROS 2 CDR padding of a fundmental type of `size_` bytes based on the current offset from
+         * the end of the CDR header.
+         *
+         * In ROS 2, CDR structs align fundamental types to memory offsets that are multiples of their own size.
+         *
+         * Hence:
+         * - 1 byte: no alignment
+         * - 2 bytes: starts on even byte offset
+         * - 4 bytes: starts on multiple of 4 bytes
+         * - 8 bytes: starts on multiple of 8 bytes
+         *
+         * There is no trailing padding.
+         *
+         * @param size_
+         * @param offset
+         * @return constexpr std::size_t
+         */
+        static constexpr std::size_t padding(const std::size_t size_, const std::size_t offset = 0) {
+            // Since size_ is a power of 2, use bit-masking to compute the padding efficiently
+            assert(size_ == 0 || (size_ & (size_ - 1)) == 0);
+            return size_ == 0 ? 0 : (offset + (size_ - 1)) & ~(size_ - 1);
+        }
+
+        /**
+         * @brief Compute the ROS 2 CDR size of a fundament type including its padding based on the current offset from
+         * the end of the CDR header.
+         *
+         * See `std::size_t padding(const std::size_t, const std::size_t)` for more details.
          *
          * @param msg_type
          * @return constexpr std::size_t
          */
-        static constexpr std::size_t size(const std::string_view msg_type) {
+        static constexpr std::size_t size(const std::string_view msg_type, const std::size_t offset = 0) {
             const auto it = std::find_if(sizes.cbegin(), sizes.cend(),
                     [msg_type](const MessageSize& message_size) { return message_size.type == msg_type; });
-            return it == sizes.cend() ? 0 : it->size;
+            std::size_t unpadded_size = it != sizes.cend() ? it->size : 0;
+            return padding(unpadded_size, offset) + unpadded_size;
+        }
+    };
+
+    struct builtin_interfaces {
+        static constexpr auto Time = std::to_array<MessageField>({
+                {"int32", "sec"},
+                {"uint32", "nanosec"},
+        });
+        static constexpr auto Duration = std::to_array<MessageField>({
+                {"int32", "sec"},
+                {"uint32", "nanosec"},
+        });
+
+        static constexpr auto msg_types = std::to_array<MessageType>({
+                {"builtin_interfaces/Time", Time},
+                {"builtin_interfaces/Duration", Duration},
+        });
+
+        static constexpr std::size_t size(const std::string_view msg_type, const std::size_t offset = 0) {
+            const auto it = std::find_if(msg_types.cbegin(), msg_types.cend(),
+                    [msg_type](const MessageType& message_type) { return message_type.type == msg_type; });
+            return it == msg_types.cend() ? 0
+                                          : std::accumulate(it->fields.begin(), it->fields.end(), 0,
+                                                    [offset](std::size_t sum, const MessageField& item) {
+                                                        return sum + fundamental::size(item.type, offset);
+                                                    });
         }
     };
 
@@ -96,9 +150,9 @@ struct ROS1MessagesTypes {
                 {"std_msgs/MultiArrayLayout", "layout"},
                 {"float64[]", "data"},
         });
+        // In ROS 2 `seq` was dropped and `stamp` changed type
         static constexpr auto Header = std::to_array<MessageField>({
-                {"uint32", "seq"},
-                {"time", "stamp"},
+                {"builtin_interfaces/Time", "stamp"},
                 {"string", "frame_id"},
         });
         static constexpr auto Int16 = std::to_array<MessageField>({
@@ -256,6 +310,16 @@ struct ROS1MessagesTypes {
         static constexpr auto Polygon = std::to_array<MessageField>({
                 {"geometry_msgs/Point32[]", "points"},
         });
+        // ROS 2 introduced PolygonInstance
+        static constexpr auto PolygonInstance = std::to_array<MessageField>({
+                {"geometry_msgs/Polygon", "polygon"},
+                {"int64", "id"},
+        });
+        // ROS 2 introduced PolygonInstanceStamped
+        static constexpr auto PolygonInstanceStamped = std::to_array<MessageField>({
+                {"stdd_msgs/Header", "header"},
+                {"geometry_msgs/PolygonInstance", "polygon"},
+        });
         static constexpr auto PolygonStamped = std::to_array<MessageField>({
                 {"std_msgs/Header", "header"},
                 {"geometry_msgs/Polygon", "polygon"},
@@ -324,6 +388,13 @@ struct ROS1MessagesTypes {
                 {"std_msgs/Header", "header"},
                 {"geometry_msgs/Vector3", "vector"},
         });
+        // ROS 2 introduced VelocityStamped
+        static constexpr auto VelocityStamped = std::to_array<MessageField>({
+                {"std_msgs/Header", "header"},
+                {"string", "body_frame_id"},
+                {"string", "reference_frame_id"},
+                {"geometry_msgs/Twist", "velocity"},
+        });
         static constexpr auto Wrench = std::to_array<MessageField>({
                 {"geometry_msgs/Vector3", "force"},
                 {"geometry_msgs/Vector3", "torque"},
@@ -344,6 +415,8 @@ struct ROS1MessagesTypes {
                 {"geometry_msgs/Point32", Point32},
                 {"geometry_msgs/PointStamped", PointStamped},
                 {"geometry_msgs/Polygon", Polygon},
+                {"geometry_msgs/PolygonInstance", PolygonInstance},
+                {"geometry_msgs/PolygonInstanceStamped", PolygonInstanceStamped},
                 {"geometry_msgs/PolygonStamped", PolygonStamped},
                 {"geometry_msgs/Pose", Pose},
                 {"geometry_msgs/Pose2D", Pose2D},
@@ -360,20 +433,27 @@ struct ROS1MessagesTypes {
                 {"geometry_msgs/TwistWithCovarianceStamped", TwistWithCovarianceStamped},
                 {"geometry_msgs/Vector3", Vector3},
                 {"geometry_msgs/Vector3Stamped", Vector3Stamped},
+                {"geometry_msgs/VelocityStamped", VelocityStamped},
                 {"geometry_msgs/Wrench", Wrench},
                 {"geometry_msgs/WrenchStamped", WrenchStamped},
         });
     };
 
     struct nav_msgs {
+        // ROS 2 introduced Goals
+        static constexpr auto Goals = std::to_array<MessageField>({
+                {"std_msgs/Header", "header"},
+                {"geometry_msgs/PoseStamped[]", "goals"},
+        });
         static constexpr auto GridCells = std::to_array<MessageField>({
                 {"std_msgs/Header", "header"},
                 {"float32", "cell_width"},
                 {"float32", "cell_height"},
                 {"geometry_msgs/Point[]", "cells"},
         });
+        // In ROS 2 `map_load_time` changed type
         static constexpr auto MapMetaData = std::to_array<MessageField>({
-                {"time", "map_load_time"},
+                {"builtin_interfaces/Time", "map_load_time"},
                 {"float32", "resolution"},
                 {"uint32", "width"},
                 {"uint32", "height"},
@@ -393,6 +473,19 @@ struct ROS1MessagesTypes {
         static constexpr auto Path = std::to_array<MessageField>({
                 {"std_msgs/Header", "header"},
                 {"geometry_msgs/PoseStamped[]", "poses"},
+        });
+        // ROS 2 introduced Trajectory
+        static constexpr auto Trajectory = std::to_array<MessageField>({
+                {"std_msgs/Header", "header"},
+                {"nav_msgs/TrajectoryPoint[]", "points"},
+        });
+        // ROS 2 introduced TrajectoryPoint
+        static constexpr auto TrajectoryPoint = std::to_array<MessageField>({
+                {"std_msgs/Header", "header"},
+                {"geometry_msgs/Pose", "pose"},
+                {"geometry_msgs/Twist", "velocity"},
+                {"geometry_msgs/Accel", "acceleration"},
+                {"geometry_msgs/Wrench", "effort"},
         });
 
         static constexpr auto msg_types = std::to_array<MessageType>({
@@ -432,6 +525,10 @@ struct ROS1MessagesTypes {
             static constexpr uint8_t POWER_SUPPLY_TECHNOLOGY_LIFE = 4;
             static constexpr uint8_t POWER_SUPPLY_TECHNOLOGY_NICD = 5;
             static constexpr uint8_t POWER_SUPPLY_TECHNOLOGY_LIMN = 6;
+            // Added in ROS 2
+            static constexpr uint8_t POWER_SUPPLY_TECHNOLOGY_TERNARY = 7;
+            // Added in ROS 2
+            static constexpr uint8_t POWER_SUPPLY_TECHNOLOGY_VRLA = 8;
         };
         static constexpr auto BatteryState = std::to_array<MessageField>({
                 {"std_msgs/Header", "header"},
@@ -658,9 +755,10 @@ struct ROS1MessagesTypes {
                 {"float64", "temperature"},
                 {"float64", "variance"},
         });
+        // ROS 2 changed `time_ref` type
         static constexpr auto TimeReference = std::to_array<MessageField>({
                 {"std_msgs/Header", "header"},
-                {"time", "time_ref"},
+                {"builtin_interfaces/Time", "time_ref"},
                 {"string", "source"},
         });
 
@@ -719,262 +817,23 @@ struct ROS1MessagesTypes {
         });
     };
 
-    struct any_msgs {
-        static constexpr auto BoolStamped = std::to_array<MessageField>({
-                {"std_msgs/Header", "header"},
-                {"bool", "value"},
-        });
-        static constexpr auto Event = std::to_array<MessageField>({
-                {"time", "stamp"},
-        });
-        static constexpr auto ExtendedJointState = std::to_array<MessageField>({
-                {"std_msgs/Header", "header"},
-                {"string[]", "name"},
-                {"float64[]", "position"},
-                {"float64[]", "velocity"},
-                {"float64[]", "acceleration"},
-                {"float64[]", "effort"},
-        });
-        static constexpr auto Float64Stamped = std::to_array<MessageField>({
-                {"std_msgs/Header", "header"},
-                {"float64", "value"},
-        });
-        static constexpr auto ImuWithTrigger = std::to_array<MessageField>({
-                {"sensor_msgs/Imu", "imu"},
-                {"bool", "trigger_indicator"},
-        });
-        struct point_contact {
-            static constexpr int8_t STATE_OPEN = 0;
-            static constexpr int8_t STATE_CLOSED = 1;
-            static constexpr int8_t STATE_SLIPPING = 2;
-        };
-        static constexpr auto PointContact = std::to_array<MessageField>({
-                {"std_msgs/Header", "header"},
-                {"geometry_msgs/Wrench", "wrench"},
-                {"geometry_msgs/Point", "position"},
-                {"geometry_msgs/Twist", "twist"},
-                {"geometry_msgs/Vector3", "normal"},
-                {"uint8", "state"},
-        });
-        static constexpr auto SensorTimeInfo = std::to_array<MessageField>({
-                {"std_msgs/Header", "header"},
-                {"uint64", "counter"},
-                {"uint64", "duration"},
-        });
-        static constexpr auto State = std::to_array<MessageField>({
-                {"time", "stamp"},
-                {"bool", "is_ok"},
-        });
-        static constexpr auto UserInteractionOption = std::to_array<MessageField>({
-                {"string", "name"},
-                {"string", "description"},
-                {"bool", "selectable"},
-        });
-
-        static constexpr auto msg_types = std::to_array<MessageType>({
-                {"any_msgs/BoolStamped", BoolStamped},
-                {"any_msgs/Event", Event},
-                {"any_msgs/ExtendedJointState", ExtendedJointState},
-                {"any_msgs/Float64Stamped", Float64Stamped},
-                {"any_msgs/ImuWithTrigger", ImuWithTrigger},
-                {"any_msgs/PointContact", PointContact},
-                {"any_msgs/SensorTimeInfo", SensorTimeInfo},
-                {"any_msgs/State", State},
-                {"any_msgs/UserInteractionOption", UserInteractionOption},
-        });
-    };
-
-    struct anymal_msgs {
-        struct anymal_state {
-            static constexpr int8_t STATE_ERROR_SENSOR = -3;
-            static constexpr int8_t STATE_ERROR_ESTIMATOR = -2;
-            static constexpr int8_t STATE_ERROR_UNKNOWN = -1;
-            static constexpr int8_t STATE_OK = 0;
-            static constexpr int8_t STATE_UNINITIALIZED = 1;
-        };
-        static constexpr auto AnymalState = std::to_array<MessageField>({
-                {"std_msgs/Header", "header"},
-                {"int8", "state"},
-                {"geometry_msgs/PoseStamped", "pose"},
-                {"geometry_msgs/TwistStamped", "twist"},
-                {"any_msgs/ExtendedJointState", "joints"},
-                {"anymal_msgs/Contact[]", "contacts"},
-                {"geometry_msgs/TransformStamped[]", "frame_transforms"},
-        });
-        static constexpr auto BMSState = std::to_array<MessageField>({
-                {"uint16[]", "cell_voltages"},
-                {"float64", "battery_voltage"},
-                {"float64", "battery_level"},
-                {"float64", "temperature"},
-        });
-        struct contact {
-            static constexpr int8_t STATE_OPEN = 0;
-            static constexpr int8_t STATE_CLOSED = 1;
-            static constexpr int8_t STATE_SLIPPING = 2;
-        };
-        static constexpr auto Contact = std::to_array<MessageField>({
-                {"std_msgs/Header", "header"},
-                {"string", "name"},
-                {"uint8", "state"},
-                {"geometry_msgs/Wrench", "wrench"},
-                {"geometry_msgs/Point", "position"},
-                {"geometry_msgs/Vector3", "normal"},
-                {"float64", "friction_coefficient"},
-                {"float64", "restitution_coefficient"},
-        });
-        static constexpr auto Contacts = std::to_array<MessageField>({
-                {"anymal_msgs/Contact[]", "contacts"},
-        });
-        static constexpr auto GaitPattern = std::to_array<MessageField>({
-                {"float64", "duration"},
-                {"float64[4]", "liftoff_phases"},
-                {"float64[4]", "touchdown_phases"},
-        });
-        static constexpr auto GaitPatterns = std::to_array<MessageField>({
-                {"std_msgs/Header", "header"},
-                {"float64", "phase"},
-                {"GaitPattern[]", "patterns"},
-        });
-        static constexpr auto LegAttributes = std::to_array<MessageField>({
-                {"bool[4]", "is_grounded"},
-        });
-        static constexpr auto StringStamped = std::to_array<MessageField>({
-                {"std_msgs/Header", "header"},
-                {"string", "value"},
-        });
-
-        static constexpr auto msg_types = std::to_array<MessageType>({
-                {"anymal_msgs/AnymalState", AnymalState},
-                {"anymal_msgs/BMSState", BMSState},
-                {"anymal_msgs/Contact", Contact},
-                {"anymal_msgs/Contacts", Contacts},
-                {"anymal_msgs/GaitPattern", GaitPattern},
-                {"anymal_msgs/GaitPatterns", GaitPatterns},
-                {"anymal_msgs/LegAttributes", LegAttributes},
-                {"anymal_msgs/StringStamped", StringStamped},
-        });
-    };
-
-    struct series_elastic_actuator_msgs {
-        struct se_actuator_command {
-            static constexpr int16_t MODE_NA = 0;              // Not available
-            static constexpr int16_t MODE_FREEZE = 1;          // Freeze motor
-            static constexpr int16_t MODE_DISABLE = 2;         // Disable motor
-            static constexpr int16_t MODE_CURRENT = 3;         // Track current
-            static constexpr int16_t MODE_MOTOR_POSITION = 4;  // Track motor position
-            static constexpr int16_t MODE_MOTOR_VELOCITY = 5;  // Track motor velocity
-            static constexpr int16_t MODE_GEAR_POSITION = 6;   // Track gear position
-            static constexpr int16_t MODE_GEAR_VELOCITY = 7;   // Track gear velocity
-            static constexpr int16_t MODE_JOINT_POSITION = 8;  // Track joint position
-            static constexpr int16_t MODE_JOINT_VELOCITY = 9;  // Track joint velocity
-            static constexpr int16_t MODE_JOINT_TORQUE = 10;   // Track joint torque
-            static constexpr int16_t MODE_JOINT_POSITION_VELOCITY =
-                    11;  // Track joint position with feedforward velocity
-            static constexpr int16_t MODE_JOINT_POSITION_VELOCITY_TORQUE =
-                    12;  // Track joint position with feedforward velocity and torque
-            static constexpr int16_t MODE_JOINT_POSITION_VELOCITY_TORQUE_PID_GAINS =
-                    13;  // Track joint position with feedforward velocity and torque using custom joint position gains
-        };
-        static constexpr auto SeActuatorCommand = std::to_array<MessageField>({
-                {"std_msgs/Header", "header"},
-                {"string", "name"},
-                {"int16", "mode"},
-                {"float64", "current"},
-                {"float64", "position"},
-                {"float64", "velocity"},
-                {"float64", "joint_torque"},
-                {"float32", "pid_gains_p"},
-                {"float32", "pid_gains_i"},
-                {"float32", "pid_gains_d"},
-        });
-        static constexpr auto SeActuatorCommands = std::to_array<MessageField>({
-                {"series_elastic_actuator_msgs/SeActuatorCommand[]", "commands"},
-        });
-        static constexpr auto SeActuatorReading = std::to_array<MessageField>({
-                {"std_msgs/Header", "heading"},
-                {"series_elastic_actuator_msgs/SeActuatorState", "state"},
-                {"series_elastic_actuator_msgs/SeActuatorCommand", "commanded"},
-        });
-        static constexpr auto SeActuatorReadingExtended = std::to_array<MessageField>({
-                {"std_msgs/Header", "heading"},
-                {"series_elastic_actuator_msgs/SeActuatorStateExtended", "state"},
-                {"series_elastic_actuator_msgs/SeActuatorCommand", "commanded"},
-        });
-        static constexpr auto SeActuatorReadings = std::to_array<MessageField>({
-                {"series_elastic_actuator_msgs/SeActuatorReading[]", "readings"},
-        });
-        static constexpr auto SeActuatorReadingsExtended = std::to_array<MessageField>({
-                {"series_elastic_actuator_msgs/SeActuatorReadingExtended[]", "readings"},
-        });
-        static constexpr auto SeActuatorState = std::to_array<MessageField>({
-                {"std_msgs/Header", "heading"},
-                {"string", "name"},
-                {"uint32", "statusword"},
-                {"float64", "current"},
-                {"float64", "gear_position"},
-                {"float64", "gear_velocity"},
-                {"float64", "joint_position"},
-                {"float64", "joint_velocity"},
-                {"float64", "joint_acceleration"},
-                {"float64", "joint_torque"},
-                {"sensor_msgs/Imu", "imu"},
-        });
-        static constexpr auto SeActuatorStateExtended = std::to_array<MessageField>({
-                {"std_msgs/Header", "heading"},
-                {"string", "name"},
-                {"uint32", "statusword"},
-                {"float64", "current"},
-                {"float64", "gear_position"},
-                {"float64", "gear_velocity"},
-                {"float64", "joint_position"},
-                {"float64", "joint_velocity"},
-                {"float64", "joint_acceleration"},
-                {"float64", "joint_torque"},
-                {"sensor_msgs/Imu", "imu"},
-                {"float64", "motor_position"},
-                {"float64", "motor_velocity"},
-                {"int32", "gear_position_ticks"},
-                {"int32", "joint_position_ticks"},
-                {"float64", "temperature"},
-                {"float64", "voltage"},
-                {"uint64", "timestamp"},
-                {"float64", "desired_current_d"},
-                {"float64", "measured_current_d"},
-                {"float64", "desired_current_q"},
-                {"float64", "measured_current_q"},
-                {"float64", "measured_current_phase_u"},
-                {"float64", "measured_voltage_phase_u"},
-                {"float64", "measured_current_phase_v"},
-                {"float64", "measured_voltage_phase_v"},
-                {"float64", "measured_current_phase_w"},
-                {"float64", "measured_voltage_phase_w"},
-        });
-        static constexpr auto SeActuatorStates =
-                std::to_array<MessageField>({{"series_elastic_actuator_msgs/SeActuatorState[]", "states"}});
-
-        static constexpr auto msg_types = std::to_array<MessageType>({
-                {"series_elastic_actuator_msgs/SeActuatorCommand", SeActuatorCommand},
-                {"series_elastic_actuator_msgs/SeActuatorCommands", SeActuatorCommands},
-                {"series_elastic_actuator_msgs/SeActuatorReading", SeActuatorReading},
-                {"series_elastic_actuator_msgs/SeActuatorReadingExtended", SeActuatorReadingExtended},
-                {"series_elastic_actuator_msgs/SeActuatorReadings", SeActuatorReadings},
-                {"series_elastic_actuator_msgs/SeActuatorReadingsExtended", SeActuatorReadingsExtended},
-                {"series_elastic_actuator_msgs/SeActuatorState", SeActuatorState},
-                {"series_elastic_actuator_msgs/SeActuatorStateExtended", SeActuatorStateExtended},
-                {"series_elastic_actuator_msgs/SeActuatorStates", SeActuatorStates},
-        });
-    };
-
     static constexpr auto msg_types = cppbox::merge(std_msgs::msg_types, geometry_msgs::msg_types, nav_msgs::msg_types,
-            sensor_msgs::msg_types, tf2_msgs::msg_types, any_msgs::msg_types, anymal_msgs::msg_types,
-            series_elastic_actuator_msgs::msg_types);
+            sensor_msgs::msg_types, tf2_msgs::msg_types);
 
     static constexpr std::string_view starts_with(const std::string_view msg_type) {
         return message_starts_with(msg_types, msg_type);
     }
+
+    static std::string remove_internal_msg_substring(const std::string_view msg_type) {
+        constexpr std::string_view target = "msg/";
+        if (std::size_t pos = msg_type.find(target); pos != std::string_view::npos) {
+            return std::string(msg_type.substr(0, pos)) + std::string(msg_type.substr(pos + target.size()));
+        }
+        return std::string(msg_type);
+    }
 };
 
-struct ROS1Conversions {
+struct ROS2Conversions {
     template<typename T>
     static constexpr auto decodable_msg_types() {
         if constexpr (std::same_as<T, std::string>) {
@@ -990,18 +849,6 @@ struct ROS1Conversions {
         } else if constexpr (std::same_as<T, Eigen::Isometry3d>) {
             return std::to_array<std::string_view>(
                     {"geometry_msgs/Pose", "geometry_msgs/PoseWithCovariance", "geometry_msgs/Transform"});
-        } else if constexpr (std::same_as<T, ActuatorMeasurement>) {
-            return std::to_array<std::string_view>(
-                    {"series_elastic_actuator_msgs/SeActuatorReading", "series_elastic_actuator_msgs/SeActuatorState"});
-        } else if constexpr (std::same_as<T, std::vector<ActuatorMeasurement>>) {
-            return std::to_array<std::string_view>({"anymal_msgs/AnymalState", "any_msgs/ExtendedJointState",
-                    "series_elastic_actuator_msgs/SeActuatorReadings"});
-        } else if constexpr (std::same_as<T, ActuatorMeasurements>) {
-            return std::to_array<std::string_view>({"anymal_msgs/AnymalState", "any_msgs/ExtendedJointState",
-                    "series_elastic_actuator_msgs/SeActuatorReadings"});
-        } else if constexpr (std::same_as<T, ContactClassifications>) {
-            return std::to_array<std::string_view>(
-                    {"anymal_msgs/AnymalState", "anymal_msgs/Contact[]", "anymal_msgs/Contacts"});
         } else if constexpr (std::same_as<T, ImuMeasurement<3>>) {
             return std::to_array<std::string_view>({"sensor_msgs/Imu"});
         } else if constexpr (std::same_as<T, PoseMeasurement<3>>) {
@@ -1025,18 +872,16 @@ struct ROS1Conversions {
     }
 };
 
-class ROS1BytesDecoder : public MessageDecoder<ROS1MessagesTypes, ROS1Conversions> {
+class ROS2BytesDecoder : public MessageDecoder<ROS2MessagesTypes, ROS2Conversions> {
 public:
-    using Base = MessageDecoder<ROS1MessagesTypes, ROS1Conversions>;
-
     /**
-     * @brief Construct a new ROS 1 decoder.
+     * @brief Construct a new ROS 2 decoder.
      *
      * @param bytes_
      * @param size_
      * @param msg_type_
      */
-    explicit ROS1BytesDecoder(const std::byte* bytes_, const std::size_t size_, const std::string& msg_type_);
+    explicit ROS2BytesDecoder(const std::byte* bytes_, const std::size_t size_, const std::string& msg_type_);
 
     /**
      * @brief Decode all bytes to a T object.
@@ -1074,8 +919,6 @@ public:
     template<typename T>
     std::optional<T> decode_optional();
 
-    using Base::ignore;
-
     /**
      * @brief Ignore a message of known type.
      *
@@ -1083,6 +926,16 @@ public:
      * @param num_ignore number of messages to ignore (e.g., if a fixed-size array)
      */
     void ignore(const std::string_view msg_type, const std::size_t num_ignore = 1);
+
+    /**
+     * @brief Ignore a fundamental type.
+     *
+     * @tparam T
+     * @param num_ignore number of messages to ignore (e.g., if a fixed-size array)
+     */
+    template<typename T>
+        requires(std::is_trivially_copyable_v<T> && !cppbox::IsTimePoint<T> && !cppbox::IsDuration<T>)
+    void ignore(const std::size_t num_ignore = 1);
 
     /**
      * @brief Read fundamental data at the current offset plus optional extra offset without changing internal offsets
@@ -1195,14 +1048,6 @@ public:
 
     void read_to(Eigen::Isometry3d& out);
 
-    void read_to(ActuatorMeasurement& out);
-
-    void read_to(std::vector<ActuatorMeasurement>& out);
-
-    void read_to(ActuatorMeasurements& out);
-
-    void read_to(ContactClassifications& out);
-
     void read_to(ImuMeasurement<3>& out);
 
     void read_to(PoseMeasurement<3>& out);
@@ -1218,10 +1063,10 @@ public:
     void read_to(TemporalSpatialMeasurement& out);
 
 protected:
-    explicit ROS1BytesDecoder(const std::byte* bytes_, const std::size_t size_, const std::string& msg_type_,
-            ROS1BytesDecoder* parent_decoder_);
+    explicit ROS2BytesDecoder(const std::byte* bytes_, const std::size_t size_, const std::string& msg_type_,
+            ROS2BytesDecoder* parent_decoder_);
 
-    ROS1BytesDecoder create_internal_decoder(const std::string& internal_msg_type);
+    ROS2BytesDecoder create_internal_decoder(const std::string& internal_msg_type);
 
     template<typename T>
     T decode_internal(const std::string& internal_msg_type);
@@ -1240,6 +1085,6 @@ protected:
 
 }
 
-#include "sensorbox/impl/ros1_decoder.hpp"
+#include "sensorbox/impl/ros2_decoder.hpp"
 
 #endif

@@ -142,6 +142,7 @@ else()
         src/position.cpp
         src/random_walk_sensor.cpp
         src/ros1_decoder.cpp
+        src/ros2_decoder.cpp
         src/sensor.cpp
         src/stiffness.cpp
     )

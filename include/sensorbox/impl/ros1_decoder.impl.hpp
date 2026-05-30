@@ -11,12 +11,14 @@
 namespace sensorbox {
 
 SENSORBOX_INLINE void ROS1BytesDecoder::read_to(Eigen::Ref<Eigen::Vector3d> out) {
+    // geometry_msgs/Point, geometry_msgs/Vector3
     out[0] = read<double>();
     out[1] = read<double>();
     out[2] = read<double>();
 }
 
 SENSORBOX_INLINE void ROS1BytesDecoder::read_to(Eigen::Quaterniond& out) {
+    // geometry_msgs/Quaternion
     out.x() = read<double>();
     out.y() = read<double>();
     out.z() = read<double>();
@@ -52,13 +54,13 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(ActuatorMeasurement& out) {
         read_to(out.name());
         out.set_type(ActuatorType::SERIES_ELASTIC);
         ignore<uint32_t>();  // statusword
-        read_to_optional<double>(out.current());
-        read_to_optional<double>(out.motor_position());
-        read_to_optional<double>(out.motor_velocity());
-        read_to_optional<double>(out.joint_position());
-        read_to_optional<double>(out.joint_velocity());
+        read_optional_to<double>(out.current());
+        read_optional_to<double>(out.motor_position());
+        read_optional_to<double>(out.motor_velocity());
+        read_optional_to<double>(out.joint_position());
+        read_optional_to<double>(out.joint_velocity());
         ignore<double>();  // joint_acceleration
-        read_to_optional(out.joint_torque());
+        read_optional_to(out.joint_torque());
         ignore("sensor_msgs/Imu");  // imu
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to ActuatorMeasurement.");
@@ -72,12 +74,12 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(std::vector<ActuatorMeasurement>
         ignore("geometry_msgs/PoseStamped");   // pose
         ignore("geometry_msgs/TwistStamped");  // twist
         decode_internal_to("any_msgs/ExtendedJointState", out);
-        ignore_vector("anymal_msgs/Contact");             // contacts
-        ignore_vector("geometry_msgs/TransformStamped");  // frame_transforms
+        ignore("anymal_msgs/Contact[]");             // contacts
+        ignore("geometry_msgs/TransformStamped[]");  // frame_transforms
     } else if (msg_type() == "any_msgs/ExtendedJointState") {
         ignore<uint32_t>();  // seq
-        const typename ActuatorMeasurement::Timestamp timestamp = read_to<typename ActuatorMeasurement::Timestamp>();
-        const std::string frame = read_to<std::string>();
+        const typename ActuatorMeasurement::Timestamp timestamp = read<typename ActuatorMeasurement::Timestamp>();
+        const std::string frame = read<std::string>();
         const uint32_t names_size = read<uint32_t>();
         out.resize(names_size);
         for (uint32_t i = 0; i < names_size; ++i) {
@@ -88,18 +90,18 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(std::vector<ActuatorMeasurement>
         const uint32_t position_size = read<uint32_t>();
         throw_if(position_size != position_size, "Size mismatch in any_msgs/ExtendedJointState arrays.");
         for (uint32_t i = 0; i < position_size; ++i) {
-            read_to_optional<double>(out[i].joint_position());
+            read_optional_to<double>(out[i].joint_position());
         }
         const uint32_t velocity_size = read<uint32_t>();
         throw_if(velocity_size != velocity_size, "Size mismatch in any_msgs/ExtendedJointState arrays.");
         for (uint32_t i = 0; i < velocity_size; ++i) {
-            read_to_optional<double>(out[i].joint_velocity());
+            read_optional_to<double>(out[i].joint_velocity());
         }
-        ignore_vector<double>();  // acceleration
+        ignore("float64[]");  // acceleration
         const uint32_t effort_size = read<uint32_t>();
         throw_if(effort_size != effort_size, "Size mismatch in any_msgs/ExtendedJointState arrays.");
         for (uint32_t i = 0; i < effort_size; ++i) {
-            read_to_optional<double>(out[i].joint_torque());
+            read_optional_to<double>(out[i].joint_torque());
         }
     } else if (msg_type() == "series_elastic_actuator_msgs/SeActuatorReadings") {
         decode_vector_to("series_elastic_actuator_msgs/SeActuatorReading", out);
@@ -115,8 +117,8 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(ActuatorMeasurements& out) {
         ignore("geometry_msgs/PoseStamped");   // pose
         ignore("geometry_msgs/TwistStamped");  // twist
         decode_internal_to("any_msgs/ExtendedJointState", out);
-        ignore_vector("anymal_msgs/Contact");             // contacts
-        ignore_vector("geometry_msgs/TransformStamped");  // frame_transforms
+        ignore("anymal_msgs/Contact[]");             // contacts
+        ignore("geometry_msgs/TransformStamped[]");  // frame_transforms
     } else if (msg_type() == "any_msgs/ExtendedJointState") {
         out.timestamp() = peak<typename ActuatorMeasurements::Timestamp>(sizeof(uint32_t));  // (peak past header.seq)
         read_to(out.measurements());
@@ -136,9 +138,12 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(ContactClassifications& out) {
         ignore("geometry_msgs/PoseStamped");    // pose
         ignore("geometry_msgs/TwistStamped");   // twist
         ignore("any_msgs/ExtendedJointState");  // joints
+        decode_internal_to("anymal_msgs/Contact[]", out);
+        ignore("geometry_msgs/TransformStamped[]");  // frame_transforms
+    } else if (msg_type() == "anymal_msgs/Contact[]") {
         const uint32_t contacts_size = read<uint32_t>();
         for (uint32_t i = 0; i < contacts_size; ++i) {
-            ignore("std_msgs/Header");  // header
+            decode_internal_to("std_msgs/Header", static_cast<TemporalMeasurement&>(out));  // header
             const std::string name = read<std::string>();
             const uint8_t state = read<uint8_t>();
             out.set_classication(name, state == 1);
@@ -148,24 +153,8 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(ContactClassifications& out) {
             ignore<double>();                 // frictionCoefficient
             ignore<double>();                 // restitutionCoefficient
         }
-        ignore_vector("geometry_msgs/TransformStamped");  // frame_transforms
     } else if (msg_type() == "anymal_msgs/Contacts") {
-        const uint32_t contacts_size = read<uint32_t>();
-        if (contacts_size > 0) {
-            out.timestamp() =
-                    peak<typename ContactClassifications::Timestamp>(sizeof(uint32_t));  // (peak past header.seq)
-        }
-        for (uint32_t i = 0; i < contacts_size; ++i) {
-            ignore("std_msgs/Header");  // header
-            const std::string name = read<std::string>();
-            const uint8_t state = read<uint8_t>();
-            out.set_classication(name, state == 1);
-            ignore("geometry_msgs/Wrench");   // wrench
-            ignore("geometry_msgs/Point");    // position
-            ignore("geometry_msgs/Vector3");  // normal
-            ignore<double>();                 // frictionCoefficient
-            ignore<double>();                 // restitutionCoefficient
-        }
+        decode_internal_to("anymal_msgs/Contact[]", out);
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to ContactClassifications.");
     }
@@ -261,7 +250,7 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(TemporalMeasurement& out) {
     if (msg_type() == "std_msgs/Header") {
         ignore<uint32_t>();  // seq
         read_to(out.timestamp());
-        ignore_string();  // frame_id
+        ignore("string");  // frame_id
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to TemporalMeasurement.");
     }
@@ -277,154 +266,39 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(TemporalSpatialMeasurement& out)
     }
 }
 
-SENSORBOX_INLINE ROS1BytesDecoder::ROS1BytesDecoder(const std::byte* bytes_, const std::size_t size_,
-        const std::string& msg_type_, ROS1BytesDecoder* parent_decoder_)
-    : cppbox::BytesDecoder(bytes_, size_, parent_decoder_), msg_type_(msg_type_) {}
-
 SENSORBOX_INLINE std::size_t ROS1BytesDecoder::internal_msg_size(const std::string_view internal_msg_type,
-        std::size_t offset) const {
-    const std::size_t initial_offset = offset;
-    if (internal_msg_type == "duration") {
-        offset += sizeof(int32_t) * 2;  // secs, nsecs
+        std::size_t offset_) const {
+    const std::size_t initial_offset = offset_;
+    const std::size_t fundamental_size = ROS1MessagesTypes::fundamental::size(internal_msg_type);
+    if (fundamental_size > 0) {
+        // Message type is fundamental
+        offset_ += fundamental_size;
+    } else if (message_is_vector_type(internal_msg_type)) {
+        const std::string_view internal_msg_element_type = message_vector_type(internal_msg_type);
+        // In ROS 1, the vector length in elements is encoded in the first 4 bytes as a uint32.
+        const uint32_t vector_size = peak<uint32_t>(offset_);
+        offset_ += ROS1MessagesTypes::fundamental::size("uint32");
+        for (uint32_t i = 0; i < vector_size; ++i) {
+            offset_ += internal_msg_size(internal_msg_element_type, offset_);
+        }
+    } else if (message_is_array_type(internal_msg_type)) {
+        const std::string_view internal_msg_element_type = message_array_type(internal_msg_type);
+        const std::size_t array_size = message_array_size(internal_msg_type);
+        for (std::size_t i = 0; i < array_size; ++i) {
+            offset_ += internal_msg_size(internal_msg_element_type, offset_);
+        }
     } else if (internal_msg_type == "string") {
-        // In ROS 1, the string length in chars/bytes is encoded in the first 4 bytes as a uint32
-        offset += sizeof(uint32_t) + peak<uint32_t>(offset);
-    } else if (internal_msg_type == "time") {
-        offset += sizeof(uint32_t) * 2;  // secs, nsecs
-    } else if (internal_msg_type == "std_msgs/Duration") {
-        offset += internal_msg_size("duration", offset);
-    } else if (internal_msg_type == "std_msgs/Header") {
-        offset += sizeof(uint32_t);  // seq
-        offset += internal_msg_size("time", offset);
-        offset += internal_msg_size("string", offset);
-    } else if (internal_msg_type == "std_msgs/String") {
-        offset += internal_msg_size("string", offset);
-    } else if (internal_msg_type == "std_msgs/Time") {
-        offset += internal_msg_size("time", offset);
-    } else if (internal_msg_type == "geometry_msgs/Point") {
-        offset += sizeof(double) * 3;  // x, y, z
-    } else if (internal_msg_type == "geometry_msgs/Pose") {
-        offset += internal_msg_size("geometry_msgs/Point", offset);
-        offset += internal_msg_size("geometry_msgs/Quaternion", offset);
-    } else if (internal_msg_type == "geometry_msgs/PoseStamped") {
-        offset += internal_msg_size("std_msgs/Header", offset);
-        offset += internal_msg_size("geometry_msgs/Pose", offset);
-    } else if (internal_msg_type == "geometry_msgs/PoseWithCovariance") {
-        offset += internal_msg_size("geometry_msgs/Pose", offset);
-        offset += sizeof(double) * 36;
-    } else if (internal_msg_type == "geometry_msgs/PoseWithCovarianceStamped") {
-        offset += internal_msg_size("std_msgs/Header", offset);
-        offset += internal_msg_size("geometry_msgs/PoseWithCovariance", offset);
-    } else if (internal_msg_type == "geometry_msgs/Transform") {
-        offset += internal_msg_size("geometry_msgs/Vector3", offset);
-        offset += internal_msg_size("geometry_msgs/Quaternion", offset);
-    } else if (internal_msg_type == "geometry_msgs/Quaternion") {
-        offset += sizeof(double) * 4;  // x, y, z, w
-    } else if (internal_msg_type == "geometry_msgs/TransformStamped") {
-        offset += internal_msg_size("std_msgs/Header", offset);
-        offset += internal_msg_size("string", offset);
-        offset += internal_msg_size("geometry_msgs/Transform", offset);
-    } else if (internal_msg_type == "geometry_msgs/Twist") {
-        offset += internal_msg_size("geometry_msgs/Vector3", offset);
-        offset += internal_msg_size("geometry_msgs/Vector3", offset);
-    } else if (internal_msg_type == "geometry_msgs/TwistStamped") {
-        offset += internal_msg_size("std_msgs/Header", offset);
-        offset += internal_msg_size("geometry_msgs/Twist", offset);
-    } else if (internal_msg_type == "geometry_msgs/TwistWithCovariance") {
-        offset += internal_msg_size("geometry_msgs/Twist", offset);
-        offset += sizeof(double) * 36;
-    } else if (internal_msg_type == "geometry_msgs/TwistWithCovarianceStamped") {
-        offset += internal_msg_size("std_msgs/Header", offset);
-        offset += internal_msg_size("geometry_msgs/TwistWithCovariance", offset);
-    } else if (internal_msg_type == "geometry_msgs/Vector3") {
-        offset += sizeof(double) * 3;  // x, y, z
-    } else if (internal_msg_type == "geometry_msgs/Wrench") {
-        offset += internal_msg_size("geometry_msgs/Vector3", offset);
-        offset += internal_msg_size("geometry_msgs/Vector3", offset);
-    } else if (internal_msg_type == "nav_msgs/Odometry") {
-        offset += internal_msg_size("std_msgs/Header", offset);
-        offset += internal_msg_size("string", offset);
-        offset += internal_msg_size("geometry_msgs/PoseWithCovariance", offset);
-        offset += internal_msg_size("geometry_msgs/TwistWithCovariance", offset);
-    } else if (internal_msg_type == "sensor_msgs/Imu") {
-        offset += internal_msg_size("std_msgs/Header", offset);
-        offset += internal_msg_size("geometry_msgs/Quaternion", offset);
-        offset += sizeof(double) * 9;
-        offset += internal_msg_size("geometry_msgs/Vector3", offset);
-        offset += sizeof(double) * 9;
-        offset += internal_msg_size("geometry_msgs/Vector3", offset);
-        offset += sizeof(double) * 9;
-    } else if (internal_msg_type == "tf2_msgs/TFMessage") {
-        offset += internal_vector_msg_size("geometry_msgs/TransformStamped", offset);
-    } else if (internal_msg_type == "any_msgs/ExtendedJointState") {
-        offset += internal_msg_size("std_msgs/Header", offset);
-        offset += internal_vector_msg_size("string", offset);
-        offset += internal_vector_msg_size<double>(offset);
-        offset += internal_vector_msg_size<double>(offset);
-        offset += internal_vector_msg_size<double>(offset);
-        offset += internal_vector_msg_size<double>(offset);
-    } else if (internal_msg_type == "anymal_msgs/AnymalState") {
-        offset += internal_msg_size("std_msgs/Header", offset);
-        offset += sizeof(int8_t);
-        offset += internal_msg_size("geometry_msgs/PoseStamped", offset);
-        offset += internal_msg_size("geometry_msgs/TwistStamped", offset);
-        offset += internal_msg_size("any_msgs/ExtendedJointState", offset);
-        offset += internal_vector_msg_size("anymal_msgs/Contact", offset);
-        offset += internal_vector_msg_size("geometry_msgs/TransformStamped", offset);
-    } else if (internal_msg_type == "anymal_msgs/Contact") {
-        offset += internal_msg_size("std_msgs/Header", offset);
-        offset += internal_msg_size("string", offset);
-        offset += sizeof(uint8_t);
-        offset += internal_msg_size("geometry_msgs/Wrench", offset);
-        offset += internal_msg_size("geometry_msgs/Point", offset);
-        offset += internal_msg_size("geometry_msgs/Vector3", offset);
-        offset += sizeof(double);
-        offset += sizeof(double);
-    } else if (internal_msg_type == "series_elastic_actuator_msgs/SeActuatorCommand") {
-        offset += internal_msg_size("std_msgs/Header", offset);
-        offset += internal_msg_size("string", offset);
-        offset += sizeof(int16_t);
-        offset += sizeof(double);
-        offset += sizeof(double);
-        offset += sizeof(double);
-        offset += sizeof(double);
-        offset += sizeof(float);
-        offset += sizeof(float);
-        offset += sizeof(float);
-    } else if (internal_msg_type == "series_elastic_actuator_msgs/SeActuatorReadings") {
-        offset += internal_vector_msg_size("series_elastic_actuator_msgs/SeActuatorReading", offset);
-    } else if (internal_msg_type == "series_elastic_actuator_msgs/SeActuatorReading") {
-        offset += internal_msg_size("std_msgs/Header", offset);
-        offset += internal_msg_size("series_elastic_actuator_msgs/SeActuatorState", offset);
-        offset += internal_msg_size("series_elastic_actuator_msgs/SeActuatorCommand", offset);
-    } else if (internal_msg_type == "series_elastic_actuator_msgs/SeActuatorState") {
-        offset += internal_msg_size("std_msgs/Header", offset);
-        offset += internal_msg_size("string", offset);
-        offset += sizeof(uint32_t);
-        offset += sizeof(double);
-        offset += sizeof(double);
-        offset += sizeof(double);
-        offset += sizeof(double);
-        offset += sizeof(double);
-        offset += sizeof(double);
-        offset += sizeof(double);
-        offset += internal_msg_size("sensor_msgs/Imu", offset);
+        // In ROS 1, the string length in chars/bytes is encoded in the first 4 bytes as a uint32.
+        offset_ += ROS1MessagesTypes::fundamental::size("uint32") + peak<uint32_t>(offset_);
     } else {
-        throw_here("ROS1 internal msg size for msg_type " + std::string(internal_msg_type) + " not known.");
+        // Message type belongs to a group
+        const auto fields = message_fields(ROS1MessagesTypes::msg_types, internal_msg_type);
+        throw_if(fields.empty(), std::string(internal_msg_type) + " is not a known msg type.");
+        std::for_each(fields.begin(), fields.end(), [this, &offset_, internal_msg_type](const MessageField& field) {
+            offset_ += internal_msg_size(field.type, offset_);
+        });
     }
-    return offset - initial_offset;
-}
-
-SENSORBOX_INLINE std::size_t ROS1BytesDecoder::internal_vector_msg_size(const std::string_view internal_msg_type,
-        std::size_t offset) const {
-    const std::size_t initial_offset = offset;
-    // In ROS 1, the vector length in elements is encoded in the first 4 bytes as a uint32
-    const uint32_t size = peak<uint32_t>(offset);
-    offset += sizeof(uint32_t);
-    for (uint32_t i = 0; i < size; ++i) {
-        offset += internal_msg_size(internal_msg_type, offset);
-    }
-    return offset - initial_offset;
+    return offset_ - initial_offset;
 }
 
 }
