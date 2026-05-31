@@ -46,10 +46,11 @@ struct ROS2MessagesTypes {
         });
 
         /**
-         * @brief Compute the ROS 2 CDR padding of a fundmental type of `size_` bytes based on the current offset from
-         * the end of the CDR header.
+         * @brief Compute the ROS 2 CDR aligned offset of a fundmental type of `size_` bytes based on the current offset
+         * from the end of the CDR header.
          *
-         * In ROS 2, CDR structs align fundamental types to memory offsets that are multiples of their own size.
+         * In ROS 2, CDR structs align fundamental types with leading padding to memory offsets that are multiples of
+         * their own size.
          *
          * Hence:
          * - 1 byte: no alignment
@@ -63,10 +64,16 @@ struct ROS2MessagesTypes {
          * @param offset
          * @return constexpr std::size_t
          */
+        static constexpr std::size_t aligned_offset(const std::size_t size_, const std::size_t offset = 0) {
+            // Since size_ is a power of 2, use bit-masking to compute the aligned offset efficiently
+            assert(size_ == 0 || (size_ & (size_ - 1)) == 0);
+            return size_ == 0 ? offset : (offset + (size_ - 1)) & ~(size_ - 1);
+        }
+
         static constexpr std::size_t padding(const std::size_t size_, const std::size_t offset = 0) {
             // Since size_ is a power of 2, use bit-masking to compute the padding efficiently
             assert(size_ == 0 || (size_ & (size_ - 1)) == 0);
-            return size_ == 0 ? 0 : (offset + (size_ - 1)) & ~(size_ - 1);
+            return size_ == 0 ? 0 : (-offset) & (size_ - 1);
         }
 
         /**
@@ -928,7 +935,8 @@ public:
     void ignore(const std::string_view msg_type, const std::size_t num_ignore = 1);
 
     /**
-     * @brief Ignore a fundamental type.
+     * @brief Ignore a fundamental type. The user should not directly use the base class ignore functions because
+     * padding must be considered.
      *
      * @tparam T
      * @param num_ignore number of messages to ignore (e.g., if a fixed-size array)
@@ -938,48 +946,14 @@ public:
     void ignore(const std::size_t num_ignore = 1);
 
     /**
-     * @brief Read fundamental data at the current offset plus optional extra offset without changing internal offsets
-     * used during reading.
-     *
-     * @tparam T
-     * @param extra_offset
-     */
-    template<typename T>
-        requires(std::is_trivially_copyable_v<T> && !cppbox::IsTimePoint<T> && !cppbox::IsDuration<T>)
-    T peak(const std::size_t extra_offset = 0) const;
-
-    /**
-     * @brief Read string at the current offset plus optional extra offset without changing internal offsets used during
-     * reading.
-     *
-     * @tparam T
-     * @param extra_offset
-     */
-    template<typename T>
-        requires(std::is_same_v<T, std::string>)
-    T peak(const std::size_t extra_offset = 0) const;
-
-    /**
-     * @brief Read duration at the current offset plus optional extra offset without changing internal offsets used
-     * during reading.
+     * @brief Read data to `T` without changing the internal offsets.
      *
      * @tparam T
      * @param extra_offset
      * @return T
      */
-    template<cppbox::IsDuration T>
-    T peak(const std::size_t extra_offset = 0) const;
-
-    /**
-     * @brief Read time at the current offset plus optional extra offset without changing internal offsets used during
-     * reading.
-     *
-     * @tparam T
-     * @param extra_offset
-     * @return T
-     */
-    template<cppbox::IsTimePoint T>
-    T peak(const std::size_t extra_offset = 0) const;
+    template<typename T>
+    T peak(const std::size_t extra_offset = 0);
 
     /**
      * @brief Read data to `T`.
@@ -1080,7 +1054,7 @@ protected:
     template<typename T>
     void decode_vector_to(const std::string& vector_msg_type, std::vector<T>& out);
 
-    std::size_t internal_msg_size(const std::string_view internal_msg_type, std::size_t offset_) const;
+    std::size_t internal_msg_size(const std::string_view internal_msg_type, std::size_t extra_offset = 0);
 };
 
 }

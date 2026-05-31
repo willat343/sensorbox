@@ -267,38 +267,38 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(TemporalSpatialMeasurement& out)
 }
 
 SENSORBOX_INLINE std::size_t ROS1BytesDecoder::internal_msg_size(const std::string_view internal_msg_type,
-        std::size_t offset_) const {
-    const std::size_t initial_offset = offset_;
+        std::size_t extra_offset) {
+    const std::size_t initial_offset = extra_offset;
     const std::size_t fundamental_size = ROS1MessagesTypes::fundamental::size(internal_msg_type);
     if (fundamental_size > 0) {
         // Message type is fundamental
-        offset_ += fundamental_size;
+        extra_offset += fundamental_size;
     } else if (message_is_vector_type(internal_msg_type)) {
         const std::string_view internal_msg_element_type = message_vector_type(internal_msg_type);
         // In ROS 1, the vector length in elements is encoded in the first 4 bytes as a uint32.
-        const uint32_t vector_size = peak<uint32_t>(offset_);
-        offset_ += ROS1MessagesTypes::fundamental::size("uint32");
+        const uint32_t vector_size = peak<uint32_t>(extra_offset);
+        extra_offset += ROS1MessagesTypes::fundamental::size("uint32");
         for (uint32_t i = 0; i < vector_size; ++i) {
-            offset_ += internal_msg_size(internal_msg_element_type, offset_);
+            extra_offset += internal_msg_size(internal_msg_element_type, extra_offset);
         }
     } else if (message_is_array_type(internal_msg_type)) {
         const std::string_view internal_msg_element_type = message_array_type(internal_msg_type);
         const std::size_t array_size = message_array_size(internal_msg_type);
         for (std::size_t i = 0; i < array_size; ++i) {
-            offset_ += internal_msg_size(internal_msg_element_type, offset_);
+            extra_offset += internal_msg_size(internal_msg_element_type, extra_offset);
         }
     } else if (internal_msg_type == "string") {
         // In ROS 1, the string length in chars/bytes is encoded in the first 4 bytes as a uint32.
-        offset_ += ROS1MessagesTypes::fundamental::size("uint32") + peak<uint32_t>(offset_);
+        extra_offset += ROS1MessagesTypes::fundamental::size("uint32") + peak<uint32_t>(extra_offset);
     } else {
         // Message type belongs to a group
         const auto fields = message_fields(ROS1MessagesTypes::msg_types, internal_msg_type);
         throw_if(fields.empty(), std::string(internal_msg_type) + " is not a known msg type.");
-        std::for_each(fields.begin(), fields.end(), [this, &offset_, internal_msg_type](const MessageField& field) {
-            offset_ += internal_msg_size(field.type, offset_);
-        });
+        std::for_each(fields.begin(), fields.end(),
+                [this, &extra_offset, internal_msg_type](
+                        const MessageField& field) { extra_offset += internal_msg_size(field.type, extra_offset); });
     }
-    return offset_ - initial_offset;
+    return extra_offset - initial_offset;
 }
 
 }

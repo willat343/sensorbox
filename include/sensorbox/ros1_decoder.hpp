@@ -1074,6 +1074,7 @@ public:
     template<typename T>
     std::optional<T> decode_optional();
 
+    // Include base ignore functions which remain valid.
     using Base::ignore;
 
     /**
@@ -1085,48 +1086,14 @@ public:
     void ignore(const std::string_view msg_type, const std::size_t num_ignore = 1);
 
     /**
-     * @brief Read fundamental data at the current offset plus optional extra offset without changing internal offsets
-     * used during reading.
-     *
-     * @tparam T
-     * @param extra_offset
-     */
-    template<typename T>
-        requires(std::is_trivially_copyable_v<T> && !cppbox::IsTimePoint<T> && !cppbox::IsDuration<T>)
-    T peak(const std::size_t extra_offset = 0) const;
-
-    /**
-     * @brief Read string at the current offset plus optional extra offset without changing internal offsets used during
-     * reading.
-     *
-     * @tparam T
-     * @param extra_offset
-     */
-    template<typename T>
-        requires(std::is_same_v<T, std::string>)
-    T peak(const std::size_t extra_offset = 0) const;
-
-    /**
-     * @brief Read duration at the current offset plus optional extra offset without changing internal offsets used
-     * during reading.
+     * @brief Read data to `T` without changing the internal offsets.
      *
      * @tparam T
      * @param extra_offset
      * @return T
      */
-    template<cppbox::IsDuration T>
-    T peak(const std::size_t extra_offset = 0) const;
-
-    /**
-     * @brief Read time at the current offset plus optional extra offset without changing internal offsets used during
-     * reading.
-     *
-     * @tparam T
-     * @param extra_offset
-     * @return T
-     */
-    template<cppbox::IsTimePoint T>
-    T peak(const std::size_t extra_offset = 0) const;
+    template<typename T>
+    T peak(const std::size_t extra_offset = 0);
 
     /**
      * @brief Read data to `T`.
@@ -1235,7 +1202,7 @@ protected:
     template<typename T>
     void decode_vector_to(const std::string& vector_msg_type, std::vector<T>& out);
 
-    std::size_t internal_msg_size(const std::string_view internal_msg_type, std::size_t offset_) const;
+    std::size_t internal_msg_size(const std::string_view internal_msg_type, std::size_t extra_offset = 0);
 };
 
 }

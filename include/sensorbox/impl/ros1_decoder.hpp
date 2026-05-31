@@ -11,7 +11,9 @@ namespace sensorbox {
 
 inline ROS1BytesDecoder::ROS1BytesDecoder(const std::byte* bytes_, const std::size_t size_,
         const std::string& msg_type_)
-    : ROS1BytesDecoder(bytes_, size_, msg_type_, nullptr) {}
+    : ROS1BytesDecoder(bytes_, size_, msg_type_, nullptr) {
+    assert(internal_msg_size(msg_type()) == size());
+}
 
 template<typename T>
 inline T ROS1BytesDecoder::decode() {
@@ -50,36 +52,16 @@ inline std::optional<T> ROS1BytesDecoder::decode_optional() {
 }
 
 inline void ROS1BytesDecoder::ignore(const std::string_view msg_type, const std::size_t num_ignore) {
-    ignore_bytes(internal_msg_size(msg_type, 0) * num_ignore);
+    ignore_bytes(internal_msg_size(msg_type) * num_ignore);
 }
 
 template<typename T>
-    requires(std::is_trivially_copyable_v<T> && !cppbox::IsTimePoint<T> && !cppbox::IsDuration<T>)
-inline T ROS1BytesDecoder::peak(const std::size_t extra_offset) const {
-    return cppbox::BytesDecoder::peak<T>(extra_offset);
-}
-
-template<typename T>
-    requires(std::is_same_v<T, std::string>)
-inline T ROS1BytesDecoder::peak(const std::size_t extra_offset) const {
-    // In ROS 1, the string length in bytes is encoded in the first 4 bytes as a uint32
-    return cppbox::BytesDecoder::peak<std::string>(peak<uint32_t>(extra_offset), extra_offset + sizeof(uint32_t));
-}
-
-template<cppbox::IsDuration T>
-inline T ROS1BytesDecoder::peak(const std::size_t extra_offset) const {
-    // In ROS 1, duration is sec as int32_t and nsec as int32_t
-    const std::chrono::seconds sec{peak<int32_t>(extra_offset)};
-    const std::chrono::nanoseconds nsec{peak<int32_t>(extra_offset + sizeof(int32_t))};
-    return T{sec + nsec};
-}
-
-template<cppbox::IsTimePoint T>
-inline T ROS1BytesDecoder::peak(const std::size_t extra_offset) const {
-    // In ROS 1, time is sec as uint32_t and nsec as uint32_t
-    const std::chrono::seconds sec{peak<uint32_t>(extra_offset)};
-    const std::chrono::nanoseconds nsec{peak<uint32_t>(extra_offset + sizeof(uint32_t))};
-    return T{sec + nsec};
+inline T ROS1BytesDecoder::peak(const std::size_t extra_offset) {
+    const std::size_t initial_offset = offset();
+    increment_offset(extra_offset);
+    const T out = read<T>();
+    decrement_offset(offset() - initial_offset);
+    return out;
 }
 
 template<typename T>
@@ -133,7 +115,9 @@ inline ROS1BytesDecoder::ROS1BytesDecoder(const std::byte* bytes_, const std::si
     : MessageDecoder<ROS1MessagesTypes, ROS1Conversions>(bytes_, size_, msg_type_, parent_decoder_) {}
 
 inline ROS1BytesDecoder ROS1BytesDecoder::create_internal_decoder(const std::string& internal_msg_type) {
-    return ROS1BytesDecoder(bytes() + offset(), internal_msg_size(internal_msg_type, 0), internal_msg_type, this);
+    const std::size_t internal_msg_size_ = internal_msg_size(internal_msg_type);
+    assert(offset() + internal_msg_size_ <= size());
+    return ROS1BytesDecoder(bytes() + offset(), internal_msg_size_, internal_msg_type, this);
 }
 
 template<typename T>

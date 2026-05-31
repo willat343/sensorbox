@@ -13,6 +13,7 @@ inline ROS2BytesDecoder::ROS2BytesDecoder(const std::byte* bytes_, const std::si
     // Check that the CDR header was correctly ignored (and is not included in the offset)
     assert(size_ >= ROS2MessagesTypes::cdr_header.size());
     assert(std::equal(ROS2MessagesTypes::cdr_header.begin(), ROS2MessagesTypes::cdr_header.end(), bytes_));
+    assert(internal_msg_size(msg_type()) == size());
 }
 
 template<typename T>
@@ -61,41 +62,18 @@ template<typename T>
     requires(std::is_trivially_copyable_v<T> && !cppbox::IsTimePoint<T> && !cppbox::IsDuration<T>)
 inline void ROS2BytesDecoder::ignore(const std::size_t num_ignore) {
     // In ROS 2, fundamental types may have padding which must be ignored
-    ignore_bytes(ROS2MessagesTypes::fundamental::padding(sizeof(T), offset()));
+    ignore_bytes(ROS2MessagesTypes::fundamental::padding(sizeof(T), offset_overall()));
     // Subsequently, types will be aligned without padding so can be be ignored together
     ignore_bytes(sizeof(T) * num_ignore);
 }
 
 template<typename T>
-    requires(std::is_trivially_copyable_v<T> && !cppbox::IsTimePoint<T> && !cppbox::IsDuration<T>)
-inline T ROS2BytesDecoder::peak(const std::size_t extra_offset) const {
-    return cppbox::BytesDecoder::peak<T>(
-            ROS2MessagesTypes::fundamental::padding(sizeof(T), offset() + extra_offset) + extra_offset);
-}
-
-template<typename T>
-    requires(std::is_same_v<T, std::string>)
-inline T ROS2BytesDecoder::peak(const std::size_t extra_offset) const {
-    // In ROS 2, the string length in bytes is encoded in the first 4 bytes as a uint32
-    return cppbox::BytesDecoder::peak<std::string>(peak<uint32_t>(extra_offset),
-            extra_offset + ROS2MessagesTypes::fundamental::padding(sizeof(T), offset() + extra_offset) +
-                    sizeof(uint32_t));
-}
-
-template<cppbox::IsDuration T>
-inline T ROS2BytesDecoder::peak(const std::size_t extra_offset) const {
-    // In ROS 2, duration is sec as int32_t and nanosec as uint32_t
-    const std::chrono::seconds sec{peak<int32_t>(extra_offset)};
-    const std::chrono::nanoseconds nanosec{peak<int32_t>(extra_offset + sizeof(int32_t))};
-    return T{sec + nanosec};
-}
-
-template<cppbox::IsTimePoint T>
-inline T ROS2BytesDecoder::peak(const std::size_t extra_offset) const {
-    // In ROS 2, duration is sec as int32_t and nanosec as uint32_t
-    const std::chrono::seconds sec{peak<int32_t>(extra_offset)};
-    const std::chrono::nanoseconds nanosec{peak<uint32_t>(extra_offset + sizeof(int32_t))};
-    return T{sec + nanosec};
+inline T ROS2BytesDecoder::peak(const std::size_t extra_offset) {
+    const std::size_t initial_offset = offset();
+    increment_offset(extra_offset);
+    const T out = read<T>();
+    decrement_offset(offset() - initial_offset);
+    return out;
 }
 
 template<typename T>
@@ -121,7 +99,7 @@ template<typename T>
     requires(std::is_trivially_copyable_v<T> && !cppbox::IsTimePoint<T> && !cppbox::IsDuration<T>)
 inline void ROS2BytesDecoder::read_to(T& out) {
     // In ROS 2, fundamental types may have padding which must be ignored
-    ignore_bytes(ROS2MessagesTypes::fundamental::padding(sizeof(T), offset()));
+    ignore_bytes(ROS2MessagesTypes::fundamental::padding(sizeof(T), offset_overall()));
     out = cppbox::BytesDecoder::read<T>();
 }
 
@@ -154,7 +132,9 @@ inline ROS2BytesDecoder::ROS2BytesDecoder(const std::byte* bytes_, const std::si
     : MessageDecoder<ROS2MessagesTypes, ROS2Conversions>(bytes_, size_, msg_type_, parent_decoder_) {}
 
 inline ROS2BytesDecoder ROS2BytesDecoder::create_internal_decoder(const std::string& internal_msg_type) {
-    return ROS2BytesDecoder(bytes() + offset(), internal_msg_size(internal_msg_type, 0), internal_msg_type, this);
+    const std::size_t internal_msg_size_ = internal_msg_size(internal_msg_type);
+    assert(offset() + internal_msg_size_ <= size());
+    return ROS2BytesDecoder(bytes() + offset(), internal_msg_size_, internal_msg_type, this);
 }
 
 template<typename T>

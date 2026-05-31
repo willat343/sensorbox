@@ -145,47 +145,52 @@ SENSORBOX_INLINE void ROS2BytesDecoder::read_to(TemporalSpatialMeasurement& out)
 }
 
 SENSORBOX_INLINE std::size_t ROS2BytesDecoder::internal_msg_size(const std::string_view internal_msg_type,
-        std::size_t offset_) const {
+        std::size_t extra_offset) {
     // Note that offset does not include the CDR header
-    const std::size_t initial_offset = offset_;
-    const std::size_t fundamental_size = ROS2MessagesTypes::fundamental::size(internal_msg_type);
+    const std::size_t initial_offset = extra_offset;
+    assert(offset_overall() >= offset());
+    const std::size_t fundamental_size =
+            ROS2MessagesTypes::fundamental::size(internal_msg_type, offset_overall() + extra_offset);
     if (fundamental_size > 0) {
         // Message type is fundamental
-        offset_ += fundamental_size;
+        extra_offset += fundamental_size;
     } else if (message_is_vector_type(internal_msg_type)) {
         const std::string_view internal_msg_element_type = message_vector_type(internal_msg_type);
         // In ROS 2, the vector length in elements is encoded in the first 4 bytes as a uint32 (which must
         // obey alignment). Add padding first to ensure correct peak.
-        offset_ += ROS2MessagesTypes::fundamental::padding(ROS2MessagesTypes::fundamental::size("uint32"), offset_);
-        const uint32_t vector_size = peak<uint32_t>(offset_);
-        offset_ += ROS2MessagesTypes::fundamental::size("uint32", offset_);
+        extra_offset += ROS2MessagesTypes::fundamental::padding(ROS2MessagesTypes::fundamental::size("uint32"),
+                offset_overall() + extra_offset);
+        const uint32_t vector_size = peak<uint32_t>(extra_offset);
+        extra_offset += ROS2MessagesTypes::fundamental::size("uint32", offset_overall() + extra_offset);
         for (uint32_t i = 0; i < vector_size; ++i) {
-            offset_ += internal_msg_size(internal_msg_element_type, offset_);
+            extra_offset += internal_msg_size(internal_msg_element_type, extra_offset);
         }
     } else if (message_is_array_type(internal_msg_type)) {
         const std::string_view internal_msg_element_type = message_array_type(internal_msg_type);
         const std::size_t array_size = message_array_size(internal_msg_type);
         for (std::size_t i = 0; i < array_size; ++i) {
-            offset_ += internal_msg_size(internal_msg_element_type, offset_);
+            extra_offset += internal_msg_size(internal_msg_element_type, extra_offset);
         }
     } else if (internal_msg_type == "string") {
         // In ROS 2, the string length in chars/bytes is encoded in the first 4 bytes as a uint32 (which
         // must obey alignment), and the string ends with a null terminator '\0'. Add padding first to
         // ensure correct peak.
-        offset_ += ROS2MessagesTypes::fundamental::padding(ROS2MessagesTypes::fundamental::size("uint32"), offset_);
-        offset_ += ROS2MessagesTypes::fundamental::size("uint32", offset_) + peak<uint32_t>(offset_) + 1;
+        extra_offset += ROS2MessagesTypes::fundamental::padding(ROS2MessagesTypes::fundamental::size("uint32"),
+                offset_overall() + extra_offset);
+        extra_offset += ROS2MessagesTypes::fundamental::size("uint32", offset_overall() + extra_offset) +
+                        peak<uint32_t>(extra_offset) + 1;
     } else if (internal_msg_type.starts_with("builtin_interfaces")) {
         // In ROS 2, all builtin_interfaces has fixed size
-        offset_ += ROS2MessagesTypes::builtin_interfaces::size(internal_msg_type, offset_);
+        extra_offset += ROS2MessagesTypes::builtin_interfaces::size(internal_msg_type, offset_overall() + extra_offset);
     } else {
         // Message type belongs to a group
         const auto fields = message_fields(ROS2MessagesTypes::msg_types, internal_msg_type);
         throw_if(fields.empty(), std::string(internal_msg_type) + " is not a known msg type.");
-        std::for_each(fields.begin(), fields.end(), [this, &offset_, internal_msg_type](const MessageField& field) {
-            offset_ += internal_msg_size(field.type, offset_);
-        });
+        std::for_each(fields.begin(), fields.end(),
+                [this, &extra_offset, internal_msg_type](
+                        const MessageField& field) { extra_offset += internal_msg_size(field.type, extra_offset); });
     }
-    return offset_ - initial_offset;
+    return extra_offset - initial_offset;
 }
 
 }
