@@ -9,12 +9,13 @@ A package for processing sensor data.
 | **Dependency** | **Version** | **Description** |
 |----------------|-------------|-----------------|
 | CMake | >= 3.21 | CMake Build Tool |
-| [cmakebox](https://github.com/willat343/cmakebox) | >= 0.0.11 | CMake Functions and Utilities |
-| [cppbox](https://github.com/willat343/cppbox) | >= 0.2.2 | C++ Package |
+| [cmakebox](https://github.com/willat343/cmakebox) | >= 0.0.13 | CMake Functions and Utilities |
+| [cppbox](https://github.com/willat343/cppbox) | >= 0.2.3 | C++ Package |
 | Eigen3 | >= 3.4.0 | Linear Algebra Package |
-| nlohmann_json | >= 3.7.3 (< g++-10) or >= 3.8.0 (>= g++-10) | JSON Package |
-| [mathbox](https://github.com/willat343/mathbox) | 0.8.1 | Math Package |
-| [convert](https://github.com/willat343/convert) | >= 0.7.0 | General Conversion Package |
+| nlohmann_json |  >= 3.8.0 | JSON Package |
+| nlohmann_json_schema_validator |  >= 2.3.0 | JSON Package |
+| [mathbox](https://github.com/willat343/mathbox) | >= 0.8.2 | Math Package |
+| [convert](https://github.com/willat343/convert) | >= 0.7.2 | General Conversion Package |
 
 There are several ways to include `sensorbox` within your project:
 - [Preferred] Via `FetchContent` allowing package to be built as a submodule.

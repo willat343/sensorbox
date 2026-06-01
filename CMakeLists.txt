@@ -33,7 +33,13 @@ if (DEVELOPER_MODE)
 endif()
 
 # Dependency: cmakebox
-set(CMAKEBOX_VERSION "0.0.11")
+set(CMAKEBOX_MINIMUM_VERSION "0.0.13")
+if (NOT DEFINED CMAKEBOX_VERSION)
+    set(CMAKEBOX_VERSION "${CMAKEBOX_MINIMUM_VERSION}" CACHE STRING "Version of cmakebox to fetch")
+endif()
+if (CMAKEBOX_VERSION VERSION_LESS CMAKEBOX_MINIMUM_VERSION)
+    message(FATAL_ERROR "CMAKEBOX_VERSION ${CMAKEBOX_VERSION} was less than minimum ${CMAKEBOX_MINIMUM_VERSION}.")
+endif()
 FetchContent_Declare(
     cmakebox
     GIT_REPOSITORY git@github.com:willat343/cmakebox.git
@@ -50,25 +56,25 @@ setup_build_type()
 get_cxx_compiler_info()
 
 # Dependency: Eigen3 (Target: Eigen3::Eigen)
-set(EIGEN3_VERSION "3.4.0")
+dependency_version(EIGEN3 MINIMUM_VERSION "3.4.0")
 import_Eigen3(
     VERSION ${EIGEN3_VERSION}
 )
 
 # Dependency: nlohmann_json (Target: nlohmann_json::nlohmann_json)
-set(NLOHMANN_JSON_VERSION "3.8.0")
+dependency_version(NLOHMANN_JSON MINIMUM_VERSION "3.8.0")
 import_nlohmann_json(
     VERSION ${NLOHMANN_JSON_VERSION}
 )
 
 # Dependency: nlohmann_json_schema_validator (Target: nlohmann_json_schema_validator::validator)
-set(NLOHMANN_JSON_SCHEMA_VALIDATOR_VERSION "2.3.0")
+dependency_version(NLOHMANN_JSON_SCHEMA_VALIDATOR MINIMUM_VERSION "2.3.0")
 import_nlohmann_json_schema_validator(
     VERSION ${NLOHMANN_JSON_SCHEMA_VALIDATOR_VERSION}
 )
 
 # Dependency: cppbox (Target: cppbox::cppbox)
-set(CPPBOX_VERSION "0.2.0")
+dependency_version(CPPBOX MINIMUM_VERSION "0.2.3")
 import_dependency(
     cppbox
     TARGET cppbox::cppbox
@@ -79,7 +85,7 @@ import_dependency(
 )
 
 # Dependency: mathbox (Target: mathbox::mathbox)
-set(MATHBOX_VERSION "0.8.0")
+dependency_version(MATHBOX MINIMUM_VERSION "0.8.2")
 import_dependency(
     mathbox
     TARGET mathbox::mathbox
@@ -109,7 +115,7 @@ if (BUILD_SENSORBOX_ROS)
         ${sensor_msgs_LIBRARIES}
     )
 endif()
-set(CONVERT_VERSION "0.7.0")
+dependency_version(CONVERT MINIMUM_VERSION "0.7.2")
 import_dependency(
     convert
     TARGET convert::convert
@@ -262,7 +268,7 @@ create_uninstall_target()
 
 # Build Documentation
 if (BUILD_DOCUMENTATION)
-    set(DOXYGEN_VERSION "1.16.0")
+    dependency_version(DOXYGEN MINIMUM_VERSION "1.16.0")
     import_doxygen(VERSION ${DOXYGEN_VERSION})
     set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
     configure_file(Doxyfile.in ${DOXYGEN_OUT})
