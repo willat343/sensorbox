@@ -1,6 +1,8 @@
 #ifndef SENSORBOX_IMPL_CONTACT_HPP
 #define SENSORBOX_IMPL_CONTACT_HPP
 
+#include <numeric>
+
 #include "sensorbox/contact.hpp"
 
 namespace sensorbox {
@@ -28,6 +30,11 @@ inline bool ContactClassifications::empty() const {
 
 inline bool ContactClassifications::has_classication(const std::string& link) const {
     return classifications().contains(link);
+}
+
+inline std::size_t ContactClassifications::num_contacts() const {
+    return std::count_if(classifications().begin(), classifications().end(),
+            [](const auto& link_contact_pair) { return link_contact_pair.second; });
 }
 
 inline void ContactClassifications::set_classication(const std::string& link, const bool classification_) {
