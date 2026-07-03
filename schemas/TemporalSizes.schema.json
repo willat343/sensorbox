@@ -1,0 +1,37 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "file::///TemporalSizes.schema.json",
+    "type": "object",
+    "description": "Temporal key-size pairs.",
+    "properties": {
+        "timestamp": {
+            "type": "integer",
+            "description": "Timestamp (nanoseconds)"
+        },
+        "values": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "integer",
+                        "minimum": 0
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "key",
+                    "value"
+                ]
+            }
+        }
+    },
+    "required": [
+        "timestamp",
+        "values"
+    ],
+    "additionalProperties": false
+}
