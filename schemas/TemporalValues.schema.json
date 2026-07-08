@@ -1,0 +1,47 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "file::///TemporalValues.schema.json",
+    "type": "object",
+    "description": "Temporal key-value pairs.",
+    "properties": {
+        "timestamp": {
+            "type": "object",
+            "description": "Timestamp",
+            "properties": {
+                "sec": {
+                    "type": "integer"
+                },
+                "nsec": {
+                    "type": "integer"
+                }
+            },
+            "additionalProperties": false
+        },
+        "values": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "label": {
+                        "type": "string",
+                        "description": "Label or key"
+                    },
+                    "value": {
+                        "type": "number",
+                        "description": "Primitive value"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "label",
+                    "value"
+                ]
+            }
+        }
+    },
+    "required": [
+        "timestamp",
+        "values"
+    ],
+    "additionalProperties": false
+}
