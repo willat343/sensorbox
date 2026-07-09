@@ -278,14 +278,28 @@ SENSORBOX_INLINE std::size_t ROS1BytesDecoder::internal_msg_size(const std::stri
         // In ROS 1, the vector length in elements is encoded in the first 4 bytes as a uint32.
         const uint32_t vector_size = peak<uint32_t>(extra_offset);
         extra_offset += ROS1MessagesTypes::fundamental::size("uint32");
-        for (uint32_t i = 0; i < vector_size; ++i) {
-            extra_offset += internal_msg_size(internal_msg_element_type, extra_offset);
+        const std::size_t fundamental_size = ROS1MessagesTypes::fundamental::size(internal_msg_element_type);
+        if (fundamental_size > 0) {
+            // Compute vector size efficiently for fundamental types
+            extra_offset += vector_size * fundamental_size;
+        } else {
+            for (uint32_t i = 0; i < vector_size; ++i) {
+                // Compute element size individually for non-fundamental types
+                extra_offset += internal_msg_size(internal_msg_element_type, extra_offset);
+            }
         }
     } else if (message_is_array_type(internal_msg_type)) {
         const std::string_view internal_msg_element_type = message_array_type(internal_msg_type);
         const std::size_t array_size = message_array_size(internal_msg_type);
-        for (std::size_t i = 0; i < array_size; ++i) {
-            extra_offset += internal_msg_size(internal_msg_element_type, extra_offset);
+        const std::size_t fundamental_size = ROS1MessagesTypes::fundamental::size(internal_msg_element_type);
+        if (fundamental_size > 0) {
+            // Compute array size efficiently for fundamental types
+            extra_offset += array_size * fundamental_size;
+        } else {
+            for (std::size_t i = 0; i < array_size; ++i) {
+                // Compute element size individually for non-fundamental types
+                extra_offset += internal_msg_size(internal_msg_element_type, extra_offset);
+            }
         }
     } else if (internal_msg_type == "string") {
         // In ROS 1, the string length in chars/bytes is encoded in the first 4 bytes as a uint32.

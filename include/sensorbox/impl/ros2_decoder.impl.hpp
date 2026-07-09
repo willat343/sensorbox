@@ -162,14 +162,32 @@ SENSORBOX_INLINE std::size_t ROS2BytesDecoder::internal_msg_size(const std::stri
                 offset_overall() + extra_offset);
         const uint32_t vector_size = peak<uint32_t>(extra_offset);
         extra_offset += ROS2MessagesTypes::fundamental::size("uint32", offset_overall() + extra_offset);
-        for (uint32_t i = 0; i < vector_size; ++i) {
-            extra_offset += internal_msg_size(internal_msg_element_type, extra_offset);
+        const std::size_t unpadded_fundamental_size = ROS2MessagesTypes::fundamental::size(internal_msg_element_type);
+        if (unpadded_fundamental_size > 0) {
+            // Compute vector size efficiently for fundamental types
+            extra_offset += ROS2MessagesTypes::fundamental::padding(unpadded_fundamental_size,
+                                    offset_overall() + extra_offset) +
+                            vector_size * unpadded_fundamental_size;
+        } else {
+            for (uint32_t i = 0; i < vector_size; ++i) {
+                // Compute element size individually for non-fundamental types
+                extra_offset += internal_msg_size(internal_msg_element_type, extra_offset);
+            }
         }
     } else if (message_is_array_type(internal_msg_type)) {
         const std::string_view internal_msg_element_type = message_array_type(internal_msg_type);
         const std::size_t array_size = message_array_size(internal_msg_type);
-        for (std::size_t i = 0; i < array_size; ++i) {
-            extra_offset += internal_msg_size(internal_msg_element_type, extra_offset);
+        const std::size_t unpadded_fundamental_size = ROS2MessagesTypes::fundamental::size(internal_msg_element_type);
+        if (unpadded_fundamental_size > 0) {
+            // Compute array size efficiently for fundamental types
+            extra_offset += ROS2MessagesTypes::fundamental::padding(unpadded_fundamental_size,
+                                    offset_overall() + extra_offset) +
+                            array_size * unpadded_fundamental_size;
+        } else {
+            for (std::size_t i = 0; i < array_size; ++i) {
+                // Compute element size individually for non-fundamental types
+                extra_offset += internal_msg_size(internal_msg_element_type, extra_offset);
+            }
         }
     } else if (internal_msg_type == "string") {
         // In ROS 2, the string length in chars/bytes is encoded in the first 4 bytes as a uint32 (which
