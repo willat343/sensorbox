@@ -14,51 +14,51 @@ inline MessageDecoder<MessageTypes, Conversions>::MessageDecoder(const std::byte
 
 template<class MessageTypes, class Conversions>
 template<typename T>
-inline constexpr bool MessageDecoder<MessageTypes, Conversions>::is_decodable() {
+constexpr inline bool MessageDecoder<MessageTypes, Conversions>::is_decodable() {
     return Conversions::template decodable_msg_types<T>().empty();
 }
 
 template<class MessageTypes, class Conversions>
 template<typename T>
-inline constexpr bool MessageDecoder<MessageTypes, Conversions>::is_decodable_to(const std::string_view msg_type) {
+constexpr inline bool MessageDecoder<MessageTypes, Conversions>::is_decodable_to(const std::string_view msg_type) {
     return is_directly_decodable_to<T>(msg_type) || is_vector_or_start_recursively_decodable_to<T>(msg_type);
 }
 
 template<class MessageTypes, class Conversions>
 template<typename T>
-inline constexpr bool MessageDecoder<MessageTypes, Conversions>::is_decodable_to() const {
+constexpr inline bool MessageDecoder<MessageTypes, Conversions>::is_decodable_to() const {
     return is_decodable_to<T>(msg_type());
 }
 
 template<class MessageTypes, class Conversions>
 template<typename T>
-inline constexpr bool MessageDecoder<MessageTypes, Conversions>::is_directly_decodable_to(
+constexpr inline bool MessageDecoder<MessageTypes, Conversions>::is_directly_decodable_to(
         const std::string_view msg_type) {
     return cppbox::contains(Conversions::template decodable_msg_types<T>(), msg_type);
 }
 
 template<class MessageTypes, class Conversions>
 template<typename T>
-inline constexpr bool MessageDecoder<MessageTypes, Conversions>::is_directly_decodable_to() const {
+constexpr inline bool MessageDecoder<MessageTypes, Conversions>::is_directly_decodable_to() const {
     return is_directly_decodable_to<T>(msg_type());
 }
 
 template<class MessageTypes, class Conversions>
 template<typename T>
-inline constexpr bool MessageDecoder<MessageTypes, Conversions>::is_start_decodable_to(
+constexpr inline bool MessageDecoder<MessageTypes, Conversions>::is_start_decodable_to(
         const std::string_view msg_type) {
     return is_directly_decodable_to<T>(MessageTypes::starts_with(msg_type));
 }
 
 template<class MessageTypes, class Conversions>
 template<typename T>
-inline constexpr bool MessageDecoder<MessageTypes, Conversions>::is_start_decodable_to() const {
+constexpr inline bool MessageDecoder<MessageTypes, Conversions>::is_start_decodable_to() const {
     return is_start_decodable_to<T>(msg_type());
 }
 
 template<class MessageTypes, class Conversions>
 template<typename T>
-inline constexpr bool MessageDecoder<MessageTypes, Conversions>::is_start_recursively_decodable_to(
+constexpr inline bool MessageDecoder<MessageTypes, Conversions>::is_start_recursively_decodable_to(
         const std::string_view msg_type) {
     return msg_type != std::string_view() &&
            (is_directly_decodable_to<T>(MessageTypes::starts_with(msg_type)) ||
@@ -67,13 +67,13 @@ inline constexpr bool MessageDecoder<MessageTypes, Conversions>::is_start_recurs
 
 template<class MessageTypes, class Conversions>
 template<typename T>
-inline constexpr bool MessageDecoder<MessageTypes, Conversions>::is_start_recursively_decodable_to() const {
+constexpr inline bool MessageDecoder<MessageTypes, Conversions>::is_start_recursively_decodable_to() const {
     return is_start_recursively_decodable_to<T>(msg_type());
 }
 
 template<class MessageTypes, class Conversions>
 template<typename T>
-inline constexpr bool MessageDecoder<MessageTypes, Conversions>::is_vector_or_start_recursively_decodable_to(
+constexpr inline bool MessageDecoder<MessageTypes, Conversions>::is_vector_or_start_recursively_decodable_to(
         const std::string_view msg_type) {
     return msg_type != std::string_view() &&
            ((message_is_vector_type(msg_type) &&
@@ -87,7 +87,7 @@ inline constexpr bool MessageDecoder<MessageTypes, Conversions>::is_vector_or_st
 
 template<class MessageTypes, class Conversions>
 template<typename T>
-inline constexpr bool MessageDecoder<MessageTypes, Conversions>::is_vector_or_start_recursively_decodable_to() const {
+constexpr inline bool MessageDecoder<MessageTypes, Conversions>::is_vector_or_start_recursively_decodable_to() const {
     return is_vector_or_start_recursively_decodable_to<T>(msg_type());
 }
 

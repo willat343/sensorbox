@@ -14,19 +14,19 @@
 
 namespace sensorbox {
 
-inline constexpr SchemaFilepath AccelerometerSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Accelerometer.schema.json"};
-inline constexpr SchemaFilepath ActuatorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Actuator.schema.json"};
-inline constexpr SchemaFilepath CurrentSensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "CurrentSensor.schema.json"};
-inline constexpr SchemaFilepath DirectPoseSensorSchemaFilepath{
+constexpr inline SchemaFilepath AccelerometerSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Accelerometer.schema.json"};
+constexpr inline SchemaFilepath ActuatorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Actuator.schema.json"};
+constexpr inline SchemaFilepath CurrentSensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "CurrentSensor.schema.json"};
+constexpr inline SchemaFilepath DirectPoseSensorSchemaFilepath{
         SENSORBOX_SCHEMAS_DIRECTORY "DirectPoseSensor.schema.json"};
-inline constexpr SchemaFilepath DirectPositionSensorSchemaFilepath{
+constexpr inline SchemaFilepath DirectPositionSensorSchemaFilepath{
         SENSORBOX_SCHEMAS_DIRECTORY "DirectPositionSensor.schema.json"};
-inline constexpr SchemaFilepath EncoderSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Encoder.schema.json"};
-inline constexpr SchemaFilepath GyroscopeSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Gyroscope.schema.json"};
-inline constexpr SchemaFilepath ImuSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Imu.schema.json"};
-inline constexpr SchemaFilepath RandomWalkSensorSchemaFilepath{
+constexpr inline SchemaFilepath EncoderSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Encoder.schema.json"};
+constexpr inline SchemaFilepath GyroscopeSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Gyroscope.schema.json"};
+constexpr inline SchemaFilepath ImuSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Imu.schema.json"};
+constexpr inline SchemaFilepath RandomWalkSensorSchemaFilepath{
         SENSORBOX_SCHEMAS_DIRECTORY "RandomWalkSensor.schema.json"};
-inline constexpr SchemaFilepath SensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Sensor.schema.json"};
+constexpr inline SchemaFilepath SensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Sensor.schema.json"};
 
 CREATE_SMART_ENUM(SensorTypeBase, ACCELEROMETER, ACTUATOR, ACTUATORS, CONTACTS_CLASSIFIER, CURRENT, DIRECT_POSE,
         DIRECT_POSITION, ENCODER, GYROSCOPE, IMU)

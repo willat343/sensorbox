@@ -11,12 +11,12 @@
 namespace sensorbox {
 
 template<std::size_t N>
-inline constexpr SchemaFilepath<N>::SchemaFilepath(const char (&string)[N]) {
+constexpr inline SchemaFilepath<N>::SchemaFilepath(const char (&string)[N]) {
     std::copy_n(string, N, value.begin());
 }
 
 template<std::size_t N>
-inline constexpr std::string_view SchemaFilepath<N>::string() const noexcept {
+constexpr inline std::string_view SchemaFilepath<N>::string() const noexcept {
     return std::string_view{value.data(), value.size()};
 }
 
