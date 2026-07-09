@@ -5,6 +5,7 @@
 #include <array>
 #include <cppbox/array.hpp>
 #include <cppbox/bytes.hpp>
+#include <cppbox/constexpr_map.hpp>
 #include <cppbox/time.hpp>
 #include <numeric>
 #include <optional>
@@ -28,23 +29,6 @@ struct ROS2MessagesTypes {
             {std::byte{0x00}, std::byte{0x01}, std::byte{0x00}, std::byte{0x00}}};
 
     struct fundamental {
-        static constexpr auto sizes = std::to_array<MessageSize>({
-                {"bool", sizeof(bool)},
-                {"byte", sizeof(uint8_t)},
-                {"char", sizeof(char)},
-                {"int8", sizeof(int8_t)},
-                {"uint8", sizeof(uint8_t)},
-                {"int16", sizeof(int16_t)},
-                {"int16", sizeof(int16_t)},
-                {"uint16", sizeof(uint16_t)},
-                {"int32", sizeof(int32_t)},
-                {"uint32", sizeof(uint32_t)},
-                {"int64", sizeof(int64_t)},
-                {"uint64", sizeof(uint64_t)},
-                {"float32", sizeof(float)},
-                {"float64", sizeof(double)},
-        });
-
         /**
          * @brief Compute the ROS 2 CDR aligned offset of a fundmental type of `size_` bytes based on the current offset
          * from the end of the CDR header.
@@ -60,8 +44,8 @@ struct ROS2MessagesTypes {
          *
          * There is no trailing padding.
          *
-         * @param size_
-         * @param offset
+         * @param size_ size of the fundamental type
+         * @param offset offset (from end of the CDR header)
          * @return constexpr std::size_t
          */
         static constexpr std::size_t aligned_offset(const std::size_t size_, const std::size_t offset = 0) {
@@ -77,18 +61,34 @@ struct ROS2MessagesTypes {
         }
 
         /**
-         * @brief Compute the ROS 2 CDR size of a fundament type including its padding based on the current offset from
-         * the end of the CDR header.
+         * @brief Compute the ROS 2 CDR size of a fundamental type including its padding based on the current offset
+         * from the end of the CDR header.
          *
+         * Note that passing `0` for offset will result in no padding.
          * See `std::size_t padding(const std::size_t, const std::size_t)` for more details.
          *
          * @param msg_type
+         * @param offset
          * @return constexpr std::size_t
          */
         static constexpr std::size_t size(const std::string_view msg_type, const std::size_t offset = 0) {
-            const auto it = std::find_if(sizes.cbegin(), sizes.cend(),
-                    [msg_type](const MessageSize& message_size) { return message_size.type == msg_type; });
-            std::size_t unpadded_size = it != sizes.cend() ? it->size : 0;
+            constexpr auto sizes =
+                    cppbox::ConstexprMap(std::to_array<cppbox::ConstexprMapEntry<std::string_view, std::size_t>>({
+                            {"bool", sizeof(bool)},
+                            {"byte", sizeof(uint8_t)},
+                            {"char", sizeof(char)},
+                            {"int8", sizeof(int8_t)},
+                            {"uint8", sizeof(uint8_t)},
+                            {"int16", sizeof(int16_t)},
+                            {"uint16", sizeof(uint16_t)},
+                            {"int32", sizeof(int32_t)},
+                            {"uint32", sizeof(uint32_t)},
+                            {"int64", sizeof(int64_t)},
+                            {"uint64", sizeof(uint64_t)},
+                            {"float32", sizeof(float)},
+                            {"float64", sizeof(double)},
+                    }));
+            const std::size_t unpadded_size = sizes.get_or(msg_type, 0);
             return padding(unpadded_size, offset) + unpadded_size;
         }
     };

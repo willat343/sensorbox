@@ -6,6 +6,7 @@
 #include <chrono>
 #include <cppbox/array.hpp>
 #include <cppbox/bytes.hpp>
+#include <cppbox/constexpr_map.hpp>
 #include <cppbox/time.hpp>
 #include <string>
 #include <vector>
@@ -23,38 +24,32 @@ namespace sensorbox {
 struct ROS1MessagesTypes {
     struct fundamental {
         /**
-         * @brief Fundamental type sizes, see https://wiki.ros.org/msg for serialization information.
-         *
-         */
-        static constexpr auto sizes = std::to_array<MessageSize>({
-                {"bool", sizeof(bool)},
-                {"byte", sizeof(uint8_t)},
-                {"char", sizeof(char)},
-                {"int8", sizeof(int8_t)},
-                {"uint8", sizeof(uint8_t)},
-                {"int16", sizeof(int16_t)},
-                {"int16", sizeof(int16_t)},
-                {"uint16", sizeof(uint16_t)},
-                {"int32", sizeof(int32_t)},
-                {"uint32", sizeof(uint32_t)},
-                {"int64", sizeof(int64_t)},
-                {"uint64", sizeof(uint64_t)},
-                {"float32", sizeof(float)},
-                {"float64", sizeof(double)},
-                {"duration", 2 * sizeof(int32_t)},
-                {"time", 2 * sizeof(uint32_t)},
-        });
-
-        /**
          * @brief In ROS 1, data is packed with no padding or alignment.
          *
          * @param msg_type
          * @return constexpr std::size_t
          */
         static constexpr std::size_t size(const std::string_view msg_type) {
-            const auto it = std::find_if(sizes.cbegin(), sizes.cend(),
-                    [msg_type](const MessageSize& message_size) { return message_size.type == msg_type; });
-            return it == sizes.cend() ? 0 : it->size;
+            // Fundamental type sizes, see https://wiki.ros.org/msg for serialization information.
+            constexpr auto sizes =
+                    cppbox::ConstexprMap(std::to_array<cppbox::ConstexprMapEntry<std::string_view, std::size_t>>({
+                            {"bool", sizeof(bool)},
+                            {"byte", sizeof(uint8_t)},
+                            {"char", sizeof(char)},
+                            {"int8", sizeof(int8_t)},
+                            {"uint8", sizeof(uint8_t)},
+                            {"int16", sizeof(int16_t)},
+                            {"uint16", sizeof(uint16_t)},
+                            {"int32", sizeof(int32_t)},
+                            {"uint32", sizeof(uint32_t)},
+                            {"int64", sizeof(int64_t)},
+                            {"uint64", sizeof(uint64_t)},
+                            {"float32", sizeof(float)},
+                            {"float64", sizeof(double)},
+                            {"duration", 2 * sizeof(int32_t)},
+                            {"time", 2 * sizeof(uint32_t)},
+                    }));
+            return sizes.get_or(msg_type, 0);
         }
     };
 
