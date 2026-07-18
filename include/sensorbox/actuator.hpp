@@ -226,9 +226,17 @@ public:
 
     bool equal_joint_measurements(const ActuatorMeasurements& other) const;
 
+    std::vector<double> joint_positions() const;
+
+    std::vector<double> joint_velocities() const;
+
+    std::vector<double> joint_torques() const;
+
     const std::vector<ActuatorMeasurement>& measurements() const;
 
     std::vector<ActuatorMeasurement>& measurements();
+
+    std::vector<std::string> names() const;
 
     void overwrite_names(const std::vector<std::string>& new_names);
 

@@ -149,6 +149,27 @@ inline bool ActuatorMeasurements::equal_joint_measurements(const ActuatorMeasure
     return equal_joint_positions(other) && equal_joint_velocities(other) && equal_joint_torques(other);
 }
 
+inline std::vector<double> ActuatorMeasurements::joint_positions() const {
+    std::vector<double> joint_positions_(size());
+    std::transform(measurements().cbegin(), measurements().cend(), joint_positions_.begin(),
+            [](const ActuatorMeasurement& measurement) { return *measurement.joint_position(); });
+    return joint_positions_;
+}
+
+inline std::vector<double> ActuatorMeasurements::joint_velocities() const {
+    std::vector<double> joint_velocities_(size());
+    std::transform(measurements().cbegin(), measurements().cend(), joint_velocities_.begin(),
+            [](const ActuatorMeasurement& measurement) { return *measurement.joint_velocity(); });
+    return joint_velocities_;
+}
+
+inline std::vector<double> ActuatorMeasurements::joint_torques() const {
+    std::vector<double> joint_torques_(size());
+    std::transform(measurements().cbegin(), measurements().cend(), joint_torques_.begin(),
+            [](const ActuatorMeasurement& measurement) { return *measurement.joint_torque(); });
+    return joint_torques_;
+}
+
 inline const std::vector<ActuatorMeasurement>& ActuatorMeasurements::measurements() const {
     return measurements_;
 }
@@ -162,6 +183,13 @@ inline void ActuatorMeasurements::overwrite_names(const std::vector<std::string>
     for (std::size_t i = 0; i < measurements().size(); ++i) {
         measurements()[i].name() = new_names[i];
     }
+}
+
+inline std::vector<std::string> ActuatorMeasurements::names() const {
+    std::vector<std::string> names_(size());
+    std::transform(measurements().cbegin(), measurements().cend(), names_.begin(),
+            [](const ActuatorMeasurement& measurement) { return measurement.name(); });
+    return names_;
 }
 
 inline std::size_t ActuatorMeasurements::size() const {
