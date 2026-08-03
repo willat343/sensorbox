@@ -74,7 +74,7 @@ import_nlohmann_json_schema_validator(
 )
 
 # Dependency: cppbox (Target: cppbox::cppbox)
-dependency_version(CPPBOX MINIMUM_VERSION "0.2.4")
+dependency_version(CPPBOX MINIMUM_VERSION "0.2.5")
 import_dependency(
     cppbox
     TARGET cppbox::cppbox
