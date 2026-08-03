@@ -125,11 +125,25 @@ public:
     void set_properties(const double frequency_, const double noise_density_, const double bias_noise_density_);
 
     /**
+     * @brief Compute the standard deviation as the noise density multiplied by the square root of the frequency.
+     *
+     * @return double
+     */
+    double stddev() const;
+
+    /**
      * @brief Get the stiffness matrix
      *
      * @return const Stiffness&
      */
     const Stiffness& stiffness() const;
+
+    /**
+     * @brief Compute the variance as the square of the noise density multiplied by the frequency.
+     *
+     * @return double
+     */
+    double variance() const;
 
 private:
     /**

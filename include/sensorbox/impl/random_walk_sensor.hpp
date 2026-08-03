@@ -83,13 +83,23 @@ inline void RandomWalkSensor<DoF_>::set_properties(const double frequency_, cons
 }
 
 template<int DoF_>
+inline double RandomWalkSensor<DoF_>::stddev() const {
+    return noise_density() * std::sqrt(frequency());
+}
+
+template<int DoF_>
 inline auto RandomWalkSensor<DoF_>::stiffness() const -> const Stiffness& {
     return stiffness_;
 }
 
 template<int DoF_>
 inline void RandomWalkSensor<DoF_>::update_stiffness() {
-    stiffness_ = math::stiffness_from_sigma<DoF>(noise_density() * std::sqrt(frequency()));
+    stiffness_ = math::stiffness_from_sigma<DoF>(stddev());
+}
+
+template<int DoF_>
+inline double RandomWalkSensor<DoF_>::variance() const {
+    return noise_density() * noise_density() * frequency();
 }
 
 }
