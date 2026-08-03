@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 project(sensorbox
-    VERSION 0.7.2
+    VERSION 0.7.3
     DESCRIPTION "Sensor Toolbox"
     LANGUAGES CXX
 )
@@ -74,7 +74,7 @@ import_nlohmann_json_schema_validator(
 )
 
 # Dependency: cppbox (Target: cppbox::cppbox)
-dependency_version(CPPBOX MINIMUM_VERSION "0.2.3")
+dependency_version(CPPBOX MINIMUM_VERSION "0.2.4")
 import_dependency(
     cppbox
     TARGET cppbox::cppbox
@@ -85,7 +85,7 @@ import_dependency(
 )
 
 # Dependency: mathbox (Target: mathbox::mathbox)
-dependency_version(MATHBOX MINIMUM_VERSION "0.8.2")
+dependency_version(MATHBOX MINIMUM_VERSION "0.8.3")
 import_dependency(
     mathbox
     TARGET mathbox::mathbox
