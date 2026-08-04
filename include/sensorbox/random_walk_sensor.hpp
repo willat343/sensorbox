@@ -25,6 +25,12 @@ public:
     using Stiffness = Eigen::Matrix<double, DoF, DoF>;
 
     /**
+     * @brief Sensor axis scaling matrix
+     *
+     */
+    using ScalingMatrix = Eigen::Matrix<double, DoF, DoF>;
+
+    /**
      * @brief Construct an instance of the class
      *
      * @param type
@@ -66,6 +72,13 @@ public:
     double initial_noise() const;
 
     /**
+     * @brief Get the inverse scaling matrix S^{-1}, used to correct a raw measurement scaled by S.
+     *
+     * @return const ScalingMatrix&
+     */
+    const ScalingMatrix& inverse_scaling_matrix() const;
+
+    /**
      * @brief Noise density (in sensor units * Hz^{-1/2})
      *
      * @return double
@@ -78,6 +91,14 @@ public:
      * @return double
      */
     double period() const;
+
+    /**
+     * @brief Correct a raw measurement for axis scaling, i.e. compute S^{-1} * measurement.
+     *
+     * @param measurement raw (uncorrected) measurement
+     * @return Eigen::Matrix<double, DoF, 1> scaled (corrected) measurement
+     */
+    Eigen::Matrix<double, DoF, 1> scale_measurement(const Eigen::Matrix<double, DoF, 1>& measurement) const;
 
     /**
      * @brief Set the bias noise density
@@ -125,6 +146,13 @@ public:
     void set_properties(const double frequency_, const double noise_density_, const double bias_noise_density_);
 
     /**
+     * @brief Set the scaling matrix S (not its inverse). The inverse is stored and used to correct measurements.
+     *
+     * @param scaling_matrix_
+     */
+    void set_scaling_matrix(const ScalingMatrix& scaling_matrix_);
+
+    /**
      * @brief Compute the standard deviation as the noise density multiplied by the square root of the frequency.
      *
      * @return double
@@ -166,6 +194,9 @@ private:
 
     // Stiffness matrix
     Stiffness stiffness_;
+
+    // Inverse of the axis scaling matrix S, i.e. S^{-1}, applied to correct raw measurements
+    ScalingMatrix inverse_scaling_matrix_;
 };
 
 }

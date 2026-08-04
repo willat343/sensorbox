@@ -29,6 +29,23 @@
                 "initial_noise": {
                     "type": "number",
                     "exclusiveMinimum": 0.0
+                },
+                "scaling": {
+                    "description": "Axis scaling matrix S (scalar or per-axis vector); applies S^-1.",
+                    "oneOf": [
+                        {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "number",
+                                "exclusiveMinimum": 0.0
+                            },
+                            "minItems": 1
+                        }
+                    ]
                 }
             },
             "required": [

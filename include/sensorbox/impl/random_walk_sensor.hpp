@@ -1,6 +1,9 @@
 #ifndef SENSORBOX_IMPL_RANDOM_WALK_SENSOR_HPP
 #define SENSORBOX_IMPL_RANDOM_WALK_SENSOR_HPP
 
+#include <convert/convert.hpp>
+#include <cppbox/exceptions.hpp>
+
 #include "mathbox/stiffness.hpp"
 #include "sensorbox/random_walk_sensor.hpp"
 
@@ -9,7 +12,7 @@ namespace sensorbox {
 template<int DoF_>
 inline RandomWalkSensor<DoF_>::RandomWalkSensor(const SensorType type, const double frequency_,
         const double noise_density_, const double bias_noise_density_, const double initial_noise_)
-    : Sensor(type) {
+    : Sensor(type), inverse_scaling_matrix_(ScalingMatrix::Identity()) {
     set_properties(frequency_, noise_density_, bias_noise_density_);
     initial_noise__ = initial_noise_;
 }
@@ -20,6 +23,24 @@ inline RandomWalkSensor<DoF_>::RandomWalkSensor(const nlohmann::json& config, co
     set_properties(config["frequency"].get<double>(), config["noise_density"].get<double>(),
             config["bias_noise_density"].get<double>());
     initial_noise__ = config["initial_noise"].get<double>();
+
+    // Parse optional axis scaling matrix S from "scaling", either a scalar (uniform scaling) or a per-axis vector
+    // (the diagonal of S), defaulting to the identity matrix if not present.
+    if (config.contains("scaling")) {
+        const nlohmann::json& scaling = config["scaling"];
+        if (scaling.is_array()) {
+            throw_if(scaling.size() != DoF, "RandomWalkSensor: Expected size of 'scaling' vector in json was " +
+                                                    std::to_string(DoF) + " but was " + std::to_string(scaling.size()) +
+                                                    ".");
+            set_scaling_matrix(convert::to<Eigen::Vector<double, DoF>>(
+                    scaling.template get<std::array<double, std::size_t(DoF)>>())
+                            .asDiagonal());
+        } else {
+            set_scaling_matrix(ScalingMatrix::Identity() * scaling.get<double>());
+        }
+    } else {
+        set_scaling_matrix(ScalingMatrix::Identity());
+    }
 }
 
 template<int DoF_>
@@ -37,6 +58,11 @@ inline double RandomWalkSensor<DoF_>::initial_noise() const {
 }
 
 template<int DoF_>
+inline auto RandomWalkSensor<DoF_>::inverse_scaling_matrix() const -> const ScalingMatrix& {
+    return inverse_scaling_matrix_;
+}
+
+template<int DoF_>
 inline double RandomWalkSensor<DoF_>::noise_density() const {
     return noise_density__;
 }
@@ -44,6 +70,12 @@ inline double RandomWalkSensor<DoF_>::noise_density() const {
 template<int DoF_>
 inline double RandomWalkSensor<DoF_>::period() const {
     return 1.0 / frequency();
+}
+
+template<int DoF_>
+inline auto RandomWalkSensor<DoF_>::scale_measurement(const Eigen::Vector<double, DoF>& measurement) const
+        -> Eigen::Vector<double, DoF> {
+    return inverse_scaling_matrix_ * measurement;
 }
 
 template<int DoF_>
@@ -80,6 +112,11 @@ inline void RandomWalkSensor<DoF_>::set_properties(const double frequency_, cons
         const double bias_noise_density_) {
     set_properties(frequency_, noise_density_);
     set_bias_noise_density(bias_noise_density_);
+}
+
+template<int DoF_>
+inline void RandomWalkSensor<DoF_>::set_scaling_matrix(const ScalingMatrix& scaling_matrix_) {
+    inverse_scaling_matrix_ = scaling_matrix_.inverse();
 }
 
 template<int DoF_>
