@@ -18,3 +18,4 @@ AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Empty
 AllowAllArgumentsOnNextLine: false
 AlwaysBreakBeforeMultilineStrings: false
+InsertNewlineAtEOF: true
