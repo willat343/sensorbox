@@ -15,7 +15,7 @@ A package for processing sensor data.
 | nlohmann_json |  >= 3.8.0 | JSON Package |
 | nlohmann_json_schema_validator |  >= 2.3.0 | JSON Package |
 | [mathbox](https://github.com/willat343/mathbox) | >= 0.8.3 | Math Package |
-| [convert](https://github.com/willat343/convert) | >= 0.7.3 | General Conversion Package |
+| [convert](https://github.com/willat343/convert) | >= 0.7.2 | General Conversion Package |
 
 There are several ways to include `sensorbox` within your project:
 - [Preferred] Via `FetchContent` allowing package to be built as a submodule.
@@ -128,7 +128,7 @@ To use the package in a downstream project, one should add to their `package.xml
 <depend>sensorbox</depend>
 ```
 
-One can then include `sensorbox` package by includeing in the `CMakeLists.txt`:
+One can then include the `sensorbox` package by including in the `CMakeLists.txt`:
 ```CMake
 find_package(sensorbox REQUIRED)
 target_link_libraries(<target> PUBLIC sensorbox::sensorbox)
