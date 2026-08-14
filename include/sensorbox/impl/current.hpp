@@ -11,7 +11,7 @@ inline CurrentSensor::CurrentSensor(const nlohmann::json& config, const bool val
       JsonLoadable<CurrentSensorSchemaFilepath, sensorbox_schema_loader>(config, validate),
       stiffness_(stiffness_from_config<1>(config)) {}
 
-inline auto CurrentSensor::stiffness() const -> const Stiffness {
+inline auto CurrentSensor::stiffness() const -> Stiffness {
     return stiffness_;
 }
 

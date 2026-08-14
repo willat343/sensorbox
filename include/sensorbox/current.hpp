@@ -23,9 +23,9 @@ public:
     /**
      * @brief Get stiffness for sensor.
      *
-     * @return const Stiffness&
+     * @return Stiffness
      */
-    const Stiffness stiffness() const;
+    Stiffness stiffness() const;
 
 private:
     /**
