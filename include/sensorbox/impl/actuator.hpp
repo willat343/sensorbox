@@ -1,6 +1,9 @@
 #ifndef SENSORBOX_IMPL_ACTUATOR_HPP
 #define SENSORBOX_IMPL_ACTUATOR_HPP
 
+#include <algorithm>
+#include <cppbox/exceptions.hpp>
+
 #include "sensorbox/actuator.hpp"
 
 namespace sensorbox {
@@ -8,7 +11,7 @@ namespace sensorbox {
 inline Actuator::Actuator(const nlohmann::json& config, const bool validate)
     : Sensor(config, false),
       JsonLoadable<ActuatorSchemaFilepath, sensorbox_schema_loader>(config, validate),
-      type_(config["actuator_type"].get<std::string>()),
+      actuator_type_(config["actuator_type"].get<std::string>()),
       current_sensor_(config.contains("current_sensor")
                               ? std::make_optional<CurrentSensor>(config["current_sensor"], false)
                               : std::nullopt),
@@ -29,8 +32,8 @@ inline const std::optional<Encoder>& Actuator::joint_encoder() const {
     return joint_encoder_;
 }
 
-inline const ActuatorType Actuator::type() const {
-    return type_;
+inline ActuatorType Actuator::actuator_type() const {
+    return actuator_type_;
 }
 
 inline ActuatorMeasurement::ActuatorMeasurement()
@@ -38,8 +41,10 @@ inline ActuatorMeasurement::ActuatorMeasurement()
               ActuatorType::UNSPECIFIED) {}
 
 inline ActuatorMeasurement::ActuatorMeasurement(const Timestamp& timestamp_, const std::string& frame_,
-        const std::string& child_frame_, const std::string& name_, const ActuatorType type_)
-    : TemporalSpatialRelationalMeasurement(timestamp_, frame_, child_frame_), name_(name_), type_(type_) {}
+        const std::string& child_frame_, const std::string& name_, const ActuatorType actuator_type_)
+    : TemporalSpatialRelationalMeasurement(timestamp_, frame_, child_frame_),
+      name_(name_),
+      actuator_type_(actuator_type_) {}
 
 inline const std::optional<double>& ActuatorMeasurement::current() const {
     return current_;
@@ -105,12 +110,12 @@ inline std::string& ActuatorMeasurement::name() {
     return const_cast<std::string&>(std::as_const(*this).name());
 }
 
-inline void ActuatorMeasurement::set_type(const ActuatorType type__) {
-    type_ = type__;
+inline void ActuatorMeasurement::set_actuator_type(const ActuatorType type__) {
+    actuator_type_ = type__;
 }
 
-inline const ActuatorType ActuatorMeasurement::type() const {
-    return type_;
+inline ActuatorType ActuatorMeasurement::actuator_type() const {
+    return actuator_type_;
 }
 
 inline ActuatorMeasurements::ActuatorMeasurements() : ActuatorMeasurements(Timestamp{Duration::zero()}) {}

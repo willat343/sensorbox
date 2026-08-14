@@ -3,6 +3,8 @@
 
 #include <cppbox/enum.hpp>
 #include <optional>
+#include <string>
+#include <vector>
 
 #include "sensorbox/current.hpp"
 #include "sensorbox/encoder.hpp"
@@ -30,10 +32,15 @@ public:
 
     const std::optional<Encoder>& joint_encoder() const;
 
-    const ActuatorType type() const;
+    /**
+     * @brief Get the actuator type. Note that `Sensor::type()` gives the sensor type.
+     *
+     * @return ActuatorType
+     */
+    ActuatorType actuator_type() const;
 
 private:
-    ActuatorType type_;
+    ActuatorType actuator_type_;
 
     /**
      * @brief Embedded current sensor if available.
@@ -78,10 +85,10 @@ public:
      * @param frame_ reference parent frame of the actuator (parent link)
      * @param child_frame_ reference child frame of the actuator (child link)
      * @param name_ name of the actuator (joint)
-     * @param type_ type of the actuator
+     * @param actuator_type_ type of the actuator
      */
     explicit ActuatorMeasurement(const Timestamp& timestamp_, const std::string& frame_,
-            const std::string& child_frame_, const std::string& name_, const ActuatorType type_);
+            const std::string& child_frame_, const std::string& name_, const ActuatorType actuator_type_);
 
     const std::optional<double>& current() const;
 
@@ -115,9 +122,9 @@ public:
 
     std::string& name();
 
-    void set_type(const ActuatorType type__);
+    void set_actuator_type(const ActuatorType type__);
 
-    const ActuatorType type() const;
+    ActuatorType actuator_type() const;
 
 private:
     /**
@@ -130,7 +137,7 @@ private:
      * @brief Actuator type
      *
      */
-    ActuatorType type_;
+    ActuatorType actuator_type_;
 
     /**
      * @brief Motor current [A]
@@ -151,7 +158,7 @@ private:
     /**
      * @brief Motor-side velocity [rad/s]
      *
-     * Usually not sensed directly but estimated by numerical differentation (e.g., finite differencing).
+     * Usually not sensed directly but estimated by numerical differentiation (e.g., finite differencing).
      *
      */
     std::optional<double> motor_velocity_;
@@ -182,7 +189,7 @@ private:
     /**
      * @brief Joint-side (output-side) velocity [rad/s]
      *
-     * Usually not sensed directly but estimated by numerical differentation (e.g., finite differencing).
+     * Usually not sensed directly but estimated by numerical differentiation (e.g., finite differencing).
      *
      */
     std::optional<double> joint_velocity_;
