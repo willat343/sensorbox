@@ -33,11 +33,11 @@ public:
 
     bool empty() const;
 
-    bool has_classication(const std::string& link) const;
+    bool has_classification(const std::string& link) const;
 
     std::size_t num_contacts() const;
 
-    void set_classication(const std::string& link, const bool classification_);
+    void set_classification(const std::string& link, const bool classification_);
 
     std::size_t size() const;
 
