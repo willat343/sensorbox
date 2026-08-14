@@ -11,11 +11,11 @@ inline Encoder::Encoder(const nlohmann::json& config, const bool validate)
       JsonLoadable<EncoderSchemaFilepath, sensorbox_schema_loader>(config, validate),
       stiffness_(stiffness_from_config<1>(config)) {}
 
-inline auto Encoder::covariance() const -> const Covariance {
+inline auto Encoder::covariance() const -> Covariance {
     return (stiffness_.transpose() * stiffness_).inverse();
 }
 
-inline auto Encoder::stiffness() const -> const Stiffness {
+inline auto Encoder::stiffness() const -> Stiffness {
     return stiffness_;
 }
 

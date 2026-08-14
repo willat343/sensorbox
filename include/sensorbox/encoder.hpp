@@ -27,16 +27,16 @@ public:
      * TODO: consider replacing covariance/stiffness functions in sensors with uncertainty (capturing all these, to
      * exist in mathbox)
      *
-     * @return const Covariance
+     * @return Covariance
      */
-    const Covariance covariance() const;
+    Covariance covariance() const;
 
     /**
      * @brief Get stiffness for sensor.
      *
-     * @return const Stiffness
+     * @return Stiffness
      */
-    const Stiffness stiffness() const;
+    Stiffness stiffness() const;
 
 private:
     /**
