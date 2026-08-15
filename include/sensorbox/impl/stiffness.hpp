@@ -129,6 +129,47 @@ Eigen::Matrix<double, Rows, Rows> stiffness_from_config(const nlohmann::json& co
     }
 }
 
+template<int Rows>
+inline math::CovarianceDensity<double, Rows> covariance_density_from_config(const nlohmann::json& config) {
+    static_assert(Rows == Eigen::Dynamic || Rows >= 0, "Rows must be Eigen::Dynamic or >= 0.");
+    if constexpr (Rows == Eigen::Dynamic) {
+        throw_if(!config.contains("size"), "Expected size field for Rows == Eigen::Dynamic.");
+        return covariance_density_from_config(config, config["size"].template get<int>());
+    } else {
+        return math::CovarianceDensity<double, Rows>{covariance_density_from_config(config, Rows)};
+    }
+}
+
+inline math::CovarianceDensityXd covariance_density_from_config(const nlohmann::json& config, const int size) {
+    if (config.contains("covariance_density")) {
+        not_implemented("Conversion of covariance density to covariance density not yet implemented.");
+    } else if (config.contains("information_density")) {
+        not_implemented("Conversion of information density to covariance density not yet implemented.");
+    } else if (config.contains("variance_densities")) {
+        const int config_size = config["variance_densities"].size();
+        throw_if(config_size != size, "Expected size of variance_densities vector in json was " + std::to_string(size) +
+                                              " but was " + std::to_string(config_size) + ".");
+        return math::CovarianceDensityXd{math::covariance_from_variances(
+                convert::to<Eigen::VectorXd>(config["variance_densities"].template get<std::vector<double>>()))};
+    } else if (config.contains("variance_density")) {
+        return math::CovarianceDensityXd{
+                math::covariance_from_variance(config["variance_density"].template get<double>(), size)};
+    } else if (config.contains("sigma_densities")) {
+        const int config_size = config["sigma_densities"].size();
+        throw_if(config_size != size, "Expected size of sigma_densities vector in json was " + std::to_string(size) +
+                                              " but was " + std::to_string(config_size) + ".");
+        return math::CovarianceDensityXd{math::covariance_from_sigmas(
+                convert::to<Eigen::VectorXd>(config["sigma_densities"].template get<std::vector<double>>()))};
+    } else if (config.contains("sigma_density")) {
+        return math::CovarianceDensityXd{
+                math::covariance_from_sigma(config["sigma_density"].template get<double>(), size)};
+    } else {
+        throw_here(
+                "Field covariance_density, information_density, variance_densities, variance_density, sigma_densities "
+                "or sigma_density missing from config. Config was:\n" +
+                config.dump());
+    }
+}
 }
 
 #if !SENSORBOX_HEADER_ONLY
