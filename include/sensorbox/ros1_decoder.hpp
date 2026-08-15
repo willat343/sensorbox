@@ -130,7 +130,7 @@ struct ROS1MessagesTypes {
                 {"uint32", "stride"},
         });
         static constexpr auto MultiArrayLayout = std::to_array<MessageField>({
-                {"MultiArrayDimension[]", "dim"},
+                {"std_msgs/MultiArrayDimension[]", "dim"},
                 {"uint32", "data_offset"},
         });
         static constexpr auto String = std::to_array<MessageField>({
@@ -188,6 +188,7 @@ struct ROS1MessagesTypes {
                 {"std_msgs/Int64", Int64},
                 {"std_msgs/Int64MultiArray", Int64MultiArray},
                 {"std_msgs/Int8", Int8},
+                {"std_msgs/Int8MultiArray", Int8MultiArray},
                 {"std_msgs/MultiArrayDimension", MultiArrayDimension},
                 {"std_msgs/MultiArrayLayout", MultiArrayLayout},
                 {"std_msgs/String", String},
@@ -221,7 +222,7 @@ struct ROS1MessagesTypes {
                 {"geometry_msgs/AccelWithCovariance", "accel"},
         });
         static constexpr auto Inertia = std::to_array<MessageField>({
-                {"float63", "m"},
+                {"float64", "m"},
                 {"geometry_msgs/Vector3", "com"},
                 {"float64", "ixx"},
                 {"float64", "ixy"},
@@ -268,6 +269,10 @@ struct ROS1MessagesTypes {
                 {"std_msgs/Header", "header"},
                 {"geometry_msgs/Pose[]", "poses"},
         });
+        static constexpr auto PoseStamped = std::to_array<MessageField>({
+                {"std_msgs/Header", "header"},
+                {"geometry_msgs/Pose", "pose"},
+        });
         static constexpr auto PoseWithCovariance = std::to_array<MessageField>({
                 {"geometry_msgs/Pose", "pose"},
                 {"float64[36]", "covariance"},
@@ -292,6 +297,7 @@ struct ROS1MessagesTypes {
         });
         static constexpr auto TransformStamped = std::to_array<MessageField>({
                 {"std_msgs/Header", "header"},
+                {"string", "child_frame_id"},
                 {"geometry_msgs/Transform", "transform"},
         });
         static constexpr auto Twist = std::to_array<MessageField>({
@@ -343,6 +349,7 @@ struct ROS1MessagesTypes {
                 {"geometry_msgs/Pose", Pose},
                 {"geometry_msgs/Pose2D", Pose2D},
                 {"geometry_msgs/PoseArray", PoseArray},
+                {"geometry_msgs/PoseStamped", PoseStamped},
                 {"geometry_msgs/PoseWithCovariance", PoseWithCovariance},
                 {"geometry_msgs/PoseWithCovarianceStamped", PoseWithCovarianceStamped},
                 {"geometry_msgs/Quaternion", Quaternion},
@@ -376,7 +383,7 @@ struct ROS1MessagesTypes {
         });
         static constexpr auto OccupancyGrid = std::to_array<MessageField>({
                 {"std_msgs/Header", "header"},
-                {"MapMetaData", "info"},
+                {"nav_msgs/MapMetaData", "info"},
                 {"int8[]", "data"},
         });
         static constexpr auto Odometry = std::to_array<MessageField>({
@@ -391,7 +398,7 @@ struct ROS1MessagesTypes {
         });
 
         static constexpr auto msg_types = std::to_array<MessageType>({
-                {"geometry_msgs/GridCells", GridCells},
+                {"nav_msgs/GridCells", GridCells},
                 {"nav_msgs/MapMetaData", MapMetaData},
                 {"nav_msgs/OccupancyGrid", OccupancyGrid},
                 {"nav_msgs/Odometry", Odometry},
@@ -539,7 +546,7 @@ struct ROS1MessagesTypes {
         static constexpr auto MagneticField = std::to_array<MessageField>({
                 {"std_msgs/Header", "header"},
                 {"geometry_msgs/Vector3", "magnetic_field"},
-                {"float[64]", "magnetic_field_covariance"},
+                {"float64[9]", "magnetic_field_covariance"},
         });
         static constexpr auto MultiDOFJointState = std::to_array<MessageField>({
                 {"std_msgs/Header", "header"},
@@ -814,8 +821,8 @@ struct ROS1MessagesTypes {
                 {"geometry_msgs/Wrench", "wrench"},
                 {"geometry_msgs/Point", "position"},
                 {"geometry_msgs/Vector3", "normal"},
-                {"float64", "friction_coefficient"},
-                {"float64", "restitution_coefficient"},
+                {"float64", "frictionCoefficient"},
+                {"float64", "restitutionCoefficient"},
         });
         static constexpr auto Contacts = std::to_array<MessageField>({
                 {"anymal_msgs/Contact[]", "contacts"},
@@ -828,7 +835,7 @@ struct ROS1MessagesTypes {
         static constexpr auto GaitPatterns = std::to_array<MessageField>({
                 {"std_msgs/Header", "header"},
                 {"float64", "phase"},
-                {"GaitPattern[]", "patterns"},
+                {"anymal_msgs/GaitPattern[]", "patterns"},
         });
         static constexpr auto LegAttributes = std::to_array<MessageField>({
                 {"bool[4]", "is_grounded"},
@@ -886,12 +893,12 @@ struct ROS1MessagesTypes {
                 {"series_elastic_actuator_msgs/SeActuatorCommand[]", "commands"},
         });
         static constexpr auto SeActuatorReading = std::to_array<MessageField>({
-                {"std_msgs/Header", "heading"},
+                {"std_msgs/Header", "header"},
                 {"series_elastic_actuator_msgs/SeActuatorState", "state"},
                 {"series_elastic_actuator_msgs/SeActuatorCommand", "commanded"},
         });
         static constexpr auto SeActuatorReadingExtended = std::to_array<MessageField>({
-                {"std_msgs/Header", "heading"},
+                {"std_msgs/Header", "header"},
                 {"series_elastic_actuator_msgs/SeActuatorStateExtended", "state"},
                 {"series_elastic_actuator_msgs/SeActuatorCommand", "commanded"},
         });
@@ -902,7 +909,7 @@ struct ROS1MessagesTypes {
                 {"series_elastic_actuator_msgs/SeActuatorReadingExtended[]", "readings"},
         });
         static constexpr auto SeActuatorState = std::to_array<MessageField>({
-                {"std_msgs/Header", "heading"},
+                {"std_msgs/Header", "header"},
                 {"string", "name"},
                 {"uint32", "statusword"},
                 {"float64", "current"},
@@ -915,7 +922,7 @@ struct ROS1MessagesTypes {
                 {"sensor_msgs/Imu", "imu"},
         });
         static constexpr auto SeActuatorStateExtended = std::to_array<MessageField>({
-                {"std_msgs/Header", "heading"},
+                {"std_msgs/Header", "header"},
                 {"string", "name"},
                 {"uint32", "statusword"},
                 {"float64", "current"},

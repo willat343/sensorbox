@@ -194,13 +194,12 @@ SENSORBOX_INLINE std::size_t ROS2BytesDecoder::internal_msg_size(const std::stri
             }
         }
     } else if (internal_msg_type == "string") {
-        // In ROS 2, the string length in chars/bytes is encoded in the first 4 bytes as a uint32 (which
-        // must obey alignment), and the string ends with a null terminator '\0'. Add padding first to
-        // ensure correct peak.
+        // In ROS 2, the string length in chars/bytes including its null terminator '\0' is encoded in the first 4 bytes
+        // as a uint32 (which must obey alignment). Add padding first to ensure correct peak.
         extra_offset += ROS2MessagesTypes::fundamental::padding(ROS2MessagesTypes::fundamental::size("uint32"),
                 offset_overall() + extra_offset);
         extra_offset += ROS2MessagesTypes::fundamental::size("uint32", offset_overall() + extra_offset) +
-                        peak<uint32_t>(extra_offset) + 1;
+                        peak<uint32_t>(extra_offset);
     } else if (internal_msg_type.starts_with("builtin_interfaces")) {
         // In ROS 2, all builtin_interfaces has fixed size
         extra_offset += ROS2MessagesTypes::builtin_interfaces::size(internal_msg_type, offset_overall() + extra_offset);
@@ -208,9 +207,9 @@ SENSORBOX_INLINE std::size_t ROS2BytesDecoder::internal_msg_size(const std::stri
         // Message type belongs to a group
         const auto fields = message_fields(ROS2MessagesTypes::msg_types, internal_msg_type);
         throw_if(fields.empty(), std::string(internal_msg_type) + " is not a known msg type.");
-        std::for_each(fields.begin(), fields.end(),
-                [this, &extra_offset, internal_msg_type](
-                        const MessageField& field) { extra_offset += internal_msg_size(field.type, extra_offset); });
+        std::for_each(fields.begin(), fields.end(), [this, &extra_offset](const MessageField& field) {
+            extra_offset += internal_msg_size(field.type, extra_offset);
+        });
     }
     return extra_offset - initial_offset;
 }

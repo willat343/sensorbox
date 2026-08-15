@@ -88,18 +88,18 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(std::vector<ActuatorMeasurement>
             read_to(out[i].name());
         }
         const uint32_t position_size = read<uint32_t>();
-        throw_if(position_size != position_size, "Size mismatch in any_msgs/ExtendedJointState arrays.");
+        throw_if(position_size != names_size, "Size mismatch in any_msgs/ExtendedJointState arrays.");
         for (uint32_t i = 0; i < position_size; ++i) {
             read_optional_to<double>(out[i].joint_position());
         }
         const uint32_t velocity_size = read<uint32_t>();
-        throw_if(velocity_size != velocity_size, "Size mismatch in any_msgs/ExtendedJointState arrays.");
+        throw_if(velocity_size != names_size, "Size mismatch in any_msgs/ExtendedJointState arrays.");
         for (uint32_t i = 0; i < velocity_size; ++i) {
             read_optional_to<double>(out[i].joint_velocity());
         }
         ignore("float64[]");  // acceleration
         const uint32_t effort_size = read<uint32_t>();
-        throw_if(effort_size != effort_size, "Size mismatch in any_msgs/ExtendedJointState arrays.");
+        throw_if(effort_size != names_size, "Size mismatch in any_msgs/ExtendedJointState arrays.");
         for (uint32_t i = 0; i < effort_size; ++i) {
             read_optional_to<double>(out[i].joint_torque());
         }
@@ -146,7 +146,7 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(ContactClassifications& out) {
             decode_internal_to("std_msgs/Header", static_cast<TemporalMeasurement&>(out));  // header
             const std::string name = read<std::string>();
             const uint8_t state = read<uint8_t>();
-            out.set_classication(name, state == 1);
+            out.set_classification(name, state == 1);
             ignore("geometry_msgs/Wrench");   // wrench
             ignore("geometry_msgs/Point");    // position
             ignore("geometry_msgs/Vector3");  // normal
@@ -278,10 +278,10 @@ SENSORBOX_INLINE std::size_t ROS1BytesDecoder::internal_msg_size(const std::stri
         // In ROS 1, the vector length in elements is encoded in the first 4 bytes as a uint32.
         const uint32_t vector_size = peak<uint32_t>(extra_offset);
         extra_offset += ROS1MessagesTypes::fundamental::size("uint32");
-        const std::size_t fundamental_size = ROS1MessagesTypes::fundamental::size(internal_msg_element_type);
-        if (fundamental_size > 0) {
+        const std::size_t element_fundamental_size = ROS1MessagesTypes::fundamental::size(internal_msg_element_type);
+        if (element_fundamental_size > 0) {
             // Compute vector size efficiently for fundamental types
-            extra_offset += vector_size * fundamental_size;
+            extra_offset += vector_size * element_fundamental_size;
         } else {
             for (uint32_t i = 0; i < vector_size; ++i) {
                 // Compute element size individually for non-fundamental types
@@ -291,10 +291,10 @@ SENSORBOX_INLINE std::size_t ROS1BytesDecoder::internal_msg_size(const std::stri
     } else if (message_is_array_type(internal_msg_type)) {
         const std::string_view internal_msg_element_type = message_array_type(internal_msg_type);
         const std::size_t array_size = message_array_size(internal_msg_type);
-        const std::size_t fundamental_size = ROS1MessagesTypes::fundamental::size(internal_msg_element_type);
-        if (fundamental_size > 0) {
+        const std::size_t element_fundamental_size = ROS1MessagesTypes::fundamental::size(internal_msg_element_type);
+        if (element_fundamental_size > 0) {
             // Compute array size efficiently for fundamental types
-            extra_offset += array_size * fundamental_size;
+            extra_offset += array_size * element_fundamental_size;
         } else {
             for (std::size_t i = 0; i < array_size; ++i) {
                 // Compute element size individually for non-fundamental types
@@ -308,9 +308,9 @@ SENSORBOX_INLINE std::size_t ROS1BytesDecoder::internal_msg_size(const std::stri
         // Message type belongs to a group
         const auto fields = message_fields(ROS1MessagesTypes::msg_types, internal_msg_type);
         throw_if(fields.empty(), std::string(internal_msg_type) + " is not a known msg type.");
-        std::for_each(fields.begin(), fields.end(),
-                [this, &extra_offset, internal_msg_type](
-                        const MessageField& field) { extra_offset += internal_msg_size(field.type, extra_offset); });
+        std::for_each(fields.begin(), fields.end(), [this, &extra_offset](const MessageField& field) {
+            extra_offset += internal_msg_size(field.type, extra_offset);
+        });
     }
     return extra_offset - initial_offset;
 }

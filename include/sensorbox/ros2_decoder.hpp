@@ -115,7 +115,7 @@ struct ROS2MessagesTypes {
             const auto it = std::find_if(msg_types.cbegin(), msg_types.cend(),
                     [msg_type](const MessageType& message_type) { return message_type.type == msg_type; });
             return it == msg_types.cend() ? 0
-                                          : std::accumulate(it->fields.begin(), it->fields.end(), 0,
+                                          : std::accumulate(it->fields.begin(), it->fields.end(), std::size_t{0},
                                                     [offset](std::size_t sum, const MessageField& item) {
                                                         return sum + fundamental::size(item.type, offset);
                                                     });
@@ -141,9 +141,6 @@ struct ROS2MessagesTypes {
                 {"float32", "g"},
                 {"float32", "b"},
                 {"float32", "a"},
-        });
-        static constexpr auto Duration = std::to_array<MessageField>({
-                {"duration", "data"},
         });
         static constexpr auto Empty = std::array<MessageField, 0>();
         static constexpr auto Float32 = std::to_array<MessageField>({
@@ -199,14 +196,11 @@ struct ROS2MessagesTypes {
                 {"uint32", "stride"},
         });
         static constexpr auto MultiArrayLayout = std::to_array<MessageField>({
-                {"MultiArrayDimension[]", "dim"},
+                {"std_msgs/MultiArrayDimension[]", "dim"},
                 {"uint32", "data_offset"},
         });
         static constexpr auto String = std::to_array<MessageField>({
                 {"string", "data"},
-        });
-        static constexpr auto Time = std::to_array<MessageField>({
-                {"time", "data"},
         });
         static constexpr auto UInt16 = std::to_array<MessageField>({
                 {"uint16", "data"},
@@ -243,7 +237,6 @@ struct ROS2MessagesTypes {
                 {"std_msgs/ByteMultiArray", ByteMultiArray},
                 {"std_msgs/Char", Char},
                 {"std_msgs/ColorRGBA", ColorRGBA},
-                {"std_msgs/Duration", Duration},
                 {"std_msgs/Empty", Empty},
                 {"std_msgs/Float32", Float32},
                 {"std_msgs/Float32MultiArray", Float32MultiArray},
@@ -257,10 +250,10 @@ struct ROS2MessagesTypes {
                 {"std_msgs/Int64", Int64},
                 {"std_msgs/Int64MultiArray", Int64MultiArray},
                 {"std_msgs/Int8", Int8},
+                {"std_msgs/Int8MultiArray", Int8MultiArray},
                 {"std_msgs/MultiArrayDimension", MultiArrayDimension},
                 {"std_msgs/MultiArrayLayout", MultiArrayLayout},
                 {"std_msgs/String", String},
-                {"std_msgs/Time", Time},
                 {"std_msgs/UInt16", UInt16},
                 {"std_msgs/UInt16MultiArray", UInt16MultiArray},
                 {"std_msgs/UInt32", UInt32},
@@ -290,7 +283,7 @@ struct ROS2MessagesTypes {
                 {"geometry_msgs/AccelWithCovariance", "accel"},
         });
         static constexpr auto Inertia = std::to_array<MessageField>({
-                {"float63", "m"},
+                {"float64", "m"},
                 {"geometry_msgs/Vector3", "com"},
                 {"float64", "ixx"},
                 {"float64", "ixy"},
@@ -327,7 +320,7 @@ struct ROS2MessagesTypes {
         });
         // ROS 2 introduced PolygonInstanceStamped
         static constexpr auto PolygonInstanceStamped = std::to_array<MessageField>({
-                {"stdd_msgs/Header", "header"},
+                {"std_msgs/Header", "header"},
                 {"geometry_msgs/PolygonInstance", "polygon"},
         });
         static constexpr auto PolygonStamped = std::to_array<MessageField>({
@@ -346,6 +339,10 @@ struct ROS2MessagesTypes {
         static constexpr auto PoseArray = std::to_array<MessageField>({
                 {"std_msgs/Header", "header"},
                 {"geometry_msgs/Pose[]", "poses"},
+        });
+        static constexpr auto PoseStamped = std::to_array<MessageField>({
+                {"std_msgs/Header", "header"},
+                {"geometry_msgs/Pose", "pose"},
         });
         static constexpr auto PoseWithCovariance = std::to_array<MessageField>({
                 {"geometry_msgs/Pose", "pose"},
@@ -371,6 +368,7 @@ struct ROS2MessagesTypes {
         });
         static constexpr auto TransformStamped = std::to_array<MessageField>({
                 {"std_msgs/Header", "header"},
+                {"string", "child_frame_id"},
                 {"geometry_msgs/Transform", "transform"},
         });
         static constexpr auto Twist = std::to_array<MessageField>({
@@ -431,6 +429,7 @@ struct ROS2MessagesTypes {
                 {"geometry_msgs/Pose", Pose},
                 {"geometry_msgs/Pose2D", Pose2D},
                 {"geometry_msgs/PoseArray", PoseArray},
+                {"geometry_msgs/PoseStamped", PoseStamped},
                 {"geometry_msgs/PoseWithCovariance", PoseWithCovariance},
                 {"geometry_msgs/PoseWithCovarianceStamped", PoseWithCovarianceStamped},
                 {"geometry_msgs/Quaternion", Quaternion},
@@ -471,7 +470,7 @@ struct ROS2MessagesTypes {
         });
         static constexpr auto OccupancyGrid = std::to_array<MessageField>({
                 {"std_msgs/Header", "header"},
-                {"MapMetaData", "info"},
+                {"nav_msgs/MapMetaData", "info"},
                 {"int8[]", "data"},
         });
         static constexpr auto Odometry = std::to_array<MessageField>({
@@ -499,11 +498,14 @@ struct ROS2MessagesTypes {
         });
 
         static constexpr auto msg_types = std::to_array<MessageType>({
-                {"geometry_msgs/GridCells", GridCells},
+                {"nav_msgs/GridCells", GridCells},
+                {"nav_msgs/Goals", Goals},
                 {"nav_msgs/MapMetaData", MapMetaData},
                 {"nav_msgs/OccupancyGrid", OccupancyGrid},
                 {"nav_msgs/Odometry", Odometry},
                 {"nav_msgs/Path", Path},
+                {"nav_msgs/Trajectory", Trajectory},
+                {"nav_msgs/TrajectoryPoint", TrajectoryPoint},
         });
     };
 
@@ -652,7 +654,7 @@ struct ROS2MessagesTypes {
         static constexpr auto MagneticField = std::to_array<MessageField>({
                 {"std_msgs/Header", "header"},
                 {"geometry_msgs/Vector3", "magnetic_field"},
-                {"float[64]", "magnetic_field_covariance"},
+                {"float64[9]", "magnetic_field_covariance"},
         });
         static constexpr auto MultiDOFJointState = std::to_array<MessageField>({
                 {"std_msgs/Header", "header"},
@@ -850,9 +852,9 @@ struct ROS2Conversions {
         if constexpr (std::same_as<T, std::string>) {
             return std::to_array<std::string_view>({"string", "std_msgs/String"});
         } else if constexpr (cppbox::IsDuration<T>) {
-            return std::to_array<std::string_view>({"duration", "std_msgs/Duration"});
+            return std::to_array<std::string_view>({"builtin_interfaces/Duration"});
         } else if constexpr (cppbox::IsTimePoint<T>) {
-            return std::to_array<std::string_view>({"time", "std_msgs/Time"});
+            return std::to_array<std::string_view>({"builtin_interfaces/Time"});
         } else if constexpr (std::same_as<T, Eigen::Vector3d>) {
             return std::to_array<std::string_view>({"geometry_msgs/Point", "geometry_msgs/Vector3"});
         } else if constexpr (std::same_as<T, Eigen::Quaterniond>) {

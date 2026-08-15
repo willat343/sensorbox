@@ -79,6 +79,40 @@ constexpr bool message_is_vector_type(const std::string_view msg_type) {
     return msg_type.ends_with("[]");
 }
 
+/**
+ * @brief Check if a message type contains, at any depth, a field whose serialised length depends on the data, i.e. a
+ * string or a dynamic-sized vector. Note that this is a property of the message definition only, so whether such a
+ * message type has the same size every time additionally depends on the serialization (e.g. in ROS 2 the size of a
+ * message also depends on its alignment). An unknown message type is assumed to contain a dynamic field.
+ *
+ * @tparam MessageTypes
+ * @param msg_type
+ * @return true
+ * @return false
+ */
+template<class MessageTypes>
+constexpr bool message_contains_dynamic_field(const std::string_view msg_type) {
+    if (MessageTypes::fundamental::size(msg_type) > 0) {
+        return false;
+    }
+    if (msg_type == "string" || message_is_vector_type(msg_type)) {
+        return true;
+    }
+    if (message_is_array_type(msg_type)) {
+        return message_contains_dynamic_field<MessageTypes>(message_array_type(msg_type));
+    }
+    const std::span<const MessageField> fields = message_fields(MessageTypes::msg_types, msg_type);
+    if (fields.empty()) {
+        return true;
+    }
+    for (const MessageField& field : fields) {
+        if (message_contains_dynamic_field<MessageTypes>(field.type)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 constexpr std::string_view message_vector_type(const std::string_view msg_type) {
     return message_is_vector_type(msg_type) ? msg_type.substr(0, msg_type.size() - 2) : msg_type;
 }

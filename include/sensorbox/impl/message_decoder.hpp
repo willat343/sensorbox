@@ -15,7 +15,7 @@ inline MessageDecoder<MessageTypes, Conversions>::MessageDecoder(const std::byte
 template<class MessageTypes, class Conversions>
 template<typename T>
 constexpr inline bool MessageDecoder<MessageTypes, Conversions>::is_decodable() {
-    return Conversions::template decodable_msg_types<T>().empty();
+    return !Conversions::template decodable_msg_types<T>().empty();
 }
 
 template<class MessageTypes, class Conversions>
@@ -103,7 +103,7 @@ inline std::string_view MessageDecoder<MessageTypes, Conversions>::starts_with()
 
 template<class MessageTypes, class Conversions>
 inline bool MessageDecoder<MessageTypes, Conversions>::is_vector_type() const {
-    return message_is_vector(MessageTypes::msg_types, msg_type());
+    return message_is_vector_type(msg_type());
 }
 
 template<class MessageTypes, class Conversions>

@@ -95,7 +95,7 @@ inline std::optional<T> ROS2BytesDecoder::read_optional() {
 
 template<typename T>
 inline void ROS2BytesDecoder::read_optional_to(std::optional<T>& out) {
-    out = read_to<T>();
+    out = read<T>();
 }
 
 template<typename T>
@@ -107,8 +107,10 @@ inline void ROS2BytesDecoder::read_to(T& out) {
 }
 
 inline void ROS2BytesDecoder::read_to(std::string& out) {
-    // In ROS 2, the string length in bytes is encoded in the first 4 bytes as a uint32
-    out = cppbox::BytesDecoder::read<std::string>(read<uint32_t>());
+    // In ROS 2, the string length in bytes (including null terminator '\0') is encoded in the first 4 bytes as a uint32
+    const uint32_t length = read<uint32_t>();
+    throw_if(length == 0, "Decoding of string failed because its length did not include the null terminator.");
+    out = cppbox::BytesDecoder::read<std::string>(length - 1);
     // In ROS 2, strings end with a null terminator '\0'
     [[maybe_unused]] const char null_terminator = cppbox::BytesDecoder::read<char>();
     assert(null_terminator == '\0');

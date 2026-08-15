@@ -40,7 +40,7 @@ inline void ROS1BytesDecoder::decode_to(T& out) {
 
 template<typename T>
 inline void ROS1BytesDecoder::decode_optional_to(std::optional<T>& out) {
-    out = decode_to<T>();
+    out = decode<T>();
 }
 
 template<typename T>
@@ -51,7 +51,15 @@ inline std::optional<T> ROS1BytesDecoder::decode_optional() {
 }
 
 inline void ROS1BytesDecoder::ignore(const std::string_view msg_type, const std::size_t num_ignore) {
-    ignore_bytes(internal_msg_size(msg_type) * num_ignore);
+    // In ROS 1 data is packed without alignment, so a message type without dynamic fields has the same size every
+    // time and that size need only be computed once. The check is only worthwhile for more than one message.
+    if (num_ignore > 1 && !message_contains_dynamic_field<ROS1MessagesTypes>(msg_type)) {
+        ignore_bytes(internal_msg_size(msg_type) * num_ignore);
+    } else {
+        for (std::size_t i = 0; i < num_ignore; ++i) {
+            ignore_bytes(internal_msg_size(msg_type));
+        }
+    }
 }
 
 template<typename T>
