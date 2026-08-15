@@ -403,6 +403,13 @@ struct ROS2MessagesTypes {
                 {"string", "reference_frame_id"},
                 {"geometry_msgs/Twist", "velocity"},
         });
+        // ROS 2 introduced VelocityWithCovarianceStamped
+        static constexpr auto VelocityWithCovarianceStamped = std::to_array<MessageField>({
+                {"std_msgs/Header", "header"},
+                {"string", "body_frame_id"},
+                {"string", "reference_frame_id"},
+                {"geometry_msgs/TwistWithCovariance", "velocity"},
+        });
         static constexpr auto Wrench = std::to_array<MessageField>({
                 {"geometry_msgs/Vector3", "force"},
                 {"geometry_msgs/Vector3", "torque"},
@@ -443,6 +450,7 @@ struct ROS2MessagesTypes {
                 {"geometry_msgs/Vector3", Vector3},
                 {"geometry_msgs/Vector3Stamped", Vector3Stamped},
                 {"geometry_msgs/VelocityStamped", VelocityStamped},
+                {"geometry_msgs/VelocityWithCovarianceStamped", VelocityWithCovarianceStamped},
                 {"geometry_msgs/Wrench", Wrench},
                 {"geometry_msgs/WrenchStamped", WrenchStamped},
         });
@@ -693,11 +701,15 @@ struct ROS2MessagesTypes {
         struct nav_sat_status {
             // Whether to output an augmented fix is determined by both the fix type and the last time differential
             // corrections were received. A fix is valid when status >= STATUS_FIX.
+            // Added in ROS 2
+            static constexpr int8_t STATUS_UNKNOWN = -2;
             static constexpr int8_t STATUS_NO_FIX = -1;
             static constexpr int8_t STATUS_FIX = 0;
             static constexpr int8_t STATUS_SBAS_FIX = 1;
             static constexpr int8_t STATUS_GBAS_FIX = 2;
             // Bits defining which Global Navigation Satellite System signals were used by the receiver.
+            // Added in ROS 2
+            static constexpr uint16_t SERVICE_UNKNOWN = 0;
             static constexpr uint16_t SERVICE_GPS = 1;
             static constexpr uint16_t SERVICE_GLONASS = 2;
             static constexpr uint16_t SERVICE_COMPASS = 4;
@@ -750,6 +762,8 @@ struct ROS2MessagesTypes {
                 {"float32", "min_range"},
                 {"float32", "max_range"},
                 {"float32", "range"},
+                // In ROS 2 `variance` was added
+                {"float32", "variance"},
         });
         static constexpr auto RegionOfInterest = std::to_array<MessageField>({
                 {"uint32", "x_offset"},
