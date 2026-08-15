@@ -1,5 +1,5 @@
-#ifndef SENSORBOX_SCHEMA_LOADABLE_HPP
-#define SENSORBOX_SCHEMA_LOADABLE_HPP
+#ifndef SENSORBOX_JSON_LOADABLE_HPP
+#define SENSORBOX_JSON_LOADABLE_HPP
 
 #include <array>
 #include <filesystem>
@@ -10,7 +10,7 @@
 namespace sensorbox {
 
 /**
- * @brief NTTP wrapper for string representing a JSON Scheme filepath.
+ * @brief NTTP wrapper for string representing a JSON Schema filepath.
  *
  * Example:
  * ```

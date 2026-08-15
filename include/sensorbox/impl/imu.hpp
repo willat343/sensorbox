@@ -1,6 +1,7 @@
 #ifndef SENSORBOX_IMPL_IMU_HPP
 #define SENSORBOX_IMPL_IMU_HPP
 
+#include <cassert>
 #include <cppbox/exceptions.hpp>
 
 #include "sensorbox/imu.hpp"

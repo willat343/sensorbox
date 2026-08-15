@@ -17,7 +17,7 @@ public:
     static constexpr int D = D_;
     using Pose = Eigen::Transform<double, D, Eigen::Isometry>;
     static constexpr int PoseDoF = D * (D + 1) / 2;
-    using Twist = Eigen::Matrix<double, PoseDoF, 1>;
+    using Twist = Eigen::Vector<double, PoseDoF>;
 
     explicit PoseTwistMeasurement();
 

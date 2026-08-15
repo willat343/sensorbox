@@ -54,14 +54,14 @@ public:
     static constexpr int D = D_;
     static constexpr int AccelDoF = D;
     static constexpr int GyroDoF = D * (D - 1) / 2;
-    using AngularVelocity = Eigen::Matrix<double, GyroDoF, 1>;
-    using LinearAcceleration = Eigen::Matrix<double, AccelDoF, 1>;
+    using AngularVelocity = Eigen::Vector<double, GyroDoF>;
+    using LinearAcceleration = Eigen::Vector<double, AccelDoF>;
     using Pose = Eigen::Transform<double, D, Eigen::Isometry>;
 
     explicit ImuMeasurement();
 
     /**
-     * @brief Construct a Imu Measurement.
+     * @brief Construct an IMU measurement.
      *
      * @param timestamp_ timestamp
      * @param frame_ reference frame in which the measurement is made, e.g. imu_frame
@@ -120,11 +120,12 @@ private:
      *      \mathbf{a}^{N}_{IF} = \mathbf{R}^{NF} \mathbf{f}^{F} + \mathbf{g}^{N}
      * \f]
      *
-     * If we consider an ENU navigation frame (Z-up) then \f$\mathbf{g}^{N} := \begin{bmatrix}0 \\ 0
-     * \\ -g\end{bmatrix}\f$ (at the origin). For a NED navigation frame (Z-down) we have \f$\mathbf{g}^{N} :=
+     * If we consider an ENU navigation frame (Z-up) then \f$\mathbf{g}^{N} := \begin{bmatrix}0 \\ 0 \\
+     * -g\end{bmatrix}\f$ (at the origin). For a NED navigation frame (Z-down) we have \f$\mathbf{g}^{N} :=
      * \begin{bmatrix}0 \\ 0 \\ g\end{bmatrix}\f$ (at the origin). When the IMU frame is oriented with the navigation
-     * frame (\f$\mathbf{R}^{FN} = \mathbf{I}\f$) and at rest (\f$\mathbf{a}^{N}_{IF}\f$), then the device will measure
-     * \f$\mathbf{f}^F = -\mathbf{g}^{N}\f$. This yields an output \f$[0, 0, +g]\f$ in ENU and \f$[0, 0, -g]\f$ in NED.
+     * frame (\f$\mathbf{R}^{FN} = \mathbf{I}\f$) and at rest (\f$\mathbf{a}^{N}_{IF} = \mathbf{0}\f$), then the device
+     * will measure \f$\mathbf{f}^F = -\mathbf{g}^{N}\f$. This yields an output \f$[0, 0, +g]\f$ in ENU and \f$[0, 0,
+     * -g]\f$ in NED.
      *
      */
     LinearAcceleration linear_acceleration_;

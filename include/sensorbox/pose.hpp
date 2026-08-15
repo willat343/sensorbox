@@ -3,6 +3,7 @@
 
 #include <Eigen/Geometry>
 #include <string>
+#include <vector>
 
 #include "sensorbox/json_loadable.hpp"
 #include "sensorbox/measurement.hpp"
@@ -123,7 +124,7 @@ public:
      * @param new_frame new frame \f$ NF \f$
      * @param new_child_frame new child frame \f$ NC \f$
      * @param T_NF_F pose of current frame in the new frame \f$ T_{NF,F} \f$
-     * @param T_C_NC pose of new child frame in the current child frame \f$ T_{C,N} \f$
+     * @param T_C_NC pose of new child frame in the current child frame \f$ T_{C,NC} \f$
      * @return PoseMeasurement
      */
     PoseMeasurement transform_to_new_frames(const std::string& new_frame, const std::string& new_child_frame,

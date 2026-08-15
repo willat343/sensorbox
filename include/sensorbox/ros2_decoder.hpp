@@ -2,7 +2,9 @@
 #define SENSORBOX_ROS2_DECODER_HPP
 
 #include <Eigen/Core>
+#include <algorithm>
 #include <array>
+#include <cassert>
 #include <cppbox/array.hpp>
 #include <cppbox/bytes.hpp>
 #include <cppbox/constexpr_map.hpp>
@@ -11,6 +13,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <vector>
 
 #include "sensorbox/imu.hpp"
 #include "sensorbox/measurement.hpp"
@@ -30,8 +33,8 @@ struct ROS2MessagesTypes {
 
     struct fundamental {
         /**
-         * @brief Compute the ROS 2 CDR aligned offset of a fundmental type of `size_` bytes based on the current offset
-         * from the end of the CDR header.
+         * @brief Compute the ROS 2 CDR aligned offset of a fundamental type of `size_` bytes based on the current
+         * offset from the end of the CDR header.
          *
          * In ROS 2, CDR structs align fundamental types with leading padding to memory offsets that are multiples of
          * their own size.

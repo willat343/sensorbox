@@ -1,7 +1,7 @@
 #ifndef SENSORBOX_IMPL_POSE_HPP
 #define SENSORBOX_IMPL_POSE_HPP
 
-#include <mathbox/stiffness.hpp>
+#include <cassert>
 
 #include "sensorbox/pose.hpp"
 #include "sensorbox/stiffness.hpp"

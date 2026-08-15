@@ -22,7 +22,7 @@ Eigen::Matrix<double, Rows, Rows> covariance_from_config(const nlohmann::json& c
  *
  * @tparam Rows size of stiffness matrix as `Eigen::Dynamic` or >= 0
  * @param config configuration containing information about stiffness
- * @return Eigen::Matrix<double, Rows, 1> stiffness matrix
+ * @return Eigen::Matrix<double, Rows, Rows> stiffness matrix
  */
 template<int Rows = Eigen::Dynamic>
 Eigen::Matrix<double, Rows, Rows> stiffness_from_config(const nlohmann::json& config);

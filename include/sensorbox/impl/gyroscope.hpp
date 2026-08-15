@@ -1,6 +1,8 @@
 #ifndef SENSORBOX_IMPL_GYROSCOPE_HPP
 #define SENSORBOX_IMPL_GYROSCOPE_HPP
 
+#include <cassert>
+
 #include "sensorbox/gyroscope.hpp"
 
 namespace sensorbox {

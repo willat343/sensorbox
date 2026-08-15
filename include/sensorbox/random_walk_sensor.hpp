@@ -96,9 +96,9 @@ public:
      * @brief Correct a raw measurement for axis scaling, i.e. compute S^{-1} * measurement.
      *
      * @param measurement raw (uncorrected) measurement
-     * @return Eigen::Matrix<double, DoF, 1> scaled (corrected) measurement
+     * @return Eigen::Vector<double, DoF> scaled (corrected) measurement
      */
-    Eigen::Matrix<double, DoF, 1> scale_measurement(const Eigen::Matrix<double, DoF, 1>& measurement) const;
+    Eigen::Vector<double, DoF> scale_measurement(const Eigen::Vector<double, DoF>& measurement) const;
 
     /**
      * @brief Set the bias noise density

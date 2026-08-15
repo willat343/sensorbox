@@ -5,7 +5,6 @@
 #include <cppbox/exceptions.hpp>
 #include <mathbox/covariance.hpp>
 #include <mathbox/stiffness.hpp>
-#include <stdexcept>
 
 #include "sensorbox/stiffness.hpp"
 
@@ -19,16 +18,16 @@ Eigen::Matrix<double, Rows, Rows> covariance_from_config(const nlohmann::json& c
     } else if (config.contains("information")) {
         not_implemented("Conversion of information to covariance not yet implemented.");
     } else if (config.contains("variances")) {
-        Eigen::Matrix<double, Rows, 1> variances;
+        Eigen::Vector<double, Rows> variances;
         if constexpr (Rows == Eigen::Dynamic) {
-            variances = convert::to<Eigen::Matrix<double, Rows, 1>>(
-                    config["variances"].template get<std::vector<double>>());
+            variances =
+                    convert::to<Eigen::Vector<double, Rows>>(config["variances"].template get<std::vector<double>>());
         } else {
             const int config_size = config["variances"].size();
             throw_if(config_size != Rows, "covariance_from_config: Expected size of variances vector in json was " +
                                                   std::to_string(Rows) + " but was " + std::to_string(config_size) +
                                                   ".");
-            variances = convert::to<Eigen::Matrix<double, Rows, 1>>(
+            variances = convert::to<Eigen::Vector<double, Rows>>(
                     config["variances"].template get<std::array<double, std::size_t(Rows)>>());
         }
         return math::covariance_from_variances(variances);
@@ -42,15 +41,15 @@ Eigen::Matrix<double, Rows, Rows> covariance_from_config(const nlohmann::json& c
             return math::covariance_from_variance<Rows>(config["variance"].template get<double>());
         }
     } else if (config.contains("sigmas")) {
-        Eigen::Matrix<double, Rows, 1> sigmas;
+        Eigen::Vector<double, Rows> sigmas;
         if constexpr (Rows == Eigen::Dynamic) {
-            sigmas = convert::to<Eigen::Matrix<double, Rows, 1>>(config["sigmas"].template get<std::vector<double>>());
+            sigmas = convert::to<Eigen::Vector<double, Rows>>(config["sigmas"].template get<std::vector<double>>());
         } else {
             const int config_size = config["sigmas"].size();
             throw_if(config_size != Rows, "covariance_from_config: Expected size of sigmas vector in json was " +
                                                   std::to_string(Rows) + " but was " + std::to_string(config_size) +
                                                   ".");
-            sigmas = convert::to<Eigen::Matrix<double, Rows, 1>>(
+            sigmas = convert::to<Eigen::Vector<double, Rows>>(
                     config["sigmas"].template get<std::array<double, std::size_t(Rows)>>());
         }
         return math::covariance_from_sigmas(sigmas);
@@ -79,16 +78,16 @@ Eigen::Matrix<double, Rows, Rows> stiffness_from_config(const nlohmann::json& co
     } else if (config.contains("information")) {
         not_implemented("Conversion of information to stiffness not yet implemented.");
     } else if (config.contains("variances")) {
-        Eigen::Matrix<double, Rows, 1> variances;
+        Eigen::Vector<double, Rows> variances;
         if constexpr (Rows == Eigen::Dynamic) {
-            variances = convert::to<Eigen::Matrix<double, Rows, 1>>(
-                    config["variances"].template get<std::vector<double>>());
+            variances =
+                    convert::to<Eigen::Vector<double, Rows>>(config["variances"].template get<std::vector<double>>());
         } else {
             const int config_size = config["variances"].size();
             throw_if(config_size != Rows, "stiffness_from_config: Expected size of variances vector in json was " +
                                                   std::to_string(Rows) + " but was " + std::to_string(config_size) +
                                                   ".");
-            variances = convert::to<Eigen::Matrix<double, Rows, 1>>(
+            variances = convert::to<Eigen::Vector<double, Rows>>(
                     config["variances"].template get<std::array<double, std::size_t(Rows)>>());
         }
         return math::stiffness_from_variances(variances);
@@ -102,15 +101,15 @@ Eigen::Matrix<double, Rows, Rows> stiffness_from_config(const nlohmann::json& co
             return math::stiffness_from_variance<Rows>(config["variance"].template get<double>());
         }
     } else if (config.contains("sigmas")) {
-        Eigen::Matrix<double, Rows, 1> sigmas;
+        Eigen::Vector<double, Rows> sigmas;
         if constexpr (Rows == Eigen::Dynamic) {
-            sigmas = convert::to<Eigen::Matrix<double, Rows, 1>>(config["sigmas"].template get<std::vector<double>>());
+            sigmas = convert::to<Eigen::Vector<double, Rows>>(config["sigmas"].template get<std::vector<double>>());
         } else {
             const int config_size = config["sigmas"].size();
             throw_if(config_size != Rows, "stiffness_from_config: Expected size of sigmas vector in json was " +
                                                   std::to_string(Rows) + " but was " + std::to_string(config_size) +
                                                   ".");
-            sigmas = convert::to<Eigen::Matrix<double, Rows, 1>>(
+            sigmas = convert::to<Eigen::Vector<double, Rows>>(
                     config["sigmas"].template get<std::array<double, std::size_t(Rows)>>());
         }
         return math::stiffness_from_sigmas(sigmas);

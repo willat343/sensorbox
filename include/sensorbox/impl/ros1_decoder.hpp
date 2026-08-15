@@ -1,9 +1,8 @@
-#ifndef SENSOBOX_IMPL_ROS1_DECODER_HPP
-#define SENSOBOX_IMPL_ROS1_DECODER_HPP
+#ifndef SENSORBOX_IMPL_ROS1_DECODER_HPP
+#define SENSORBOX_IMPL_ROS1_DECODER_HPP
 
 #include <cassert>
 #include <cppbox/exceptions.hpp>
-#include <set>
 
 #include "sensorbox/ros1_decoder.hpp"
 

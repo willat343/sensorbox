@@ -1,6 +1,8 @@
 #ifndef SENSORBOX_IMPL_ACCELEROMETER_HPP
 #define SENSORBOX_IMPL_ACCELEROMETER_HPP
 
+#include <cassert>
+
 #include "sensorbox/accelerometer.hpp"
 
 namespace sensorbox {

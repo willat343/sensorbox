@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <cppbox/exceptions.hpp>
 #include <fstream>
-#include <stdexcept>
 
 #include "sensorbox/json_loadable.hpp"
 

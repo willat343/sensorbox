@@ -1,6 +1,10 @@
 #ifndef SENSORBOX_IMPL_ROS2_DECODER_IMPL_HPP
 #define SENSORBOX_IMPL_ROS2_DECODER_IMPL_HPP
 
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <cppbox/exceptions.hpp>
+
 #include "sensorbox/impl/ros2_decoder.hpp"
 #include "sensorbox/impl/sensorbox.hpp"
 
@@ -156,8 +160,8 @@ SENSORBOX_INLINE std::size_t ROS2BytesDecoder::internal_msg_size(const std::stri
         extra_offset += fundamental_size;
     } else if (message_is_vector_type(internal_msg_type)) {
         const std::string_view internal_msg_element_type = message_vector_type(internal_msg_type);
-        // In ROS 2, the vector length in elements is encoded in the first 4 bytes as a uint32 (which must
-        // obey alignment). Add padding first to ensure correct peak.
+        // In ROS 2, the vector length in elements is encoded in the first 4 bytes as a uint32 (which must obey
+        // alignment). Add padding first to ensure correct peak.
         extra_offset += ROS2MessagesTypes::fundamental::padding(ROS2MessagesTypes::fundamental::size("uint32"),
                 offset_overall() + extra_offset);
         const uint32_t vector_size = peak<uint32_t>(extra_offset);

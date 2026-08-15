@@ -57,7 +57,7 @@ public:
     explicit TemporalSpatialMeasurement();
 
     /**
-     * @brief Construct a temporal measurement.
+     * @brief Construct a temporal-spatial measurement.
      *
      * @param timestamp_ timestamp
      * @param frame_ frame
@@ -87,13 +87,13 @@ public:
 
     /**
      * @brief Construct a temporal-spatial relational measurement. The timestamp is initialised to zero and the frames
-     * is left empty.
+     * are left empty.
      *
      */
     explicit TemporalSpatialRelationalMeasurement();
 
     /**
-     * @brief Construct a temporal measurement.
+     * @brief Construct a temporal-spatial relational measurement.
      *
      * @param timestamp_ timestamp
      * @param frame_ frame

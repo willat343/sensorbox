@@ -1,6 +1,7 @@
 #ifndef SENSORBOX_IMPL_RANDOM_WALK_SENSOR_HPP
 #define SENSORBOX_IMPL_RANDOM_WALK_SENSOR_HPP
 
+#include <cmath>
 #include <convert/convert.hpp>
 #include <cppbox/exceptions.hpp>
 
@@ -24,8 +25,8 @@ inline RandomWalkSensor<DoF_>::RandomWalkSensor(const nlohmann::json& config, co
             config["bias_noise_density"].get<double>());
     initial_noise__ = config["initial_noise"].get<double>();
 
-    // Parse optional axis scaling matrix S from "scaling", either a scalar (uniform scaling) or a per-axis vector
-    // (the diagonal of S), defaulting to the identity matrix if not present.
+    // Parse optional axis scaling matrix S from "scaling", either a scalar (uniform scaling) or a per-axis vector (the
+    // diagonal of S), defaulting to the identity matrix if not present.
     if (config.contains("scaling")) {
         const nlohmann::json& scaling = config["scaling"];
         if (scaling.is_array()) {
@@ -52,6 +53,7 @@ template<int DoF_>
 inline double RandomWalkSensor<DoF_>::frequency() const {
     return frequency__;
 }
+
 template<int DoF_>
 inline double RandomWalkSensor<DoF_>::initial_noise() const {
     return initial_noise__;

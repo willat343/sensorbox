@@ -1,6 +1,8 @@
 #ifndef SENSORBOX_IMPL_ROS2_DECODER_HPP
 #define SENSORBOX_IMPL_ROS2_DECODER_HPP
 
+#include <algorithm>
+#include <cassert>
 #include <cppbox/exceptions.hpp>
 
 #include "sensorbox/ros2_decoder.hpp"

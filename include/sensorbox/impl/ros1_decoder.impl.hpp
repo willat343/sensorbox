@@ -52,7 +52,7 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(ActuatorMeasurement& out) {
     } else if (msg_type() == "series_elastic_actuator_msgs/SeActuatorState") {
         decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
         read_to(out.name());
-        out.set_type(ActuatorType::SERIES_ELASTIC);
+        out.set_actuator_type(ActuatorType::SERIES_ELASTIC);
         ignore<uint32_t>();  // statusword
         read_optional_to<double>(out.current());
         read_optional_to<double>(out.motor_position());

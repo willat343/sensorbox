@@ -1,7 +1,10 @@
 #ifndef SENSORBOX_MESSAGE_DECODER_HPP
 #define SENSORBOX_MESSAGE_DECODER_HPP
 
+#include <algorithm>
+#include <array>
 #include <charconv>
+#include <cppbox/bytes.hpp>
 #include <span>
 #include <string_view>
 #include <utility>
@@ -27,7 +30,7 @@ template<std::size_t Size>
 constexpr std::span<const MessageField> message_fields(const std::array<MessageType, Size>& msg_types,
         const std::string_view msg_type) {
     const auto it = std::find_if(msg_types.cbegin(), msg_types.cend(),
-            [msg_type](const MessageType& message_size) { return message_size.type == msg_type; });
+            [msg_type](const MessageType& message_type) { return message_type.type == msg_type; });
     return it != msg_types.cend() ? it->fields : std::span<const MessageField>();
 }
 
@@ -61,6 +64,8 @@ constexpr std::size_t message_array_size(const std::string_view msg_type) {
     const std::size_t open_bracket = msg_type.find_last_of('[');
     const std::string_view array_size_string = msg_type.substr(open_bracket + 1, msg_type.size() - open_bracket - 2);
     std::size_t array_size{0};
+    // Note that std::from_chars is not constexpr until C++23, so this function can only be evaluated at compile time
+    // for a msg_type that is not an array type
     const auto result =
             std::from_chars(array_size_string.data(), array_size_string.data() + array_size_string.size(), array_size);
     return result.ec == std::errc() ? array_size : 0;
