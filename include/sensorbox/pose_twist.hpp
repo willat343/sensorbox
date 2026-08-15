@@ -27,7 +27,7 @@ public:
      * @param timestamp_ timestamp
      * @param frame_ reference frame in which the measurement is made, e.g. map_frame
      * @param child_frame_ reference frame that has been measured, e.g. body_frame
-     * @param pose_ pose of child_frame_ in frame_, \f$\mathbf{T}_{FC}\f$
+     * @param pose_ pose of child_frame_ in frame_, \f$ \mathbf{T}_{FC} \f$
      * @param twist_ twist of child_frame_ in child_frame_
      */
     explicit PoseTwistMeasurement(const Timestamp& timestamp_, const std::string& frame_,

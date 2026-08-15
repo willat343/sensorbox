@@ -39,8 +39,8 @@ public:
     using Stiffness = Eigen::Matrix<double, DoF, DoF>;
 
     /**
-     * @brief Construct an instance of the class from a json config with Sensor structure and one of ["sigma",
-     * "sigmas", "variance", "variances", "covariance"].
+     * @brief Construct an instance of the class from a json config with Sensor structure and one of ["sigma", "sigmas",
+     * "variance", "variances", "covariance"].
      *
      * @param config
      * @param validate
