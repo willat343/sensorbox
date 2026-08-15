@@ -14,4 +14,6 @@ void to_json(nlohmann::json& j, const ContactClassifications& contact_classifica
 
 }
 
+#include "sensorbox/json/impl/convert.hpp"
+
 #endif

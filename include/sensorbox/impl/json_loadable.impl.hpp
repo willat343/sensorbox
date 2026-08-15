@@ -23,7 +23,8 @@ SENSORBOX_INLINE void sensorbox_schema_loader(const nlohmann::json_uri& uri, nlo
     try {
         schema_file >> schema;
     } catch (const std::exception& ex) {
-        throw_here("Schema \"" + schema_filepath.string() + "\" exists and was opened but could not be parsed.");
+        throw_here("Schema \"" + schema_filepath.string() +
+                   "\" exists and was opened but could not be parsed. Error: " + ex.what());
     }
 }
 

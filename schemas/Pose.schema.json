@@ -6,7 +6,7 @@
             "$ref": "Pose2D.schema.json"
         },
         {
-            "$ref": "Pose3d.schema.json"
+            "$ref": "Pose3D.schema.json"
         }
     ]
 }

@@ -16,7 +16,8 @@ constexpr inline SchemaFilepath<N>::SchemaFilepath(const char (&string)[N]) {
 
 template<std::size_t N>
 constexpr inline std::string_view SchemaFilepath<N>::string() const noexcept {
-    return std::string_view{value.data(), value.size()};
+    // Exclude the null terminator, which is included in N and therefore copied into value.
+    return std::string_view{value.data(), value.size() - 1};
 }
 
 template<SchemaFilepath schema_filepath, SchemaLoader schema_loader>

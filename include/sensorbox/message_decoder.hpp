@@ -39,7 +39,7 @@ constexpr std::string_view message_starts_with(const std::array<MessageType, Siz
         const std::string_view msg_type) {
     const auto it = std::find_if(msg_types.cbegin(), msg_types.cend(),
             [msg_type](const MessageType& message_type) { return message_type.type == msg_type; });
-    return it != msg_types.cend() ? it->fields.front().type : std::string_view();
+    return it != msg_types.cend() && !it->fields.empty() ? it->fields.front().type : std::string_view();
 }
 
 constexpr bool message_is_array_type(const std::string_view msg_type) {

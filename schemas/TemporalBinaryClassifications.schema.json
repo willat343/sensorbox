@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "file::///TemporalBinaryClassifications.schema.json",
+    "$id": "file:///TemporalBinaryClassifications.schema.json",
     "type": "object",
     "description": "Temporal key-boolean pairs.",
     "properties": {

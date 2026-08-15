@@ -38,7 +38,7 @@
             },
             "minItems": 1
         },
-        "precision": {
+        "information": {
             "type": "array",
             "items": {
                 "type": "array",
@@ -78,7 +78,7 @@
         },
         {
             "required": [
-                "precision"
+                "information"
             ]
         }
     ]

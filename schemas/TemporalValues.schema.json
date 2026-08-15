@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "file::///TemporalValues.schema.json",
+    "$id": "file:///TemporalValues.schema.json",
     "type": "object",
     "description": "Temporal key-value pairs.",
     "properties": {
