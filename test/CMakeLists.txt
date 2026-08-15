@@ -1,9 +1,21 @@
 # Enable ctest
 enable_testing()
 
-# Build Example
+# Build Tests
 add_executable(${PROJECT_NAME}_tests
     src/test.cpp
+    src/test/actuator.cpp
+    src/test/contact.cpp
+    src/test/imu.cpp
+    src/test/json_convert.cpp
+    src/test/measurement.cpp
+    src/test/message_decoder.cpp
+    src/test/pose.cpp
+    src/test/pose_twist.cpp
+    src/test/position.cpp
+    src/test/random_walk_sensor.cpp
+    src/test/sensor.cpp
+    src/test/stiffness.cpp
     src/test/test_instances.cpp
 )
 

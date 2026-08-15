@@ -4,6 +4,43 @@
 
 namespace sensorbox {
 
+nlohmann::json test_accelerometer_config() {
+    return nlohmann::json{{"type", "ACCELEROMETER"}, {"make", "EPSON"}, {"model", "G365PDF1"}, {"frequency", 400.0},
+            {"noise_density", 5.5e-4}, {"bias_noise_density", 4.903325e-5}, {"initial_noise", 4.903325e-2}};
+}
+
+nlohmann::json test_actuator_config() {
+    return nlohmann::json{{"type", "ACTUATOR"}, {"make", "ANYbotics"}, {"model", "ANYdrive"},
+            {"actuator_type", "SERIES_ELASTIC"}, {"current_sensor", test_current_sensor_config()},
+            {"motor_encoder", test_encoder_config()}, {"joint_encoder", test_encoder_config()}};
+}
+
+nlohmann::json test_current_sensor_config() {
+    return nlohmann::json{{"type", "CURRENT"}, {"sigma", 0.05}};
+}
+
+nlohmann::json test_direct_pose_sensor_config() {
+    return nlohmann::json{{"type", "DIRECT_POSE"}, {"sigmas", {0.1, 0.2, 0.3, 0.4, 0.5, 0.6}}};
+}
+
+nlohmann::json test_direct_position_sensor_config() {
+    return nlohmann::json{{"type", "DIRECT_POSITION"}, {"sigmas", {0.1, 0.2, 0.3}}};
+}
+
+nlohmann::json test_encoder_config() {
+    return nlohmann::json{{"type", "ENCODER"}, {"sigma", 0.001}};
+}
+
+nlohmann::json test_gyroscope_config() {
+    return nlohmann::json{{"type", "GYROSCOPE"}, {"make", "EPSON"}, {"model", "G365PDF1"}, {"frequency", 200.0},
+            {"noise_density", 2.0e-5}, {"bias_noise_density", 5.0e-6}, {"initial_noise", 1.7e-3}};
+}
+
+nlohmann::json test_imu_config() {
+    return nlohmann::json{{"type", "IMU"}, {"make", "EPSON"}, {"model", "G365PDF1"},
+            {"accelerometer", test_accelerometer_config()}, {"gyroscope", test_gyroscope_config()}};
+}
+
 Eigen::Matrix3d test_covariance_3x3(const unsigned int i) {
     Eigen::Matrix3d cov;
     switch (i) {
@@ -67,15 +104,16 @@ Eigen::Vector3d test_vector3(const unsigned int i) {
 }
 
 void pretest_check_covariance_6x6(const unsigned int i) {
-    EXPECT_TRUE(test_covariance_6x6(i).isApprox(test_covariance_6x6(i)));
+    EXPECT_TRUE(test_covariance_6x6(i).isApprox(test_covariance_6x6(i).transpose()));
+    EXPECT_TRUE(test_covariance_6x6(i).allFinite());
 }
 
 void pretest_check_quaternion(const unsigned int i) {
-    EXPECT_TRUE(test_quaternion(i).isApprox(test_quaternion(i)));
+    EXPECT_DOUBLE_EQ(test_quaternion(i).norm(), 1.0);
 }
 
 void pretest_check_vector3(const unsigned int i) {
-    EXPECT_TRUE(test_vector3(i).isApprox(test_vector3(i)));
+    EXPECT_TRUE(test_vector3(i).allFinite());
 }
 
 TEST(pretest_100, covariance_6x6) {

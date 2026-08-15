@@ -3,11 +3,26 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-
-#include "sensorbox/imu.hpp"
-#include "sensorbox/test/test_instances.hpp"
+#include <nlohmann/json.hpp>
+#include <string>
 
 namespace sensorbox {
+
+nlohmann::json test_accelerometer_config();
+
+nlohmann::json test_actuator_config();
+
+nlohmann::json test_current_sensor_config();
+
+nlohmann::json test_direct_pose_sensor_config();
+
+nlohmann::json test_direct_position_sensor_config();
+
+nlohmann::json test_encoder_config();
+
+nlohmann::json test_gyroscope_config();
+
+nlohmann::json test_imu_config();
 
 Eigen::Matrix3d test_covariance_3x3(const unsigned int i);
 
