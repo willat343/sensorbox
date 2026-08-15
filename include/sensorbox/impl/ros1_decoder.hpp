@@ -51,8 +51,8 @@ inline std::optional<T> ROS1BytesDecoder::decode_optional() {
 }
 
 inline void ROS1BytesDecoder::ignore(const std::string_view msg_type, const std::size_t num_ignore) {
-    // In ROS 1 data is packed without alignment, so a message type without dynamic fields has the same size every
-    // time and that size need only be computed once. The check is only worthwhile for more than one message.
+    // In ROS 1 data is packed without alignment, so a message type without dynamic fields has the same size every time
+    // and that size need only be computed once. The check is only worthwhile for more than one message.
     if (num_ignore > 1 && !message_contains_dynamic_field<ROS1MessagesTypes>(msg_type)) {
         ignore_bytes(internal_msg_size(msg_type) * num_ignore);
     } else {

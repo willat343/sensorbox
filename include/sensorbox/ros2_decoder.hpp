@@ -735,7 +735,7 @@ struct ROS2MessagesTypes {
                 {"uint8[]", "data"},
                 {"bool", "is_dense"},
         });
-        struct point_cloud_2 {
+        struct point_field {
             static constexpr uint8_t INT8 = 1;
             static constexpr uint8_t UINT8 = 2;
             static constexpr uint8_t INT16 = 3;
