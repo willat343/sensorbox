@@ -21,7 +21,7 @@ TEST(json_convert, from_json_sensor_type) {
 
 TEST(json_convert, from_json_invalid_sensor_type_throws) {
     const nlohmann::json j = "NOT_A_SENSOR_TYPE";
-    EXPECT_THROW(j.get<SensorType>(), std::runtime_error);
+    EXPECT_THROW(j.get<SensorType>(), std::invalid_argument);
 }
 
 TEST(json_convert, to_json_contact_classifications) {

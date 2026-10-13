@@ -41,7 +41,7 @@ TEST(stiffness_from_config, dynamic_sigmas) {
 }
 
 TEST(stiffness_from_config, dynamic_sigma_requires_size) {
-    EXPECT_THROW(stiffness_from_config<Eigen::Dynamic>(nlohmann::json{{"sigma", 0.5}}), std::runtime_error);
+    EXPECT_THROW(stiffness_from_config<Eigen::Dynamic>(nlohmann::json{{"sigma", 0.5}}), std::invalid_argument);
     const nlohmann::json config = {{"sigma", 0.5}, {"size", 4}};
     const Eigen::MatrixXd stiffness = stiffness_from_config<Eigen::Dynamic>(config);
     ASSERT_EQ(stiffness.rows(), 4);
@@ -49,14 +49,14 @@ TEST(stiffness_from_config, dynamic_sigma_requires_size) {
 }
 
 TEST(stiffness_from_config, dynamic_variance_requires_size) {
-    EXPECT_THROW(stiffness_from_config<Eigen::Dynamic>(nlohmann::json{{"variance", 0.25}}), std::runtime_error);
+    EXPECT_THROW(stiffness_from_config<Eigen::Dynamic>(nlohmann::json{{"variance", 0.25}}), std::invalid_argument);
     const nlohmann::json config = {{"variance", 0.25}, {"size", 2}};
     EXPECT_TRUE(stiffness_from_config<Eigen::Dynamic>(config).isApprox(Eigen::MatrixXd::Identity(2, 2) * 2.0));
 }
 
 TEST(stiffness_from_config, wrong_size_throws) {
-    EXPECT_THROW(stiffness_from_config<3>(nlohmann::json{{"sigmas", {0.5, 0.25}}}), std::runtime_error);
-    EXPECT_THROW(stiffness_from_config<3>(nlohmann::json{{"variances", {0.5, 0.25}}}), std::runtime_error);
+    EXPECT_THROW(stiffness_from_config<3>(nlohmann::json{{"sigmas", {0.5, 0.25}}}), std::invalid_argument);
+    EXPECT_THROW(stiffness_from_config<3>(nlohmann::json{{"variances", {0.5, 0.25}}}), std::invalid_argument);
 }
 
 TEST(stiffness_from_config, missing_field_throws) {
@@ -107,7 +107,7 @@ TEST(covariance_from_config, is_inverse_of_squared_stiffness) {
 
 TEST(covariance_from_config, missing_field_throws) {
     EXPECT_THROW(covariance_from_config<3>(nlohmann::json::object()), std::runtime_error);
-    EXPECT_THROW(covariance_from_config<3>(nlohmann::json{{"sigmas", {0.5, 0.25}}}), std::runtime_error);
+    EXPECT_THROW(covariance_from_config<3>(nlohmann::json{{"sigmas", {0.5, 0.25}}}), std::invalid_argument);
 }
 
 }

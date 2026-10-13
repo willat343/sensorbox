@@ -47,7 +47,7 @@ TEST(sensor_type, every_sensor_type_has_a_measurement_type) {
 TEST(sensor_type, string_conversion) {
     EXPECT_EQ(SensorType(std::string("IMU")), SensorType::IMU);
     EXPECT_EQ(std::string(SensorType(SensorType::IMU)), std::string("IMU"));
-    EXPECT_THROW(SensorType(std::string("NOT_A_SENSOR_TYPE")), std::runtime_error);
+    EXPECT_THROW(SensorType(std::string("NOT_A_SENSOR_TYPE")), std::invalid_argument);
 }
 
 TEST(sensor, construction_from_type) {

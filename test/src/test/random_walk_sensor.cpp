@@ -90,7 +90,7 @@ TEST(random_walk_sensor, per_axis_scaling) {
 TEST(random_walk_sensor, per_axis_scaling_of_wrong_size_throws) {
     nlohmann::json config = test_accelerometer_config();
     config["scaling"] = {1.0, 2.0};
-    EXPECT_THROW((RandomWalkSensor<3>{config}), std::runtime_error);
+    EXPECT_THROW((RandomWalkSensor<3>{config}), std::invalid_argument);
 }
 
 TEST(random_walk_sensor, set_scaling_matrix_stores_inverse) {

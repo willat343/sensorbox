@@ -24,9 +24,10 @@ Eigen::Matrix<double, Rows, Rows> covariance_from_config(const nlohmann::json& c
                     convert::to<Eigen::Vector<double, Rows>>(config["variances"].template get<std::vector<double>>());
         } else {
             const int config_size = config["variances"].size();
-            throw_if(config_size != Rows, "covariance_from_config: Expected size of variances vector in json was " +
-                                                  std::to_string(Rows) + " but was " + std::to_string(config_size) +
-                                                  ".");
+            throw_if(config_size != Rows,
+                    "covariance_from_config: Expected size of variances vector in json was " + std::to_string(Rows) +
+                            " but was " + std::to_string(config_size) + ".",
+                    std::invalid_argument);
             variances = convert::to<Eigen::Vector<double, Rows>>(
                     config["variances"].template get<std::array<double, std::size_t(Rows)>>());
         }
@@ -34,7 +35,7 @@ Eigen::Matrix<double, Rows, Rows> covariance_from_config(const nlohmann::json& c
     } else if (config.contains("variance")) {
         if constexpr (Rows == Eigen::Dynamic) {
             throw_if(!config.contains("size"),
-                    "covariance_from_config: Expected size field for Rows == Eigen::Dynamic.");
+                    "covariance_from_config: Expected size field for Rows == Eigen::Dynamic.", std::invalid_argument);
             return math::covariance_from_variance(config["variance"].template get<double>(),
                     config["size"].template get<int>());
         } else {
@@ -46,9 +47,10 @@ Eigen::Matrix<double, Rows, Rows> covariance_from_config(const nlohmann::json& c
             sigmas = convert::to<Eigen::Vector<double, Rows>>(config["sigmas"].template get<std::vector<double>>());
         } else {
             const int config_size = config["sigmas"].size();
-            throw_if(config_size != Rows, "covariance_from_config: Expected size of sigmas vector in json was " +
-                                                  std::to_string(Rows) + " but was " + std::to_string(config_size) +
-                                                  ".");
+            throw_if(config_size != Rows,
+                    "covariance_from_config: Expected size of sigmas vector in json was " + std::to_string(Rows) +
+                            " but was " + std::to_string(config_size) + ".",
+                    std::invalid_argument);
             sigmas = convert::to<Eigen::Vector<double, Rows>>(
                     config["sigmas"].template get<std::array<double, std::size_t(Rows)>>());
         }
@@ -56,7 +58,7 @@ Eigen::Matrix<double, Rows, Rows> covariance_from_config(const nlohmann::json& c
     } else if (config.contains("sigma")) {
         if constexpr (Rows == Eigen::Dynamic) {
             throw_if(!config.contains("size"),
-                    "covariance_from_config: Expected size field for Rows == Eigen::Dynamic.");
+                    "covariance_from_config: Expected size field for Rows == Eigen::Dynamic.", std::invalid_argument);
             return math::covariance_from_sigma(config["sigma"].template get<double>(),
                     config["size"].template get<int>());
         } else {
@@ -84,17 +86,18 @@ Eigen::Matrix<double, Rows, Rows> stiffness_from_config(const nlohmann::json& co
                     convert::to<Eigen::Vector<double, Rows>>(config["variances"].template get<std::vector<double>>());
         } else {
             const int config_size = config["variances"].size();
-            throw_if(config_size != Rows, "stiffness_from_config: Expected size of variances vector in json was " +
-                                                  std::to_string(Rows) + " but was " + std::to_string(config_size) +
-                                                  ".");
+            throw_if(config_size != Rows,
+                    "stiffness_from_config: Expected size of variances vector in json was " + std::to_string(Rows) +
+                            " but was " + std::to_string(config_size) + ".",
+                    std::invalid_argument);
             variances = convert::to<Eigen::Vector<double, Rows>>(
                     config["variances"].template get<std::array<double, std::size_t(Rows)>>());
         }
         return math::stiffness_from_variances(variances);
     } else if (config.contains("variance")) {
         if constexpr (Rows == Eigen::Dynamic) {
-            throw_if(!config.contains("size"),
-                    "stiffness_from_config: Expected size field for Rows == Eigen::Dynamic.");
+            throw_if(!config.contains("size"), "stiffness_from_config: Expected size field for Rows == Eigen::Dynamic.",
+                    std::invalid_argument);
             return math::stiffness_from_variance(config["variance"].template get<double>(),
                     config["size"].template get<int>());
         } else {
@@ -106,17 +109,18 @@ Eigen::Matrix<double, Rows, Rows> stiffness_from_config(const nlohmann::json& co
             sigmas = convert::to<Eigen::Vector<double, Rows>>(config["sigmas"].template get<std::vector<double>>());
         } else {
             const int config_size = config["sigmas"].size();
-            throw_if(config_size != Rows, "stiffness_from_config: Expected size of sigmas vector in json was " +
-                                                  std::to_string(Rows) + " but was " + std::to_string(config_size) +
-                                                  ".");
+            throw_if(config_size != Rows,
+                    "stiffness_from_config: Expected size of sigmas vector in json was " + std::to_string(Rows) +
+                            " but was " + std::to_string(config_size) + ".",
+                    std::invalid_argument);
             sigmas = convert::to<Eigen::Vector<double, Rows>>(
                     config["sigmas"].template get<std::array<double, std::size_t(Rows)>>());
         }
         return math::stiffness_from_sigmas(sigmas);
     } else if (config.contains("sigma")) {
         if constexpr (Rows == Eigen::Dynamic) {
-            throw_if(!config.contains("size"),
-                    "stiffness_from_config: Expected size field for Rows == Eigen::Dynamic.");
+            throw_if(!config.contains("size"), "stiffness_from_config: Expected size field for Rows == Eigen::Dynamic.",
+                    std::invalid_argument);
             return math::stiffness_from_sigma(config["sigma"].template get<double>(),
                     config["size"].template get<int>());
         } else {
@@ -133,7 +137,7 @@ template<int Rows>
 inline math::CovarianceDensity<double, Rows> covariance_density_from_config(const nlohmann::json& config) {
     static_assert(Rows == Eigen::Dynamic || Rows >= 0, "Rows must be Eigen::Dynamic or >= 0.");
     if constexpr (Rows == Eigen::Dynamic) {
-        throw_if(!config.contains("size"), "Expected size field for Rows == Eigen::Dynamic.");
+        throw_if(!config.contains("size"), "Expected size field for Rows == Eigen::Dynamic.", std::invalid_argument);
         return covariance_density_from_config(config, config["size"].template get<int>());
     } else {
         return math::CovarianceDensity<double, Rows>{covariance_density_from_config(config, Rows)};
@@ -147,8 +151,10 @@ inline math::CovarianceDensityXd covariance_density_from_config(const nlohmann::
         not_implemented("Conversion of information density to covariance density not yet implemented.");
     } else if (config.contains("variance_densities")) {
         const int config_size = config["variance_densities"].size();
-        throw_if(config_size != size, "Expected size of variance_densities vector in json was " + std::to_string(size) +
-                                              " but was " + std::to_string(config_size) + ".");
+        throw_if(config_size != size,
+                "Expected size of variance_densities vector in json was " + std::to_string(size) + " but was " +
+                        std::to_string(config_size) + ".",
+                std::invalid_argument);
         return math::CovarianceDensityXd{math::covariance_from_variances(
                 convert::to<Eigen::VectorXd>(config["variance_densities"].template get<std::vector<double>>()))};
     } else if (config.contains("variance_density")) {
@@ -156,8 +162,10 @@ inline math::CovarianceDensityXd covariance_density_from_config(const nlohmann::
                 math::covariance_from_variance(config["variance_density"].template get<double>(), size)};
     } else if (config.contains("sigma_densities")) {
         const int config_size = config["sigma_densities"].size();
-        throw_if(config_size != size, "Expected size of sigma_densities vector in json was " + std::to_string(size) +
-                                              " but was " + std::to_string(config_size) + ".");
+        throw_if(config_size != size,
+                "Expected size of sigma_densities vector in json was " + std::to_string(size) + " but was " +
+                        std::to_string(config_size) + ".",
+                std::invalid_argument);
         return math::CovarianceDensityXd{math::covariance_from_sigmas(
                 convert::to<Eigen::VectorXd>(config["sigma_densities"].template get<std::vector<double>>()))};
     } else if (config.contains("sigma_density")) {
@@ -167,7 +175,8 @@ inline math::CovarianceDensityXd covariance_density_from_config(const nlohmann::
         throw_here(
                 "Field covariance_density, information_density, variance_densities, variance_density, sigma_densities "
                 "or sigma_density missing from config. Config was:\n" +
-                config.dump());
+                        config.dump(),
+                std::invalid_argument);
     }
 }
 }

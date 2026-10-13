@@ -10,11 +10,11 @@ A package for processing sensor data.
 |----------------|-------------|-----------------|
 | CMake | >= 3.21 | CMake Build Tool |
 | [cmakebox](https://github.com/willat343/cmakebox) | >= 0.0.13 | CMake Functions and Utilities |
-| [cppbox](https://github.com/willat343/cppbox) | >= 0.2.6 | C++ Package |
+| [cppbox](https://github.com/willat343/cppbox) | >= 0.2.9 | C++ Package |
 | Eigen3 | >= 3.4.0 | Linear Algebra Package |
 | nlohmann_json |  >= 3.8.0 | JSON Package |
 | nlohmann_json_schema_validator |  >= 2.3.0 | JSON Package |
-| [mathbox](https://github.com/willat343/mathbox) | >= 0.8.4 | Math Package |
+| [mathbox](https://github.com/willat343/mathbox) | >= 0.8.7 | Math Package |
 | [convert](https://github.com/willat343/convert) | >= 0.7.3 | General Conversion Package |
 
 There are several ways to include `sensorbox` within your project:

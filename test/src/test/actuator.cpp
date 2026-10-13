@@ -175,7 +175,7 @@ TEST(actuator_measurements, overwrite_names) {
 
 TEST(actuator_measurements, overwrite_names_of_wrong_size_throws) {
     ActuatorMeasurements measurements = test_actuator_measurements();
-    EXPECT_THROW(measurements.overwrite_names(std::vector<std::string>{test_string(10)}), std::runtime_error);
+    EXPECT_THROW(measurements.overwrite_names(std::vector<std::string>{test_string(10)}), std::invalid_argument);
 }
 
 TEST(actuator_measurements, equal_joint_measurements) {

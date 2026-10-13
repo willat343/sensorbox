@@ -30,9 +30,10 @@ inline RandomWalkSensor<DoF_>::RandomWalkSensor(const nlohmann::json& config, co
     if (config.contains("scaling")) {
         const nlohmann::json& scaling = config["scaling"];
         if (scaling.is_array()) {
-            throw_if(scaling.size() != DoF, "RandomWalkSensor: Expected size of 'scaling' vector in json was " +
-                                                    std::to_string(DoF) + " but was " + std::to_string(scaling.size()) +
-                                                    ".");
+            throw_if(scaling.size() != DoF,
+                    "RandomWalkSensor: Expected size of 'scaling' vector in json was " + std::to_string(DoF) +
+                            " but was " + std::to_string(scaling.size()) + ".",
+                    std::invalid_argument);
             set_scaling_matrix(convert::to<Eigen::Vector<double, DoF>>(
                     scaling.template get<std::array<double, std::size_t(DoF)>>())
                             .asDiagonal());

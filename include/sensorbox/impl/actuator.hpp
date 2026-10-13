@@ -184,7 +184,7 @@ inline std::vector<ActuatorMeasurement>& ActuatorMeasurements::measurements() {
 }
 
 inline void ActuatorMeasurements::overwrite_names(const std::vector<std::string>& new_names) {
-    throw_if(measurements().size() != new_names.size(), "Size mismatch when overwriting names.");
+    throw_if(measurements().size() != new_names.size(), "Size mismatch when overwriting names.", std::invalid_argument);
     for (std::size_t i = 0; i < measurements().size(); ++i) {
         measurements()[i].name() = new_names[i];
     }
