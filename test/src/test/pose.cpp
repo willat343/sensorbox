@@ -116,6 +116,42 @@ TEST(pose_measurement, transform_to_new_frames) {
                     .pose()));
 }
 
+TEST(pose_with_covariance_measurement, default_construction) {
+    const PoseWithCovarianceMeasurement<3> measurement;
+    EXPECT_EQ(measurement.timestamp(), Timestamp{PoseWithCovarianceMeasurement<3>::Duration::zero()});
+    EXPECT_TRUE(measurement.frame().empty());
+    EXPECT_TRUE(measurement.child_frame().empty());
+    EXPECT_TRUE(measurement.pose().isApprox(Pose::Identity()));
+    EXPECT_TRUE(measurement.covariance().isZero());
+}
+
+TEST(pose_with_covariance_measurement, dimensions) {
+    EXPECT_EQ(PoseWithCovarianceMeasurement<2>::DoF, 3);
+    EXPECT_EQ(PoseWithCovarianceMeasurement<2>::Covariance::RowsAtCompileTime, 3);
+    EXPECT_EQ(PoseWithCovarianceMeasurement<3>::DoF, 6);
+    EXPECT_EQ(PoseWithCovarianceMeasurement<3>::Covariance::RowsAtCompileTime, 6);
+}
+
+TEST(pose_with_covariance_measurement, construction) {
+    const Timestamp timestamp{std::chrono::nanoseconds{42}};
+    const Eigen::Vector<double, 6> variances{Eigen::Vector<double, 6>::LinSpaced(0.1, 0.6)};
+    const PoseWithCovarianceMeasurement<3> measurement{timestamp, test_string(0), test_string(1), test_isometry3(1),
+            PoseWithCovarianceMeasurement<3>::Covariance{variances}};
+    EXPECT_EQ(measurement.timestamp(), timestamp);
+    EXPECT_EQ(measurement.frame(), test_string(0));
+    EXPECT_EQ(measurement.child_frame(), test_string(1));
+    EXPECT_TRUE(measurement.pose().isApprox(test_isometry3(1)));
+    EXPECT_TRUE(measurement.covariance().diagonal().isApprox(variances));
+}
+
+TEST(pose_with_covariance_measurement, mutable_access) {
+    PoseWithCovarianceMeasurement<3> measurement;
+    measurement.pose() = test_isometry3(2);
+    measurement.covariance() = PoseWithCovarianceMeasurement<3>::Covariance{Eigen::Vector<double, 6>::Ones()};
+    EXPECT_TRUE(measurement.pose().isApprox(test_isometry3(2)));
+    EXPECT_TRUE(measurement.covariance().isApprox(Eigen::Matrix<double, 6, 6>::Identity()));
+}
+
 TEST(pose_measurements, default_construction) {
     const PoseMeasurements<3> measurements;
     EXPECT_EQ(measurements.timestamp(), Timestamp{PoseMeasurements<3>::Duration::zero()});

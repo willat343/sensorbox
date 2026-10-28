@@ -219,6 +219,34 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(PoseMeasurements<3>& out) {
     }
 }
 
+SENSORBOX_INLINE void ROS1BytesDecoder::read_to(PoseWithCovarianceMeasurement<3>& out) {
+    if (msg_type() == "geometry_msgs/PoseWithCovarianceStamped") {
+        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
+        decode_internal_to("geometry_msgs/Pose", out.pose());
+        Eigen::Matrix<double, 6, 6> covariance;
+        for (int row = 0; row < 6; ++row) {
+            for (int col = 0; col < 6; ++col) {
+                covariance(row, col) = read<double>();  // covariance (row-major)
+            }
+        }
+        out.covariance() = PoseWithCovarianceMeasurement<3>::Covariance{covariance, true};
+    } else if (msg_type() == "nav_msgs/Odometry") {
+        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
+        read_to(out.child_frame());
+        decode_internal_to("geometry_msgs/Pose", out.pose());
+        Eigen::Matrix<double, 6, 6> covariance;
+        for (int row = 0; row < 6; ++row) {
+            for (int col = 0; col < 6; ++col) {
+                covariance(row, col) = read<double>();  // covariance (row-major)
+            }
+        }
+        out.covariance() = PoseWithCovarianceMeasurement<3>::Covariance{covariance, true};
+        ignore("geometry_msgs/TwistWithCovariance");  // twist
+    } else {
+        throw_here("msg_type " + msg_type() + " cannot be converted to PoseWithCovarianceMeasurement<3>.");
+    }
+}
+
 SENSORBOX_INLINE void ROS1BytesDecoder::read_to(PositionMeasurement<3>& out) {
     if (msg_type() == "geometry_msgs/PointStamped") {
         decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));

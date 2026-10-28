@@ -2,6 +2,7 @@
 #define SENSORBOX_POSE_HPP
 
 #include <Eigen/Geometry>
+#include <mathbox/covariance.hpp>
 #include <string>
 #include <vector>
 
@@ -132,6 +133,46 @@ public:
 
 private:
     Pose pose_;
+};
+
+template<int D_>
+class PoseWithCovarianceMeasurement : public TemporalSpatialRelationalMeasurement {
+public:
+    using typename TemporalSpatialRelationalMeasurement::Clock;
+    using typename TemporalSpatialRelationalMeasurement::Duration;
+    using typename TemporalSpatialRelationalMeasurement::Timestamp;
+    static constexpr int D = D_;
+    using Pose = Eigen::Transform<double, D, Eigen::Isometry>;
+    static constexpr int DoF = D * (D + 1) / 2;
+    using Covariance = math::Covariance<double, DoF>;
+
+    explicit PoseWithCovarianceMeasurement();
+
+    /**
+     * @brief Construct a Pose Measurement with the covariance of the pose, of child_frame_ (C) in frame_ (F), i.e.
+     * \f$ \mathbf{T}_{FC} \f$.
+     *
+     * @param timestamp_ timestamp
+     * @param frame_ reference frame in which the measurement is made, e.g. map_frame
+     * @param child_frame_ reference frame that has been measured, e.g. body_frame
+     * @param pose_ pose of child_frame_ in frame_, \f$ \mathbf{T}_{FC} \f$
+     * @param covariance_ covariance of the pose, of its position and then its orientation, as given by the source of
+     * the measurement (e.g. for ROS, of the position x, y, z and the rotations about the x, y and z axes)
+     */
+    explicit PoseWithCovarianceMeasurement(const Timestamp& timestamp_, const std::string& frame_,
+            const std::string& child_frame_, const Pose& pose_, const Covariance& covariance_);
+
+    const Pose& pose() const;
+
+    Pose& pose();
+
+    const Covariance& covariance() const;
+
+    Covariance& covariance();
+
+private:
+    Pose pose_;
+    Covariance covariance_;
 };
 
 template<int D_>

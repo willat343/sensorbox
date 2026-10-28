@@ -9,6 +9,9 @@ template class JsonLoadable<DirectPoseSensorSchemaFilepath, sensorbox_schema_loa
 template class PoseMeasurement<2>;
 template class PoseMeasurement<3>;
 
+template class PoseWithCovarianceMeasurement<2>;
+template class PoseWithCovarianceMeasurement<3>;
+
 template class PoseMeasurements<2>;
 template class PoseMeasurements<3>;
 
