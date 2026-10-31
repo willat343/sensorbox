@@ -122,4 +122,41 @@ TEST(position_measurement, transform_to_new_frames) {
                     .position()));
 }
 
+
+TEST(position_with_covariance_measurement, default_construction) {
+    const PositionWithCovarianceMeasurement<3> measurement;
+    EXPECT_EQ(measurement.timestamp(), Timestamp{PositionWithCovarianceMeasurement<3>::Duration::zero()});
+    EXPECT_TRUE(measurement.frame().empty());
+    EXPECT_TRUE(measurement.child_frame().empty());
+    EXPECT_TRUE(measurement.position().isZero());
+    EXPECT_TRUE(measurement.covariance().isZero());
+}
+
+TEST(position_with_covariance_measurement, dimensions) {
+    EXPECT_EQ(PositionWithCovarianceMeasurement<2>::DoF, 2);
+    EXPECT_EQ(PositionWithCovarianceMeasurement<2>::Covariance::RowsAtCompileTime, 2);
+    EXPECT_EQ(PositionWithCovarianceMeasurement<3>::DoF, 3);
+    EXPECT_EQ(PositionWithCovarianceMeasurement<3>::Covariance::RowsAtCompileTime, 3);
+}
+
+TEST(position_with_covariance_measurement, construction) {
+    const Timestamp timestamp{std::chrono::nanoseconds{42}};
+    const Eigen::Vector3d position{1.0, 2.0, 3.0};
+    const Eigen::Vector3d variances{0.1, 0.2, 0.3};
+    const PositionWithCovarianceMeasurement<3> measurement{timestamp, test_string(0), test_string(1), position,
+            PositionWithCovarianceMeasurement<3>::Covariance{variances}};
+    EXPECT_EQ(measurement.timestamp(), timestamp);
+    EXPECT_EQ(measurement.frame(), test_string(0));
+    EXPECT_EQ(measurement.child_frame(), test_string(1));
+    EXPECT_TRUE(measurement.position().isApprox(position));
+    EXPECT_TRUE(measurement.covariance().diagonal().isApprox(variances));
+}
+
+TEST(position_with_covariance_measurement, mutable_access) {
+    PositionWithCovarianceMeasurement<3> measurement;
+    measurement.position() = Eigen::Vector3d{1.0, 2.0, 3.0};
+    measurement.covariance() = PositionWithCovarianceMeasurement<3>::Covariance{Eigen::Vector3d::Ones()};
+    EXPECT_TRUE(measurement.position().isApprox(Eigen::Vector3d{1.0, 2.0, 3.0}));
+    EXPECT_TRUE(measurement.covariance().isApprox(Eigen::Matrix3d::Identity()));
+}
 }

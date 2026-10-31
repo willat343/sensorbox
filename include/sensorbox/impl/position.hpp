@@ -69,6 +69,39 @@ inline auto PositionMeasurement<D_>::transform_to_new_frames(const std::string& 
     return PositionMeasurement(timestamp(), new_frame, new_child_frame, T_NF_F * (position() + R_F_C * C_p_C_N));
 }
 
+template<int D_>
+inline PositionWithCovarianceMeasurement<D_>::PositionWithCovarianceMeasurement()
+    : PositionWithCovarianceMeasurement(Timestamp{Duration::zero()}, std::string(), std::string(), Position::Zero(),
+              Covariance(0.0)) {}
+
+template<int D_>
+inline PositionWithCovarianceMeasurement<D_>::PositionWithCovarianceMeasurement(const Timestamp& timestamp_,
+        const std::string& frame_, const std::string& child_frame_, const Position& position_,
+        const Covariance& covariance_)
+    : TemporalSpatialRelationalMeasurement(timestamp_, frame_, child_frame_),
+      position_(position_),
+      covariance_(covariance_) {}
+
+template<int D_>
+inline auto PositionWithCovarianceMeasurement<D_>::position() const -> const Position& {
+    return position_;
+}
+
+template<int D_>
+inline auto PositionWithCovarianceMeasurement<D_>::position() -> Position& {
+    return const_cast<Position&>(std::as_const(*this).position());
+}
+
+template<int D_>
+inline auto PositionWithCovarianceMeasurement<D_>::covariance() const -> const Covariance& {
+    return covariance_;
+}
+
+template<int D_>
+inline auto PositionWithCovarianceMeasurement<D_>::covariance() -> Covariance& {
+    return const_cast<Covariance&>(std::as_const(*this).covariance());
+}
+
 }
 
 #if !SENSORBOX_HEADER_ONLY
@@ -80,6 +113,9 @@ extern template class JsonLoadable<DirectPositionSensorSchemaFilepath, sensorbox
 
 extern template class PositionMeasurement<2>;
 extern template class PositionMeasurement<3>;
+
+extern template class PositionWithCovarianceMeasurement<2>;
+extern template class PositionWithCovarianceMeasurement<3>;
 
 }
 #endif

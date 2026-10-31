@@ -2,6 +2,7 @@
 #define SENSORBOX_POSITION_HPP
 
 #include <Eigen/Geometry>
+#include <mathbox/covariance.hpp>
 #include <string>
 
 #include "sensorbox/json_loadable.hpp"
@@ -152,6 +153,45 @@ public:
 
 private:
     Position position_;
+};
+
+template<int D_>
+class PositionWithCovarianceMeasurement : public TemporalSpatialRelationalMeasurement {
+public:
+    using typename TemporalSpatialRelationalMeasurement::Clock;
+    using typename TemporalSpatialRelationalMeasurement::Duration;
+    using typename TemporalSpatialRelationalMeasurement::Timestamp;
+    static constexpr int D = D_;
+    using Position = Eigen::Vector<double, D>;
+    static constexpr int DoF = D;
+    using Covariance = math::Covariance<double, DoF>;
+
+    explicit PositionWithCovarianceMeasurement();
+
+    /**
+     * @brief Construct a Position Measurement with the covariance of the position, of child_frame_ (C) in frame_ (F)
+     * expressed in frame_ (F), i.e. \f$ {}_{F}\mathbf{p}_{FC} \f$.
+     *
+     * @param timestamp_ timestamp
+     * @param frame_ reference frame in which the measurement is made, e.g. map_frame
+     * @param child_frame_ reference frame that has been measured, e.g. body_frame
+     * @param position_ position of child_frame_ in frame_ expressed in frame_, \f$ {}_{F}\mathbf{p}_{FC} \f$
+     * @param covariance_ covariance of the position, as given by the source of the measurement
+     */
+    explicit PositionWithCovarianceMeasurement(const Timestamp& timestamp_, const std::string& frame_,
+            const std::string& child_frame_, const Position& position_, const Covariance& covariance_);
+
+    const Position& position() const;
+
+    Position& position();
+
+    const Covariance& covariance() const;
+
+    Covariance& covariance();
+
+private:
+    Position position_;
+    Covariance covariance_;
 };
 
 }
