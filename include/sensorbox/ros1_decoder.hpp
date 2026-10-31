@@ -1015,6 +1015,8 @@ struct ROS1Conversions {
             return std::to_array<std::string_view>({"geometry_msgs/PointStamped", "geometry_msgs/Vector3Stamped",
                     "geometry_msgs/PoseStamped", "geometry_msgs/PoseWithCovarianceStamped",
                     "geometry_msgs/TransformStamped", "nav_msgs/Odometry"});
+        } else if constexpr (std::same_as<T, PositionWithCovarianceMeasurement<3>>) {
+            return std::to_array<std::string_view>({"geometry_msgs/PoseWithCovarianceStamped", "nav_msgs/Odometry"});
         } else if constexpr (std::same_as<T, std::vector<PoseMeasurement<3>>>) {
             return std::to_array<std::string_view>({"nav_msgs/Path", "tf2_msgs/TFMessage"});
         } else if constexpr (std::same_as<T, PoseMeasurements<3>>) {
@@ -1185,6 +1187,8 @@ public:
     void read_to(PoseWithCovarianceMeasurement<3>& out);
 
     void read_to(PositionMeasurement<3>& out);
+
+    void read_to(PositionWithCovarianceMeasurement<3>& out);
 
     void read_to(TemporalMeasurement& out);
 

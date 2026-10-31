@@ -185,8 +185,13 @@ TEST(ros1_decoder, is_decodable_to) {
     EXPECT_TRUE((ROS1BytesDecoder::is_decodable_to<PoseWithCovarianceMeasurement<3>>("nav_msgs/Odometry")));
     EXPECT_TRUE((ROS1BytesDecoder::is_decodable_to<PoseWithCovarianceMeasurement<3>>(
             "geometry_msgs/PoseWithCovarianceStamped")));
-    // A geometry_msgs/PoseStamped has no covariance
+    EXPECT_TRUE((ROS1BytesDecoder::is_decodable_to<PositionWithCovarianceMeasurement<3>>("nav_msgs/Odometry")));
+    EXPECT_TRUE((ROS1BytesDecoder::is_decodable_to<PositionWithCovarianceMeasurement<3>>(
+            "geometry_msgs/PoseWithCovarianceStamped")));
+    // A geometry_msgs/PoseStamped and geometry_msgs/PointStamped have no covariance
     EXPECT_FALSE((ROS1BytesDecoder::is_decodable_to<PoseWithCovarianceMeasurement<3>>("geometry_msgs/PoseStamped")));
+    EXPECT_FALSE(
+            (ROS1BytesDecoder::is_decodable_to<PositionWithCovarianceMeasurement<3>>("geometry_msgs/PointStamped")));
 }
 
 TEST(ros1_decoder, is_vector_or_start_recursively_decodable_to) {
@@ -207,6 +212,9 @@ TEST(ros2_decoder, is_decodable_to) {
     EXPECT_FALSE((ROS2BytesDecoder::is_decodable_to<ImuMeasurement<3>>("nav_msgs/Odometry")));
     EXPECT_TRUE((ROS2BytesDecoder::is_decodable_to<PoseWithCovarianceMeasurement<3>>("nav_msgs/Odometry")));
     EXPECT_TRUE((ROS2BytesDecoder::is_decodable_to<PoseWithCovarianceMeasurement<3>>(
+            "geometry_msgs/PoseWithCovarianceStamped")));
+    EXPECT_TRUE((ROS2BytesDecoder::is_decodable_to<PositionWithCovarianceMeasurement<3>>("nav_msgs/Odometry")));
+    EXPECT_TRUE((ROS2BytesDecoder::is_decodable_to<PositionWithCovarianceMeasurement<3>>(
             "geometry_msgs/PoseWithCovarianceStamped")));
     // The ROS 2 decoder does not support the actuator and contact msg types
     EXPECT_FALSE(ROS2BytesDecoder::is_decodable<ActuatorMeasurements>());
