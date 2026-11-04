@@ -247,6 +247,22 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(PoseWithCovarianceMeasurement<3>
     }
 }
 
+SENSORBOX_INLINE void ROS1BytesDecoder::read_to(PoseTwistMeasurement<3>& out) {
+    if (msg_type() == "nav_msgs/Odometry") {
+        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
+        read_to(out.child_frame());
+        decode_internal_to("geometry_msgs/PoseWithCovariance", out.pose());
+        Eigen::Vector3d linear;
+        Eigen::Vector3d angular;
+        decode_internal_to("geometry_msgs/Vector3", linear);   // twist.twist.linear
+        decode_internal_to("geometry_msgs/Vector3", angular);  // twist.twist.angular
+        out.twist() << linear, angular;
+        ignore<double>(36);  // twist.covariance
+    } else {
+        throw_here("msg_type " + msg_type() + " cannot be converted to PoseTwistMeasurement<3>.");
+    }
+}
+
 SENSORBOX_INLINE void ROS1BytesDecoder::read_to(PositionMeasurement<3>& out) {
     if (msg_type() == "geometry_msgs/PointStamped") {
         decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));

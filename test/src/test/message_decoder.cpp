@@ -2,6 +2,8 @@
 
 #include <gtest/gtest.h>
 
+#include <Eigen/Geometry>
+#include <chrono>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -192,6 +194,56 @@ TEST(ros1_decoder, is_decodable_to) {
     EXPECT_FALSE((ROS1BytesDecoder::is_decodable_to<PoseWithCovarianceMeasurement<3>>("geometry_msgs/PoseStamped")));
     EXPECT_FALSE(
             (ROS1BytesDecoder::is_decodable_to<PositionWithCovarianceMeasurement<3>>("geometry_msgs/PointStamped")));
+    // Only a nav_msgs/Odometry has a twist
+    EXPECT_TRUE((ROS1BytesDecoder::is_decodable_to<PoseTwistMeasurement<3>>("nav_msgs/Odometry")));
+    EXPECT_FALSE(
+            (ROS1BytesDecoder::is_decodable_to<PoseTwistMeasurement<3>>("geometry_msgs/PoseWithCovarianceStamped")));
+}
+
+TEST(ros1_decoder, odometry_to_pose_twist) {
+    // A nav_msgs/Odometry message in ROS 1 serialisation (little endian, without padding): header (seq, stamp,
+    // frame_id), child_frame_id, pose with covariance and twist with covariance
+    std::vector<std::byte> bytes;
+    const auto append = [&bytes](const auto value) {
+        const std::byte* const begin = reinterpret_cast<const std::byte*>(&value);
+        bytes.insert(bytes.end(), begin, begin + sizeof(value));
+    };
+    const auto append_string = [&bytes, &append](const std::string& string) {
+        append(static_cast<uint32_t>(string.size()));
+        for (const char c : string) {
+            bytes.push_back(static_cast<std::byte>(c));
+        }
+    };
+    append(uint32_t{7});           // header.seq
+    append(uint32_t{1700000000});  // header.stamp.sec
+    append(uint32_t{250000000});   // header.stamp.nsec
+    append_string("map");          // header.frame_id
+    append_string("body");         // child_frame_id
+    const Eigen::Vector3d position{1.0, 2.0, 3.0};
+    const Eigen::Quaterniond orientation{Eigen::AngleAxisd{0.5, Eigen::Vector3d{1.0, 2.0, 3.0}.normalized()}};
+    for (const double value : {position.x(), position.y(), position.z(), orientation.x(), orientation.y(),
+                 orientation.z(), orientation.w()}) {
+        append(value);
+    }
+    for (int i = 0; i < 36; ++i) {
+        append(0.01 * i);  // pose.covariance
+    }
+    const Eigen::Vector<double, 6> twist{0.1, 0.2, 0.3, 0.4, 0.5, 0.6};
+    for (int i = 0; i < 6; ++i) {
+        append(twist[i]);  // twist.twist.linear, twist.twist.angular
+    }
+    for (int i = 0; i < 36; ++i) {
+        append(1.0 + i);  // twist.covariance
+    }
+    ROS1BytesDecoder decoder{bytes.data(), bytes.size(), "nav_msgs/Odometry"};
+    const PoseTwistMeasurement<3> measurement = decoder.decode<PoseTwistMeasurement<3>>();
+    EXPECT_EQ(measurement.timestamp(),
+            PoseTwistMeasurement<3>::Timestamp{std::chrono::seconds{1700000000} + std::chrono::nanoseconds{250000000}});
+    EXPECT_EQ(measurement.frame(), "map");
+    EXPECT_EQ(measurement.child_frame(), "body");
+    EXPECT_TRUE(measurement.pose().translation().isApprox(position));
+    EXPECT_TRUE(Eigen::Quaterniond{measurement.pose().rotation()}.isApprox(orientation));
+    EXPECT_TRUE(measurement.twist().isApprox(twist));
 }
 
 TEST(ros1_decoder, is_vector_or_start_recursively_decodable_to) {
@@ -216,6 +268,9 @@ TEST(ros2_decoder, is_decodable_to) {
     EXPECT_TRUE((ROS2BytesDecoder::is_decodable_to<PositionWithCovarianceMeasurement<3>>("nav_msgs/Odometry")));
     EXPECT_TRUE((ROS2BytesDecoder::is_decodable_to<PositionWithCovarianceMeasurement<3>>(
             "geometry_msgs/PoseWithCovarianceStamped")));
+    EXPECT_TRUE((ROS2BytesDecoder::is_decodable_to<PoseTwistMeasurement<3>>("nav_msgs/Odometry")));
+    EXPECT_FALSE(
+            (ROS2BytesDecoder::is_decodable_to<PoseTwistMeasurement<3>>("geometry_msgs/PoseWithCovarianceStamped")));
     // The ROS 2 decoder does not support the actuator and contact msg types
     EXPECT_FALSE(ROS2BytesDecoder::is_decodable<ActuatorMeasurements>());
     EXPECT_FALSE(ROS2BytesDecoder::is_decodable<ContactClassifications>());
