@@ -51,7 +51,10 @@ public:
     explicit RandomWalkSensor(const nlohmann::json& config, const bool validate = true);
 
     /**
-     * @brief Bias (random walk) noise density (in sensor units * s^{-1} * Hz^{-1/2})
+     * @brief Bias (random walk) noise density (in sensor units * s^{-1} * Hz^{-1/2}): the density of the white noise
+     * driving the bias, whose variance grows by bias_noise_density^2 per second. This is the rate (or acceleration)
+     * random walk, i.e. the Allan deviation's +1/2-slope line read at tau = 3 s. It is not the bias instability (the
+     * floor of the Allan deviation, in sensor units).
      *
      * @return double
      */
@@ -65,7 +68,8 @@ public:
     double frequency() const;
 
     /**
-     * @brief Initial noise (in sensor units) at sensor boot
+     * @brief Initial noise (in sensor units) at sensor boot: the standard deviation of the bias before any measurement,
+     * e.g. a datasheet's initial bias error.
      *
      * @return double
      */
@@ -79,7 +83,10 @@ public:
     const ScalingMatrix& inverse_scaling_matrix() const;
 
     /**
-     * @brief Noise density (in sensor units * Hz^{-1/2})
+     * @brief Noise density (in sensor units * Hz^{-1/2}) of the white measurement noise, as a continuous-time
+     * (two-sided) density: the per-sample standard deviation is noise_density * sqrt(frequency). This is the angle or
+     * velocity random walk (ARW/VRW), i.e. the Allan deviation at tau = 1 s. A datasheet noise density given as a
+     * one-sided amplitude spectral density is sqrt(2) larger.
      *
      * @return double
      */
