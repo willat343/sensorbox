@@ -35,6 +35,39 @@ inline auto PoseTwistMeasurement<D_>::twist() -> Twist& {
     return const_cast<Twist&>(std::as_const(*this).twist());
 }
 
+template<int D_>
+inline PoseTwistWithCovarianceMeasurement<D_>::PoseTwistWithCovarianceMeasurement()
+    : PoseTwistWithCovarianceMeasurement(Timestamp{Duration::zero()}, std::string(), std::string(), Pose::Identity(),
+              Twist::Zero(), Covariance(0.0), Covariance(0.0)) {}
+
+template<int D_>
+inline PoseTwistWithCovarianceMeasurement<D_>::PoseTwistWithCovarianceMeasurement(const Timestamp& timestamp_,
+        const std::string& frame_, const std::string& child_frame_, const Pose& pose_, const Twist& twist_,
+        const Covariance& pose_covariance_, const Covariance& twist_covariance_)
+    : PoseTwistMeasurement<D_>(timestamp_, frame_, child_frame_, pose_, twist_),
+      pose_covariance_(pose_covariance_),
+      twist_covariance_(twist_covariance_) {}
+
+template<int D_>
+inline auto PoseTwistWithCovarianceMeasurement<D_>::pose_covariance() const -> const Covariance& {
+    return pose_covariance_;
+}
+
+template<int D_>
+inline auto PoseTwistWithCovarianceMeasurement<D_>::pose_covariance() -> Covariance& {
+    return const_cast<Covariance&>(std::as_const(*this).pose_covariance());
+}
+
+template<int D_>
+inline auto PoseTwistWithCovarianceMeasurement<D_>::twist_covariance() const -> const Covariance& {
+    return twist_covariance_;
+}
+
+template<int D_>
+inline auto PoseTwistWithCovarianceMeasurement<D_>::twist_covariance() -> Covariance& {
+    return const_cast<Covariance&>(std::as_const(*this).twist_covariance());
+}
+
 }
 
 #if !SENSORBOX_HEADER_ONLY
@@ -42,6 +75,8 @@ namespace sensorbox {
 
 extern template class PoseTwistMeasurement<2>;
 extern template class PoseTwistMeasurement<3>;
+extern template class PoseTwistWithCovarianceMeasurement<2>;
+extern template class PoseTwistWithCovarianceMeasurement<3>;
 
 }
 #endif
