@@ -5,6 +5,7 @@
 #include <Eigen/Core>
 #include <nlohmann/json.hpp>
 #include <stdexcept>
+#include <string>
 
 namespace sensorbox {
 
@@ -66,6 +67,14 @@ TEST(stiffness_from_config, missing_field_throws) {
 TEST(stiffness_from_config, unimplemented_fields_throw) {
     EXPECT_THROW(stiffness_from_config<1>(nlohmann::json{{"covariance", {{1.0}}}}), std::runtime_error);
     EXPECT_THROW(stiffness_from_config<1>(nlohmann::json{{"information", {{1.0}}}}), std::runtime_error);
+}
+
+TEST(contains_uncertainty, fields) {
+    for (const std::string field : {"covariance", "information", "sigma", "sigmas", "variance", "variances"}) {
+        EXPECT_TRUE(contains_uncertainty(nlohmann::json{{field, 0.5}}));
+    }
+    EXPECT_FALSE(contains_uncertainty(nlohmann::json{{"type", "DIRECT_POSE"}}));
+    EXPECT_FALSE(contains_uncertainty(nlohmann::json::object()));
 }
 
 TEST(covariance_from_config, sigma) {

@@ -12,12 +12,13 @@ template<int D_>
 inline DirectPoseSensor<D_>::DirectPoseSensor(const nlohmann::json& config, const bool validate)
     : Sensor(config, false),
       JsonLoadable<DirectPoseSensorSchemaFilepath, sensorbox_schema_loader>(config, validate),
-      stiffness_(stiffness_from_config<DoF>(config)) {
+      stiffness_(contains_uncertainty(config) ? std::make_optional(stiffness_from_config<DoF>(config))
+                                              : std::nullopt) {
     assert(this->type() == SensorType::DIRECT_POSE);
 }
 
 template<int D_>
-inline const typename DirectPoseSensor<D_>::Stiffness& DirectPoseSensor<D_>::stiffness() const {
+inline auto DirectPoseSensor<D_>::stiffness() const -> const std::optional<Stiffness>& {
     return stiffness_;
 }
 

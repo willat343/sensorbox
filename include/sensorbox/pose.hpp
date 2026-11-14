@@ -3,6 +3,7 @@
 
 #include <Eigen/Geometry>
 #include <mathbox/covariance.hpp>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -40,8 +41,9 @@ public:
     using Stiffness = Eigen::Matrix<double, DoF, DoF>;
 
     /**
-     * @brief Construct an instance of the class from a json config with Sensor structure and one of ["sigma", "sigmas",
-     * "variance", "variances", "covariance"].
+     * @brief Construct an instance of the class from a json config with Sensor structure and optionally one of
+     * ["sigma", "sigmas", "variance", "variances", "covariance", "information"]. A sensor whose measurements each
+     * carry their own uncertainty has no uncertainty of its own.
      *
      * @param config
      * @param validate
@@ -49,14 +51,14 @@ public:
     explicit DirectPoseSensor(const nlohmann::json& config, const bool validate = true);
 
     /**
-     * @brief Get stiffness matrix for sensor.
+     * @brief Get stiffness matrix for sensor, if the sensor has an uncertainty.
      *
-     * @return const Stiffness&
+     * @return const std::optional<Stiffness>&
      */
-    const Stiffness& stiffness() const;
+    const std::optional<Stiffness>& stiffness() const;
 
 private:
-    Stiffness stiffness_;
+    std::optional<Stiffness> stiffness_;
 };
 
 template<int D_>

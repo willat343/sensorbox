@@ -23,12 +23,20 @@ TEST(direct_pose_sensor, construction_from_config) {
     EXPECT_EQ(DirectPoseSensor<3>::DoF, 6);
     const Eigen::Matrix<double, 6, 6> expected_stiffness{
             Eigen::Vector<double, 6>{10.0, 5.0, 10.0 / 3.0, 2.5, 2.0, 10.0 / 6.0}.asDiagonal()};
-    EXPECT_TRUE(sensor.stiffness().isApprox(expected_stiffness));
+    ASSERT_TRUE(sensor.stiffness().has_value());
+    EXPECT_TRUE(sensor.stiffness()->isApprox(expected_stiffness));
+}
+
+TEST(direct_pose_sensor, construction_without_uncertainty) {
+    const DirectPoseSensor<3> sensor{nlohmann::json{{"type", "DIRECT_POSE"}}};
+    EXPECT_EQ(sensor.type(), SensorType::DIRECT_POSE);
+    EXPECT_FALSE(sensor.stiffness().has_value());
 }
 
 TEST(direct_pose_sensor, invalid_config_throws) {
-    // Uncertainty is required
-    EXPECT_THROW((DirectPoseSensor<3>{nlohmann::json{{"type", "DIRECT_POSE"}}}), std::exception);
+    // At most one uncertainty field
+    EXPECT_THROW((DirectPoseSensor<3>{nlohmann::json{{"type", "DIRECT_POSE"}, {"sigma", 0.1}, {"variance", 0.01}}}),
+            std::exception);
     // Wrong number of sigmas for the degrees of freedom
     EXPECT_THROW((DirectPoseSensor<3>{test_direct_position_sensor_config()}), std::exception);
 }

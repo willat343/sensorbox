@@ -14,7 +14,7 @@
             }
         },
         {
-            "$ref": "Uncertainty.schema.json"
+            "$ref": "OptionalUncertainty.schema.json"
         }
     ]
 }
