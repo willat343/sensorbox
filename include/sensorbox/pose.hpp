@@ -70,6 +70,8 @@ public:
     using typename TemporalSpatialRelationalMeasurement::Timestamp;
     static constexpr int D = D_;
     using Pose = Eigen::Transform<double, D, Eigen::Isometry>;
+    static constexpr int DoF = math::SEDoF<D>;
+    using Covariance = math::Covariance<double, DoF>;
 
     explicit PoseMeasurement();
 
@@ -80,104 +82,26 @@ public:
      * @param frame_ reference frame in which the measurement is made, e.g. map_frame
      * @param child_frame_ reference frame that has been measured, e.g. body_frame
      * @param pose_ pose of child_frame_ in frame_, \f$ \mathbf{T}_{FC} \f$
-     */
-    explicit PoseMeasurement(const Timestamp& timestamp_, const std::string& frame_, const std::string& child_frame_,
-            const Pose& pose_);
-
-    PoseMeasurement inverse() const;
-
-    void invert();
-
-    const Pose& pose() const;
-
-    Pose& pose();
-
-    /**
-     * @brief Create a new pose measurement with a different child frame, as:
-     *
-     * \f[
-     *      T_{F,N} = T_{F,C} * T_{C,N}
-     * \f]
-     *
-     * @param new_child_frame new child frame \f$ N \f$
-     * @param T_C_N pose of new child frame in the current child frame \f$ T_{C,N} \f$
-     * @return PoseMeasurement
-     */
-    PoseMeasurement transform_to_new_child_frame(const std::string& new_child_frame, const Pose& T_C_N) const;
-
-    /**
-     * @brief Create a new pose measurement with a different frame, as:
-     *
-     * \f[
-     *      T_{N,C} = T_{N,F} * T_{F,C}
-     * \f]
-     *
-     * @param new_frame new frame \f$ N \f$
-     * @param T_N_F pose of current frame in the new frame \f$ T_{N,F} \f$
-     * @return PoseMeasurement
-     */
-    PoseMeasurement transform_to_new_frame(const std::string& new_frame, const Pose& T_N_F) const;
-
-    /**
-     * @brief Create a new pose measurement with different frames, as:
-     *
-     * \f[
-     *      T_{NF,NC} = T_{NF,F} * T_{F,C} * T_{C,NC}
-     * \f]
-     *
-     * @param new_frame new frame \f$ NF \f$
-     * @param new_child_frame new child frame \f$ NC \f$
-     * @param T_NF_F pose of current frame in the new frame \f$ T_{NF,F} \f$
-     * @param T_C_NC pose of new child frame in the current child frame \f$ T_{C,NC} \f$
-     * @return PoseMeasurement
-     */
-    PoseMeasurement transform_to_new_frames(const std::string& new_frame, const std::string& new_child_frame,
-            const Pose& T_NF_F, const Pose& T_C_NC) const;
-
-private:
-    Pose pose_;
-};
-
-template<int D_>
-class PoseWithCovarianceMeasurement : public TemporalSpatialRelationalMeasurement {
-public:
-    using typename TemporalSpatialRelationalMeasurement::Clock;
-    using typename TemporalSpatialRelationalMeasurement::Duration;
-    using typename TemporalSpatialRelationalMeasurement::Timestamp;
-    static constexpr int D = D_;
-    using Pose = Eigen::Transform<double, D, Eigen::Isometry>;
-    static constexpr int DoF = math::SEDoF<D>;
-    using Covariance = math::Covariance<double, DoF>;
-
-    explicit PoseWithCovarianceMeasurement();
-
-    /**
-     * @brief Construct a Pose Measurement with the covariance of the pose, of child_frame_ (C) in frame_ (F), i.e.
-     * \f$ \mathbf{T}_{FC} \f$.
-     *
-     * @param timestamp_ timestamp
-     * @param frame_ reference frame in which the measurement is made, e.g. map_frame
-     * @param child_frame_ reference frame that has been measured, e.g. body_frame
-     * @param pose_ pose of child_frame_ in frame_, \f$ \mathbf{T}_{FC} \f$
      * @param covariance_ covariance of the pose, of its position and then its orientation, as given by the source of
-     * the measurement (e.g. for ROS, of the position x, y, z and the rotations about the x, y and z axes)
+     * the measurement (e.g. for ROS, of the position x, y, z and the rotations about the x, y and z axes), if any
      * @param covariance_perturbation_ perturbation of the pose that the covariance is of, if known
      */
-    explicit PoseWithCovarianceMeasurement(const Timestamp& timestamp_, const std::string& frame_,
-            const std::string& child_frame_, const Pose& pose_, const Covariance& covariance_,
+    explicit PoseMeasurement(const Timestamp& timestamp_, const std::string& frame_, const std::string& child_frame_,
+            const Pose& pose_, const std::optional<Covariance>& covariance_ = std::nullopt,
             const std::optional<math::PosePerturbation>& covariance_perturbation_ = std::nullopt);
 
-    const Pose& pose() const;
+    /**
+     * @brief Covariance of the pose, if the measurement has one.
+     *
+     * @return const std::optional<Covariance>&
+     */
+    const std::optional<Covariance>& covariance() const;
 
-    Pose& pose();
-
-    const Covariance& covariance() const;
-
-    Covariance& covariance();
+    std::optional<Covariance>& covariance();
 
     /**
-     * @brief Get the covariance of another perturbation of the pose, to first order. The perturbation that the
-     * covariance of the measurement is of must be known.
+     * @brief Get the covariance of another perturbation of the pose, to first order. The measurement must have a
+     * covariance, and the perturbation that it is of must be known.
      *
      * @param perturbation_
      * @return Covariance
@@ -194,9 +118,97 @@ public:
 
     std::optional<math::PosePerturbation>& covariance_perturbation();
 
+    /**
+     * @brief Create the inverse pose measurement \f$ \mathbf{T}_{CF} = \mathbf{T}_{FC}^{-1} \f$.
+     *
+     * See `with_new_pose` for its covariance.
+     *
+     * @return PoseMeasurement
+     */
+    PoseMeasurement inverse() const;
+
+    void invert();
+
+    const Pose& pose() const;
+
+    Pose& pose();
+
+    /**
+     * @brief Create a new pose measurement with a different child frame, as:
+     *
+     * \f[
+     *      T_{F,N} = T_{F,C} * T_{C,N}
+     * \f]
+     *
+     * See `with_new_pose` for its covariance.
+     *
+     * @param new_child_frame new child frame \f$ N \f$
+     * @param T_C_N pose of new child frame in the current child frame \f$ T_{C,N} \f$
+     * @return PoseMeasurement
+     */
+    PoseMeasurement transform_to_new_child_frame(const std::string& new_child_frame, const Pose& T_C_N) const;
+
+    /**
+     * @brief Create a new pose measurement with a different frame, as:
+     *
+     * \f[
+     *      T_{N,C} = T_{N,F} * T_{F,C}
+     * \f]
+     *
+     * See `with_new_pose` for its covariance.
+     *
+     * @param new_frame new frame \f$ N \f$
+     * @param T_N_F pose of current frame in the new frame \f$ T_{N,F} \f$
+     * @return PoseMeasurement
+     */
+    PoseMeasurement transform_to_new_frame(const std::string& new_frame, const Pose& T_N_F) const;
+
+    /**
+     * @brief Create a new pose measurement with different frames, as:
+     *
+     * \f[
+     *      T_{NF,NC} = T_{NF,F} * T_{F,C} * T_{C,NC}
+     * \f]
+     *
+     * See `with_new_pose` for its covariance.
+     *
+     * @param new_frame new frame \f$ NF \f$
+     * @param new_child_frame new child frame \f$ NC \f$
+     * @param T_NF_F pose of current frame in the new frame \f$ T_{NF,F} \f$
+     * @param T_C_NC pose of new child frame in the current child frame \f$ T_{C,NC} \f$
+     * @return PoseMeasurement
+     */
+    PoseMeasurement transform_to_new_frames(const std::string& new_frame, const std::string& new_child_frame,
+            const Pose& T_NF_F, const Pose& T_C_NC) const;
+
 private:
+    /**
+     * @brief Create a measurement of a new pose, obtained from this pose by an operation (an inverse or a composition
+     * with another pose) under which a perturbation of this pose is also a perturbation of the new pose, with the same
+     * covariance. Only JOINT perturbations have this property: for the tangent vector \f$ \bm{\tau} \f$,
+     *  - \f$ (\text{Exp}(\bm{\tau}) \mathbf{T}) \mathbf{C} = \text{Exp}(\bm{\tau}) (\mathbf{T} \mathbf{C}) \f$
+     * (LEFT stays LEFT under composition on the right)
+     *  - \f$ \mathbf{N} (\mathbf{T} \text{Exp}(\bm{\tau})) = (\mathbf{N} \mathbf{T}) \text{Exp}(\bm{\tau}) \f$
+     * (RIGHT stays RIGHT under composition on the left)
+     *  - \f$ (\mathbf{T} \text{Exp}(\bm{\tau}))^{-1} = \text{Exp}(-\bm{\tau}) \mathbf{T}^{-1} \f$ (RIGHT becomes LEFT
+     * under inversion)
+     *
+     * The covariance of the new measurement is of the same perturbation as the covariance of this measurement. The new
+     * measurement has a covariance only if this measurement has one and the perturbation that it is of is known,
+     * because otherwise it is not known how the covariance changes with the pose.
+     *
+     * @param frame_ frame of the new measurement
+     * @param child_frame_ child frame of the new measurement
+     * @param pose_ new pose
+     * @param perturbation perturbation of this pose
+     * @param new_perturbation perturbation of the new pose that the perturbation of this pose is under the operation
+     * @return PoseMeasurement
+     */
+    PoseMeasurement with_new_pose(const std::string& frame_, const std::string& child_frame_, const Pose& pose_,
+            const math::PosePerturbation& perturbation, const math::PosePerturbation& new_perturbation) const;
+
     Pose pose_;
-    Covariance covariance_;
+    std::optional<Covariance> covariance_;
     std::optional<math::PosePerturbation> covariance_perturbation_;
 };
 

@@ -9,7 +9,4 @@ template class JsonLoadable<DirectPositionSensorSchemaFilepath, sensorbox_schema
 template class PositionMeasurement<2>;
 template class PositionMeasurement<3>;
 
-template class PositionWithCovarianceMeasurement<2>;
-template class PositionWithCovarianceMeasurement<3>;
-
 }

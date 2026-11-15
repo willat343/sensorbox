@@ -124,61 +124,86 @@ TEST(pose_measurement, transform_to_new_frames) {
                     .pose()));
 }
 
-TEST(pose_with_covariance_measurement, default_construction) {
-    const PoseWithCovarianceMeasurement<3> measurement;
-    EXPECT_EQ(measurement.timestamp(), Timestamp{PoseWithCovarianceMeasurement<3>::Duration::zero()});
-    EXPECT_TRUE(measurement.frame().empty());
-    EXPECT_TRUE(measurement.child_frame().empty());
-    EXPECT_TRUE(measurement.pose().isApprox(Pose::Identity()));
-    EXPECT_TRUE(measurement.covariance().isZero());
+TEST(pose_measurement, covariance_dimensions) {
+    EXPECT_EQ(PoseMeasurement<2>::DoF, 3);
+    EXPECT_EQ(PoseMeasurement<2>::Covariance::RowsAtCompileTime, 3);
+    EXPECT_EQ(PoseMeasurement<3>::DoF, 6);
+    EXPECT_EQ(PoseMeasurement<3>::Covariance::RowsAtCompileTime, 6);
 }
 
-TEST(pose_with_covariance_measurement, dimensions) {
-    EXPECT_EQ(PoseWithCovarianceMeasurement<2>::DoF, 3);
-    EXPECT_EQ(PoseWithCovarianceMeasurement<2>::Covariance::RowsAtCompileTime, 3);
-    EXPECT_EQ(PoseWithCovarianceMeasurement<3>::DoF, 6);
-    EXPECT_EQ(PoseWithCovarianceMeasurement<3>::Covariance::RowsAtCompileTime, 6);
-}
-
-TEST(pose_with_covariance_measurement, construction) {
-    const Timestamp timestamp{std::chrono::nanoseconds{42}};
+TEST(pose_measurement, covariance) {
     const Eigen::Vector<double, 6> variances{Eigen::Vector<double, 6>::LinSpaced(0.1, 0.6)};
-    const PoseWithCovarianceMeasurement<3> measurement{timestamp, test_string(0), test_string(1), test_isometry3(1),
-            PoseWithCovarianceMeasurement<3>::Covariance{variances}};
-    EXPECT_EQ(measurement.timestamp(), timestamp);
-    EXPECT_EQ(measurement.frame(), test_string(0));
-    EXPECT_EQ(measurement.child_frame(), test_string(1));
-    EXPECT_TRUE(measurement.pose().isApprox(test_isometry3(1)));
-    EXPECT_TRUE(measurement.covariance().diagonal().isApprox(variances));
+    // A measurement has no covariance unless it is given one
+    PoseMeasurement<3> measurement{Timestamp{std::chrono::nanoseconds{42}}, test_string(0), test_string(1),
+            test_isometry3(1)};
+    EXPECT_FALSE(PoseMeasurement<3>{}.covariance().has_value());
+    EXPECT_FALSE(measurement.covariance().has_value());
+    measurement.covariance() = PoseMeasurement<3>::Covariance{Eigen::Vector<double, 6>::Ones()};
+    EXPECT_TRUE(measurement.covariance()->isApprox(Eigen::Matrix<double, 6, 6>::Identity()));
+    const PoseMeasurement<3> measurement_with_covariance{Timestamp{std::chrono::nanoseconds{42}}, test_string(0),
+            test_string(1), test_isometry3(1), PoseMeasurement<3>::Covariance{variances}};
+    EXPECT_TRUE(measurement_with_covariance.pose().isApprox(test_isometry3(1)));
+    EXPECT_TRUE(measurement_with_covariance.covariance()->diagonal().isApprox(variances));
 }
 
-TEST(pose_with_covariance_measurement, mutable_access) {
-    PoseWithCovarianceMeasurement<3> measurement;
-    measurement.pose() = test_isometry3(2);
-    measurement.covariance() = PoseWithCovarianceMeasurement<3>::Covariance{Eigen::Vector<double, 6>::Ones()};
-    EXPECT_TRUE(measurement.pose().isApprox(test_isometry3(2)));
-    EXPECT_TRUE(measurement.covariance().isApprox(Eigen::Matrix<double, 6, 6>::Identity()));
-}
-
-TEST(pose_with_covariance_measurement, covariance_perturbation) {
+TEST(pose_measurement, covariance_perturbation) {
     const math::PosePerturbation split_right{math::SEType::SPLIT, math::ApplicationSide::RIGHT};
     const math::PosePerturbation joint_right{math::SEType::JOINT, math::ApplicationSide::RIGHT};
     const Eigen::Vector<double, 6> variances{Eigen::Vector<double, 6>::LinSpaced(0.1, 0.6)};
-    PoseWithCovarianceMeasurement<3> measurement{Timestamp{std::chrono::nanoseconds{42}}, test_string(0),
-            test_string(1), test_isometry3(1), PoseWithCovarianceMeasurement<3>::Covariance{variances}};
+    PoseMeasurement<3> measurement{Timestamp{std::chrono::nanoseconds{42}}, test_string(0), test_string(1),
+            test_isometry3(1)};
+    // The covariance of a perturbation requires a covariance
+    EXPECT_THROW(measurement.covariance(joint_right), std::exception);
+    measurement.covariance() = PoseMeasurement<3>::Covariance{variances};
     // The perturbation is not known unless set, and the covariance of another perturbation requires it
     EXPECT_FALSE(measurement.covariance_perturbation().has_value());
     EXPECT_THROW(measurement.covariance(joint_right), std::exception);
     measurement.covariance_perturbation() = split_right;
     EXPECT_TRUE(measurement.covariance_perturbation() == split_right);
-    EXPECT_TRUE(measurement.covariance(split_right).isApprox(measurement.covariance()));
+    EXPECT_TRUE(measurement.covariance(split_right).isApprox(*measurement.covariance()));
     // The position noise of the joint perturbation is in the child frame, and the orientation noise is unchanged
     const Eigen::Matrix3d R = test_isometry3(1).rotation();
     const Eigen::Matrix<double, 6, 6> covariance = measurement.covariance(joint_right);
-    const Eigen::Matrix3d position_covariance = measurement.covariance().block(0, 0, 3, 3);
-    const Eigen::Matrix3d orientation_covariance = measurement.covariance().block(3, 3, 3, 3);
+    const Eigen::Matrix3d position_covariance = measurement.covariance()->block(0, 0, 3, 3);
+    const Eigen::Matrix3d orientation_covariance = measurement.covariance()->block(3, 3, 3, 3);
     EXPECT_TRUE(covariance.block(0, 0, 3, 3).isApprox(R.transpose() * position_covariance * R));
     EXPECT_TRUE(covariance.block(3, 3, 3, 3).isApprox(orientation_covariance));
+}
+
+TEST(pose_measurement, covariance_of_transformed_measurements) {
+    const math::PosePerturbation split_right{math::SEType::SPLIT, math::ApplicationSide::RIGHT};
+    const math::PosePerturbation joint_left{math::SEType::JOINT, math::ApplicationSide::LEFT};
+    const math::PosePerturbation joint_right{math::SEType::JOINT, math::ApplicationSide::RIGHT};
+    const Eigen::Vector<double, 6> variances{Eigen::Vector<double, 6>::LinSpaced(0.1, 0.6)};
+    PoseMeasurement<3> measurement{Timestamp{std::chrono::nanoseconds{42}}, test_string(0), test_string(1),
+            test_isometry3(1), PoseMeasurement<3>::Covariance{variances}};
+    // The covariance cannot be transformed while the perturbation that it is of is not known
+    EXPECT_FALSE(measurement.inverse().covariance().has_value());
+    EXPECT_FALSE(measurement.transform_to_new_child_frame(test_string(2), test_isometry3(3)).covariance().has_value());
+    EXPECT_FALSE(measurement.transform_to_new_frame(test_string(2), test_isometry3(3)).covariance().has_value());
+    measurement.covariance_perturbation() = split_right;
+    // A right perturbation of a pose is a left perturbation of its inverse
+    const PoseMeasurement<3> inverse = measurement.inverse();
+    EXPECT_TRUE(inverse.covariance(joint_left).isApprox(measurement.covariance(joint_right)));
+    // The covariance stays of the perturbation that it was of
+    EXPECT_TRUE(inverse.covariance_perturbation() == split_right);
+    EXPECT_TRUE(inverse.inverse().covariance()->isApprox(*measurement.covariance()));
+    // A left perturbation is unchanged by a new child frame, and a right perturbation by a new frame
+    const PoseMeasurement<3> new_child_frame =
+            measurement.transform_to_new_child_frame(test_string(2), test_isometry3(3));
+    EXPECT_TRUE(new_child_frame.covariance(joint_left).isApprox(measurement.covariance(joint_left)));
+    const PoseMeasurement<3> new_frame = measurement.transform_to_new_frame(test_string(2), test_isometry3(3));
+    EXPECT_TRUE(new_frame.covariance(joint_right).isApprox(measurement.covariance(joint_right)));
+    // Changing to a frame and back recovers the covariance
+    EXPECT_TRUE(new_child_frame.transform_to_new_child_frame(test_string(1), test_isometry3(3).inverse())
+                    .covariance(split_right)
+                    .isApprox(*measurement.covariance()));
+    EXPECT_TRUE(
+            measurement.transform_to_new_frames(test_string(2), test_string(3), test_isometry3(3), test_isometry3(4))
+                    .transform_to_new_frames(test_string(0), test_string(1), test_isometry3(3).inverse(),
+                            test_isometry3(4).inverse())
+                    .covariance(split_right)
+                    .isApprox(*measurement.covariance()));
 }
 
 TEST(pose_measurements, default_construction) {

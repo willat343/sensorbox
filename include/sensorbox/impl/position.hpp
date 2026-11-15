@@ -27,12 +27,26 @@ inline PositionMeasurement<D_>::PositionMeasurement()
 
 template<int D_>
 inline PositionMeasurement<D_>::PositionMeasurement(const Timestamp& timestamp_, const std::string& frame_,
-        const std::string& child_frame_, const Position& position_)
-    : TemporalSpatialRelationalMeasurement(timestamp_, frame_, child_frame_), position_(position_) {}
+        const std::string& child_frame_, const Position& position_, const std::optional<Covariance>& covariance_)
+    : TemporalSpatialRelationalMeasurement(timestamp_, frame_, child_frame_),
+      position_(position_),
+      covariance_(covariance_) {}
+
+template<int D_>
+inline auto PositionMeasurement<D_>::covariance() const -> const std::optional<Covariance>& {
+    return covariance_;
+}
+
+template<int D_>
+inline auto PositionMeasurement<D_>::covariance() -> std::optional<Covariance>& {
+    return const_cast<std::optional<Covariance>&>(std::as_const(*this).covariance());
+}
 
 template<int D_>
 inline auto PositionMeasurement<D_>::inverse(const RotationMatrix& R_C_F) const -> PositionMeasurement<D_> {
-    return PositionMeasurement<D_>{timestamp(), child_frame(), frame(), -R_C_F * position()};
+    return PositionMeasurement<D_>{timestamp(), child_frame(), frame(), -R_C_F * position(),
+            covariance() ? std::make_optional(Covariance{R_C_F * *covariance() * R_C_F.transpose(), true})
+                         : std::nullopt};
 }
 
 template<int D_>
@@ -59,7 +73,10 @@ inline auto PositionMeasurement<D_>::transform_to_new_child_frame(const std::str
 template<int D_>
 inline auto PositionMeasurement<D_>::transform_to_new_frame(const std::string& new_frame, const Pose& T_N_F) const
         -> PositionMeasurement {
-    return PositionMeasurement(timestamp(), new_frame, child_frame(), T_N_F * position());
+    const RotationMatrix R_N_F = T_N_F.rotation();
+    return PositionMeasurement(timestamp(), new_frame, child_frame(), T_N_F * position(),
+            covariance() ? std::make_optional(Covariance{R_N_F * *covariance() * R_N_F.transpose(), true})
+                         : std::nullopt);
 }
 
 template<int D_>
@@ -67,39 +84,6 @@ inline auto PositionMeasurement<D_>::transform_to_new_frames(const std::string& 
         const std::string& new_child_frame, const Pose& T_NF_F, const RotationMatrix& R_F_C,
         const Position& C_p_C_N) const -> PositionMeasurement {
     return PositionMeasurement(timestamp(), new_frame, new_child_frame, T_NF_F * (position() + R_F_C * C_p_C_N));
-}
-
-template<int D_>
-inline PositionWithCovarianceMeasurement<D_>::PositionWithCovarianceMeasurement()
-    : PositionWithCovarianceMeasurement(Timestamp{Duration::zero()}, std::string(), std::string(), Position::Zero(),
-              Covariance(0.0)) {}
-
-template<int D_>
-inline PositionWithCovarianceMeasurement<D_>::PositionWithCovarianceMeasurement(const Timestamp& timestamp_,
-        const std::string& frame_, const std::string& child_frame_, const Position& position_,
-        const Covariance& covariance_)
-    : TemporalSpatialRelationalMeasurement(timestamp_, frame_, child_frame_),
-      position_(position_),
-      covariance_(covariance_) {}
-
-template<int D_>
-inline auto PositionWithCovarianceMeasurement<D_>::position() const -> const Position& {
-    return position_;
-}
-
-template<int D_>
-inline auto PositionWithCovarianceMeasurement<D_>::position() -> Position& {
-    return const_cast<Position&>(std::as_const(*this).position());
-}
-
-template<int D_>
-inline auto PositionWithCovarianceMeasurement<D_>::covariance() const -> const Covariance& {
-    return covariance_;
-}
-
-template<int D_>
-inline auto PositionWithCovarianceMeasurement<D_>::covariance() -> Covariance& {
-    return const_cast<Covariance&>(std::as_const(*this).covariance());
 }
 
 }
@@ -113,9 +97,6 @@ extern template class JsonLoadable<DirectPositionSensorSchemaFilepath, sensorbox
 
 extern template class PositionMeasurement<2>;
 extern template class PositionMeasurement<3>;
-
-extern template class PositionWithCovarianceMeasurement<2>;
-extern template class PositionWithCovarianceMeasurement<3>;
 
 }
 #endif
