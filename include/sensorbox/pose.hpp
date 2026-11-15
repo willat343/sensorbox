@@ -15,7 +15,7 @@
 namespace sensorbox {
 
 template<int D_>
-class DirectPoseSensor : public Sensor, public JsonLoadable<DirectPoseSensorSchemaFilepath, sensorbox_schema_loader> {
+class PoseSensor : public Sensor, public JsonLoadable<PoseSensorSchemaFilepath, sensorbox_schema_loader> {
 public:
     /**
      * @brief Dimension D
@@ -49,7 +49,7 @@ public:
      * @param config
      * @param validate
      */
-    explicit DirectPoseSensor(const nlohmann::json& config, const bool validate = true);
+    explicit PoseSensor(const nlohmann::json& config, const bool validate = true);
 
     /**
      * @brief Get stiffness matrix for sensor, if the sensor has an uncertainty.

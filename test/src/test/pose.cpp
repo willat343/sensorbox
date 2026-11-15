@@ -14,31 +14,30 @@ namespace sensorbox {
 using Pose = PoseMeasurement<3>::Pose;
 using Timestamp = PoseMeasurement<3>::Timestamp;
 
-TEST(direct_pose_sensor, construction_from_config) {
-    const DirectPoseSensor<3> sensor{test_direct_pose_sensor_config()};
-    EXPECT_EQ(sensor.type(), SensorType::DIRECT_POSE);
-    EXPECT_EQ(DirectPoseSensor<2>::D, 2);
-    EXPECT_EQ(DirectPoseSensor<2>::DoF, 3);
-    EXPECT_EQ(DirectPoseSensor<3>::D, 3);
-    EXPECT_EQ(DirectPoseSensor<3>::DoF, 6);
+TEST(pose_sensor, construction_from_config) {
+    const PoseSensor<3> sensor{test_pose_sensor_config()};
+    EXPECT_EQ(sensor.type(), SensorType::POSE);
+    EXPECT_EQ(PoseSensor<2>::D, 2);
+    EXPECT_EQ(PoseSensor<2>::DoF, 3);
+    EXPECT_EQ(PoseSensor<3>::D, 3);
+    EXPECT_EQ(PoseSensor<3>::DoF, 6);
     const Eigen::Matrix<double, 6, 6> expected_stiffness{
             Eigen::Vector<double, 6>{10.0, 5.0, 10.0 / 3.0, 2.5, 2.0, 10.0 / 6.0}.asDiagonal()};
     ASSERT_TRUE(sensor.stiffness().has_value());
     EXPECT_TRUE(sensor.stiffness()->isApprox(expected_stiffness));
 }
 
-TEST(direct_pose_sensor, construction_without_uncertainty) {
-    const DirectPoseSensor<3> sensor{nlohmann::json{{"type", "DIRECT_POSE"}}};
-    EXPECT_EQ(sensor.type(), SensorType::DIRECT_POSE);
+TEST(pose_sensor, construction_without_uncertainty) {
+    const PoseSensor<3> sensor{nlohmann::json{{"type", "POSE"}}};
+    EXPECT_EQ(sensor.type(), SensorType::POSE);
     EXPECT_FALSE(sensor.stiffness().has_value());
 }
 
-TEST(direct_pose_sensor, invalid_config_throws) {
+TEST(pose_sensor, invalid_config_throws) {
     // At most one uncertainty field
-    EXPECT_THROW((DirectPoseSensor<3>{nlohmann::json{{"type", "DIRECT_POSE"}, {"sigma", 0.1}, {"variance", 0.01}}}),
-            std::exception);
+    EXPECT_THROW((PoseSensor<3>{nlohmann::json{{"type", "POSE"}, {"sigma", 0.1}, {"variance", 0.01}}}), std::exception);
     // Wrong number of sigmas for the degrees of freedom
-    EXPECT_THROW((DirectPoseSensor<3>{test_direct_position_sensor_config()}), std::exception);
+    EXPECT_THROW((PoseSensor<3>{test_position_sensor_config()}), std::exception);
 }
 
 TEST(pose_measurement, default_construction) {

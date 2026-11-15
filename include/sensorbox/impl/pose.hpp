@@ -10,15 +10,15 @@
 namespace sensorbox {
 
 template<int D_>
-inline DirectPoseSensor<D_>::DirectPoseSensor(const nlohmann::json& config, const bool validate)
+inline PoseSensor<D_>::PoseSensor(const nlohmann::json& config, const bool validate)
     : Sensor(config, false),
-      JsonLoadable<DirectPoseSensorSchemaFilepath, sensorbox_schema_loader>(config, validate),
+      JsonLoadable<PoseSensorSchemaFilepath, sensorbox_schema_loader>(config, validate),
       stiffness_(contains_uncertainty(config) ? std::make_optional(stiffness_from_config<DoF>(config)) : std::nullopt) {
-    assert(this->type() == SensorType::DIRECT_POSE);
+    assert(this->type() == SensorType::POSE);
 }
 
 template<int D_>
-inline auto DirectPoseSensor<D_>::stiffness() const -> const std::optional<Stiffness>& {
+inline auto PoseSensor<D_>::stiffness() const -> const std::optional<Stiffness>& {
     return stiffness_;
 }
 
@@ -147,9 +147,9 @@ inline auto PoseMeasurements<D_>::measurements() -> std::vector<PoseMeasurement<
 #if !SENSORBOX_HEADER_ONLY
 namespace sensorbox {
 
-extern template class DirectPoseSensor<2>;
-extern template class DirectPoseSensor<3>;
-extern template class JsonLoadable<DirectPoseSensorSchemaFilepath, sensorbox_schema_loader>;
+extern template class PoseSensor<2>;
+extern template class PoseSensor<3>;
+extern template class JsonLoadable<PoseSensorSchemaFilepath, sensorbox_schema_loader>;
 
 extern template class PoseMeasurement<2>;
 extern template class PoseMeasurement<3>;

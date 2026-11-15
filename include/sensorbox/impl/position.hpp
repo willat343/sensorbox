@@ -9,15 +9,15 @@
 namespace sensorbox {
 
 template<int D_>
-inline DirectPositionSensor<D_>::DirectPositionSensor(const nlohmann::json& config, const bool validate)
+inline PositionSensor<D_>::PositionSensor(const nlohmann::json& config, const bool validate)
     : Sensor(config, false),
-      JsonLoadable<DirectPositionSensorSchemaFilepath, sensorbox_schema_loader>(config, validate),
+      JsonLoadable<PositionSensorSchemaFilepath, sensorbox_schema_loader>(config, validate),
       stiffness_(stiffness_from_config<DoF>(config)) {
-    assert(this->type() == SensorType::DIRECT_POSITION);
+    assert(this->type() == SensorType::POSITION);
 }
 
 template<int D_>
-inline const typename DirectPositionSensor<D_>::Stiffness& DirectPositionSensor<D_>::stiffness() const {
+inline const typename PositionSensor<D_>::Stiffness& PositionSensor<D_>::stiffness() const {
     return stiffness_;
 }
 
@@ -91,9 +91,9 @@ inline auto PositionMeasurement<D_>::transform_to_new_frames(const std::string& 
 #if !SENSORBOX_HEADER_ONLY
 namespace sensorbox {
 
-extern template class DirectPositionSensor<2>;
-extern template class DirectPositionSensor<3>;
-extern template class JsonLoadable<DirectPositionSensorSchemaFilepath, sensorbox_schema_loader>;
+extern template class PositionSensor<2>;
+extern template class PositionSensor<3>;
+extern template class JsonLoadable<PositionSensorSchemaFilepath, sensorbox_schema_loader>;
 
 extern template class PositionMeasurement<2>;
 extern template class PositionMeasurement<3>;

@@ -14,22 +14,22 @@ using Pose = PositionMeasurement<3>::Pose;
 using RotationMatrix = PositionMeasurement<3>::RotationMatrix;
 using Timestamp = PositionMeasurement<3>::Timestamp;
 
-TEST(direct_position_sensor, construction_from_config) {
-    const DirectPositionSensor<3> sensor{test_direct_position_sensor_config()};
-    EXPECT_EQ(sensor.type(), SensorType::DIRECT_POSITION);
-    EXPECT_EQ(DirectPositionSensor<2>::D, 2);
-    EXPECT_EQ(DirectPositionSensor<2>::DoF, 2);
-    EXPECT_EQ(DirectPositionSensor<3>::D, 3);
-    EXPECT_EQ(DirectPositionSensor<3>::DoF, 3);
+TEST(position_sensor, construction_from_config) {
+    const PositionSensor<3> sensor{test_position_sensor_config()};
+    EXPECT_EQ(sensor.type(), SensorType::POSITION);
+    EXPECT_EQ(PositionSensor<2>::D, 2);
+    EXPECT_EQ(PositionSensor<2>::DoF, 2);
+    EXPECT_EQ(PositionSensor<3>::D, 3);
+    EXPECT_EQ(PositionSensor<3>::DoF, 3);
     const Eigen::Matrix3d expected_stiffness{Eigen::Vector3d{10.0, 5.0, 10.0 / 3.0}.asDiagonal()};
     EXPECT_TRUE(sensor.stiffness().isApprox(expected_stiffness));
 }
 
-TEST(direct_position_sensor, invalid_config_throws) {
+TEST(position_sensor, invalid_config_throws) {
     // Uncertainty is required
-    EXPECT_THROW((DirectPositionSensor<3>{nlohmann::json{{"type", "DIRECT_POSITION"}}}), std::exception);
+    EXPECT_THROW((PositionSensor<3>{nlohmann::json{{"type", "POSITION"}}}), std::exception);
     // Wrong number of sigmas for the degrees of freedom
-    EXPECT_THROW((DirectPositionSensor<3>{test_direct_pose_sensor_config()}), std::exception);
+    EXPECT_THROW((PositionSensor<3>{test_pose_sensor_config()}), std::exception);
 }
 
 TEST(position_measurement, default_construction) {
