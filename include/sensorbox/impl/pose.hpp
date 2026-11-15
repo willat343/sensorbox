@@ -2,6 +2,7 @@
 #define SENSORBOX_IMPL_POSE_HPP
 
 #include <cassert>
+#include <cppbox/exceptions.hpp>
 
 #include "sensorbox/pose.hpp"
 #include "sensorbox/stiffness.hpp"
@@ -12,8 +13,7 @@ template<int D_>
 inline DirectPoseSensor<D_>::DirectPoseSensor(const nlohmann::json& config, const bool validate)
     : Sensor(config, false),
       JsonLoadable<DirectPoseSensorSchemaFilepath, sensorbox_schema_loader>(config, validate),
-      stiffness_(contains_uncertainty(config) ? std::make_optional(stiffness_from_config<DoF>(config))
-                                              : std::nullopt) {
+      stiffness_(contains_uncertainty(config) ? std::make_optional(stiffness_from_config<DoF>(config)) : std::nullopt) {
     assert(this->type() == SensorType::DIRECT_POSE);
 }
 
@@ -76,10 +76,12 @@ inline PoseWithCovarianceMeasurement<D_>::PoseWithCovarianceMeasurement()
 
 template<int D_>
 inline PoseWithCovarianceMeasurement<D_>::PoseWithCovarianceMeasurement(const Timestamp& timestamp_,
-        const std::string& frame_, const std::string& child_frame_, const Pose& pose_, const Covariance& covariance_)
+        const std::string& frame_, const std::string& child_frame_, const Pose& pose_, const Covariance& covariance_,
+        const std::optional<math::PosePerturbation>& covariance_perturbation_)
     : TemporalSpatialRelationalMeasurement(timestamp_, frame_, child_frame_),
       pose_(pose_),
-      covariance_(covariance_) {}
+      covariance_(covariance_),
+      covariance_perturbation_(covariance_perturbation_) {}
 
 template<int D_>
 inline auto PoseWithCovarianceMeasurement<D_>::pose() const -> const Pose& {
@@ -99,6 +101,26 @@ inline auto PoseWithCovarianceMeasurement<D_>::covariance() const -> const Covar
 template<int D_>
 inline auto PoseWithCovarianceMeasurement<D_>::covariance() -> Covariance& {
     return const_cast<Covariance&>(std::as_const(*this).covariance());
+}
+
+template<int D_>
+inline auto PoseWithCovarianceMeasurement<D_>::covariance(const math::PosePerturbation& perturbation_) const
+        -> Covariance {
+    throw_if(!covariance_perturbation(), "The pose measurement's covariance perturbation is not set.");
+    const Eigen::Matrix<double, DoF, DoF> J =
+            math::pose_perturbation_jacobian(pose(), perturbation_, *covariance_perturbation());
+    return Covariance{J * covariance() * J.transpose(), true};
+}
+
+template<int D_>
+inline auto PoseWithCovarianceMeasurement<D_>::covariance_perturbation() const
+        -> const std::optional<math::PosePerturbation>& {
+    return covariance_perturbation_;
+}
+
+template<int D_>
+inline auto PoseWithCovarianceMeasurement<D_>::covariance_perturbation() -> std::optional<math::PosePerturbation>& {
+    return const_cast<std::optional<math::PosePerturbation>&>(std::as_const(*this).covariance_perturbation());
 }
 
 template<int D_>

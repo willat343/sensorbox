@@ -160,6 +160,27 @@ TEST(pose_with_covariance_measurement, mutable_access) {
     EXPECT_TRUE(measurement.covariance().isApprox(Eigen::Matrix<double, 6, 6>::Identity()));
 }
 
+TEST(pose_with_covariance_measurement, covariance_perturbation) {
+    const math::PosePerturbation split_right{math::SEType::SPLIT, math::ApplicationSide::RIGHT};
+    const math::PosePerturbation joint_right{math::SEType::JOINT, math::ApplicationSide::RIGHT};
+    const Eigen::Vector<double, 6> variances{Eigen::Vector<double, 6>::LinSpaced(0.1, 0.6)};
+    PoseWithCovarianceMeasurement<3> measurement{Timestamp{std::chrono::nanoseconds{42}}, test_string(0),
+            test_string(1), test_isometry3(1), PoseWithCovarianceMeasurement<3>::Covariance{variances}};
+    // The perturbation is not known unless set, and the covariance of another perturbation requires it
+    EXPECT_FALSE(measurement.covariance_perturbation().has_value());
+    EXPECT_THROW(measurement.covariance(joint_right), std::exception);
+    measurement.covariance_perturbation() = split_right;
+    EXPECT_TRUE(measurement.covariance_perturbation() == split_right);
+    EXPECT_TRUE(measurement.covariance(split_right).isApprox(measurement.covariance()));
+    // The position noise of the joint perturbation is in the child frame, and the orientation noise is unchanged
+    const Eigen::Matrix3d R = test_isometry3(1).rotation();
+    const Eigen::Matrix<double, 6, 6> covariance = measurement.covariance(joint_right);
+    const Eigen::Matrix3d position_covariance = measurement.covariance().block(0, 0, 3, 3);
+    const Eigen::Matrix3d orientation_covariance = measurement.covariance().block(3, 3, 3, 3);
+    EXPECT_TRUE(covariance.block(0, 0, 3, 3).isApprox(R.transpose() * position_covariance * R));
+    EXPECT_TRUE(covariance.block(3, 3, 3, 3).isApprox(orientation_covariance));
+}
+
 TEST(pose_measurements, default_construction) {
     const PoseMeasurements<3> measurements;
     EXPECT_EQ(measurements.timestamp(), Timestamp{PoseMeasurements<3>::Duration::zero()});

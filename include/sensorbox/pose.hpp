@@ -3,6 +3,7 @@
 
 #include <Eigen/Geometry>
 #include <mathbox/covariance.hpp>
+#include <mathbox/geometry.hpp>
 #include <optional>
 #include <string>
 #include <vector>
@@ -160,9 +161,11 @@ public:
      * @param pose_ pose of child_frame_ in frame_, \f$ \mathbf{T}_{FC} \f$
      * @param covariance_ covariance of the pose, of its position and then its orientation, as given by the source of
      * the measurement (e.g. for ROS, of the position x, y, z and the rotations about the x, y and z axes)
+     * @param covariance_perturbation_ perturbation of the pose that the covariance is of, if known
      */
     explicit PoseWithCovarianceMeasurement(const Timestamp& timestamp_, const std::string& frame_,
-            const std::string& child_frame_, const Pose& pose_, const Covariance& covariance_);
+            const std::string& child_frame_, const Pose& pose_, const Covariance& covariance_,
+            const std::optional<math::PosePerturbation>& covariance_perturbation_ = std::nullopt);
 
     const Pose& pose() const;
 
@@ -172,9 +175,29 @@ public:
 
     Covariance& covariance();
 
+    /**
+     * @brief Get the covariance of another perturbation of the pose, to first order. The perturbation that the
+     * covariance of the measurement is of must be known.
+     *
+     * @param perturbation_
+     * @return Covariance
+     */
+    Covariance covariance(const math::PosePerturbation& perturbation_) const;
+
+    /**
+     * @brief Perturbation of the pose that the covariance is of, which is not known unless set, because it is not
+     * part of the measurement data.
+     *
+     * @return const std::optional<math::PosePerturbation>&
+     */
+    const std::optional<math::PosePerturbation>& covariance_perturbation() const;
+
+    std::optional<math::PosePerturbation>& covariance_perturbation();
+
 private:
     Pose pose_;
     Covariance covariance_;
+    std::optional<math::PosePerturbation> covariance_perturbation_;
 };
 
 template<int D_>
