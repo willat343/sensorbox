@@ -3,6 +3,7 @@
 
 #include <Eigen/Geometry>
 #include <mathbox/covariance.hpp>
+#include <mathbox/geometry.hpp>
 #include <string>
 
 #include "sensorbox/measurement.hpp"
@@ -17,7 +18,7 @@ public:
     using typename TemporalSpatialRelationalMeasurement::Timestamp;
     static constexpr int D = D_;
     using Pose = Eigen::Transform<double, D, Eigen::Isometry>;
-    static constexpr int PoseDoF = D * (D + 1) / 2;
+    static constexpr int PoseDoF = math::SEDoF<D>;
     using Twist = Eigen::Vector<double, PoseDoF>;
 
     explicit PoseTwistMeasurement();

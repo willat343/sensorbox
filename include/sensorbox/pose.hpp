@@ -27,7 +27,7 @@ public:
      * @brief Degrees of Freedom (DoF)
      *
      */
-    static constexpr int DoF = D * (D + 1) / 2;
+    static constexpr int DoF = math::SEDoF<D>;
 
     /**
      * @brief Covariance matrix
@@ -146,7 +146,7 @@ public:
     using typename TemporalSpatialRelationalMeasurement::Timestamp;
     static constexpr int D = D_;
     using Pose = Eigen::Transform<double, D, Eigen::Isometry>;
-    static constexpr int DoF = D * (D + 1) / 2;
+    static constexpr int DoF = math::SEDoF<D>;
     using Covariance = math::Covariance<double, DoF>;
 
     explicit PoseWithCovarianceMeasurement();
