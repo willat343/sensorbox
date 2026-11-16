@@ -1,6 +1,7 @@
 #ifndef SENSORBOX_GYROSCOPE_HPP
 #define SENSORBOX_GYROSCOPE_HPP
 
+#include <mathbox/geometry.hpp>
 #include <nlohmann/json.hpp>
 
 #include "sensorbox/json_loadable.hpp"
@@ -14,7 +15,7 @@ namespace sensorbox {
  * @tparam D_ dimension (e.g. 3 for 3D)
  */
 template<int D_>
-class Gyroscope : public RandomWalkSensor<D_*(D_ - 1) / 2>,
+class Gyroscope : public RandomWalkSensor<math::SODoF<D_>>,
                   public JsonLoadable<GyroscopeSchemaFilepath, sensorbox_schema_loader> {
 public:
     /**
@@ -27,7 +28,7 @@ public:
      * @brief Degrees of Freedom (DoF)
      *
      */
-    static constexpr int DoF = D * (D - 1) / 2;
+    static constexpr int DoF = math::SODoF<D>;
 
     /**
      * @brief Construct an instance of the class from a json config with RandomWalkSensor structure.

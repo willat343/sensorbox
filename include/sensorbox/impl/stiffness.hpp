@@ -1,6 +1,8 @@
 #ifndef SENSORBOX_IMPL_STIFFNESS_HPP
 #define SENSORBOX_IMPL_STIFFNESS_HPP
 
+#include <algorithm>
+#include <array>
 #include <convert/convert.hpp>
 #include <cppbox/exceptions.hpp>
 #include <mathbox/covariance.hpp>
@@ -131,6 +133,11 @@ Eigen::Matrix<double, Rows, Rows> stiffness_from_config(const nlohmann::json& co
                    "from config. Config was:\n" +
                    config.dump());
     }
+}
+
+inline bool contains_uncertainty(const nlohmann::json& config) {
+    return std::ranges::any_of(std::array{"covariance", "information", "sigma", "sigmas", "variance", "variances"},
+            [&config](const char* field) { return config.contains(field); });
 }
 
 template<int Rows>

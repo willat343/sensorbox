@@ -78,6 +78,20 @@ inline T ROS1BytesDecoder::read() {
     return out;
 }
 
+template<int Rows, int Cols, typename Scalar, Eigen::StorageOptions StorageOrder>
+    requires(StorageOrder == Eigen::RowMajor || StorageOrder == Eigen::ColMajor)
+inline Eigen::Matrix<Scalar, Rows, Cols> ROS1BytesDecoder::read_matrix() {
+    Eigen::Matrix<Scalar, Rows, Cols> matrix;
+    for (int i = 0; i < Rows * Cols; ++i) {
+        if (StorageOrder == Eigen::RowMajor) {
+            matrix(i / Cols, i % Cols) = read<Scalar>();
+        } else {
+            matrix(i % Rows, i / Rows) = read<Scalar>();
+        }
+    }
+    return matrix;
+}
+
 template<typename T>
 inline std::optional<T> ROS1BytesDecoder::read_optional() {
     std::optional<T> out;

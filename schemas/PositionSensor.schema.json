@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "file:///DirectPoseSensor.schema.json",
+    "$id": "file:///PositionSensor.schema.json",
     "allOf": [
         {
             "$ref": "Sensor.schema.json"
@@ -9,7 +9,7 @@
             "type": "object",
             "properties": {
                 "type": {
-                    "const": "DIRECT_POSE"
+                    "const": "POSITION"
                 }
             }
         },

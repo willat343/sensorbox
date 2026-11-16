@@ -1,0 +1,20 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "file:///OptionalUncertainty.schema.json",
+    "anyOf": [
+        {
+            "$ref": "Uncertainty.schema.json"
+        },
+        {
+            "type": "object",
+            "properties": {
+                "sigma": false,
+                "sigmas": false,
+                "variance": false,
+                "variances": false,
+                "covariance": false,
+                "information": false
+            }
+        }
+    ]
+}

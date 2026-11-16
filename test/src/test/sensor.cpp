@@ -17,10 +17,9 @@ TEST(schema_filepath, string_excludes_null_terminator) {
 
 TEST(schema_filepath, schemas_exist) {
     for (const std::string_view schema_filepath : {SensorSchemaFilepath.string(), AccelerometerSchemaFilepath.string(),
-                 ActuatorSchemaFilepath.string(), CurrentSensorSchemaFilepath.string(),
-                 DirectPoseSensorSchemaFilepath.string(), DirectPositionSensorSchemaFilepath.string(),
-                 EncoderSchemaFilepath.string(), GyroscopeSchemaFilepath.string(), ImuSchemaFilepath.string(),
-                 RandomWalkSensorSchemaFilepath.string()}) {
+                 ActuatorSchemaFilepath.string(), CurrentSensorSchemaFilepath.string(), EncoderSchemaFilepath.string(),
+                 GyroscopeSchemaFilepath.string(), ImuSchemaFilepath.string(), PoseSensorSchemaFilepath.string(),
+                 PositionSensorSchemaFilepath.string(), RandomWalkSensorSchemaFilepath.string()}) {
         EXPECT_TRUE(std::filesystem::exists(std::filesystem::path{schema_filepath})) << schema_filepath;
     }
 }
@@ -31,11 +30,11 @@ TEST(sensor_type, measurement_type) {
     EXPECT_EQ(SensorType(SensorType::ACTUATORS).measurement_type(), MeasurementType::ACTUATOR_MEASUREMENTS);
     EXPECT_EQ(SensorType(SensorType::CONTACTS_CLASSIFIER).measurement_type(), MeasurementType::CONTACT_CLASSIFICATIONS);
     EXPECT_EQ(SensorType(SensorType::CURRENT).measurement_type(), MeasurementType::CURRENT);
-    EXPECT_EQ(SensorType(SensorType::DIRECT_POSE).measurement_type(), MeasurementType::POSE);
-    EXPECT_EQ(SensorType(SensorType::DIRECT_POSITION).measurement_type(), MeasurementType::POSITION);
     EXPECT_EQ(SensorType(SensorType::ENCODER).measurement_type(), MeasurementType::ANGLE);
     EXPECT_EQ(SensorType(SensorType::GYROSCOPE).measurement_type(), MeasurementType::ANGULAR_VELOCITY);
     EXPECT_EQ(SensorType(SensorType::IMU).measurement_type(), MeasurementType::IMU_MEASUREMENT);
+    EXPECT_EQ(SensorType(SensorType::POSE).measurement_type(), MeasurementType::POSE);
+    EXPECT_EQ(SensorType(SensorType::POSITION).measurement_type(), MeasurementType::POSITION);
 }
 
 TEST(sensor_type, every_sensor_type_has_a_measurement_type) {

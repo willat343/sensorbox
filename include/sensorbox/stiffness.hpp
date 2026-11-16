@@ -37,6 +37,14 @@ template<int Rows = Eigen::Dynamic>
 Eigen::Matrix<double, Rows, Rows> stiffness_from_config(const nlohmann::json& config);
 
 /**
+ * @brief Check if a json config contains an uncertainty, i.e. one of the fields described in `stiffness_from_config`.
+ *
+ * @param config configuration that may contain information about uncertainty
+ * @return bool
+ */
+bool contains_uncertainty(const nlohmann::json& config);
+
+/**
  * @brief Get a covariance density matrix from json config containing one of the following:
  *  - "covariance_density": covariance density matrix as square vector of vectors
  *  - "information_density": information/precision density matrix as square vector of vectors

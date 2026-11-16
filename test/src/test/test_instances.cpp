@@ -19,14 +19,6 @@ nlohmann::json test_current_sensor_config() {
     return nlohmann::json{{"type", "CURRENT"}, {"sigma", 0.05}};
 }
 
-nlohmann::json test_direct_pose_sensor_config() {
-    return nlohmann::json{{"type", "DIRECT_POSE"}, {"sigmas", {0.1, 0.2, 0.3, 0.4, 0.5, 0.6}}};
-}
-
-nlohmann::json test_direct_position_sensor_config() {
-    return nlohmann::json{{"type", "DIRECT_POSITION"}, {"sigmas", {0.1, 0.2, 0.3}}};
-}
-
 nlohmann::json test_encoder_config() {
     return nlohmann::json{{"type", "ENCODER"}, {"sigma", 0.001}};
 }
@@ -39,6 +31,14 @@ nlohmann::json test_gyroscope_config() {
 nlohmann::json test_imu_config() {
     return nlohmann::json{{"type", "IMU"}, {"make", "EPSON"}, {"model", "G365PDF1"},
             {"accelerometer", test_accelerometer_config()}, {"gyroscope", test_gyroscope_config()}};
+}
+
+nlohmann::json test_pose_sensor_config() {
+    return nlohmann::json{{"type", "POSE"}, {"sigmas", {0.1, 0.2, 0.3, 0.4, 0.5, 0.6}}};
+}
+
+nlohmann::json test_position_sensor_config() {
+    return nlohmann::json{{"type", "POSITION"}, {"sigmas", {0.1, 0.2, 0.3}}};
 }
 
 Eigen::Matrix3d test_covariance_3x3(const unsigned int i) {

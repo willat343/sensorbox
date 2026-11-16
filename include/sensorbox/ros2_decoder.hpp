@@ -882,18 +882,12 @@ struct ROS2Conversions {
         } else if constexpr (std::same_as<T, PoseMeasurement<3>>) {
             return std::to_array<std::string_view>({"geometry_msgs/PoseStamped",
                     "geometry_msgs/PoseWithCovarianceStamped", "geometry_msgs/TransformStamped", "nav_msgs/Odometry"});
-        } else if constexpr (std::same_as<T, PoseWithCovarianceMeasurement<3>>) {
-            return std::to_array<std::string_view>({"geometry_msgs/PoseWithCovarianceStamped", "nav_msgs/Odometry"});
         } else if constexpr (std::same_as<T, PoseTwistMeasurement<3>>) {
-            return std::to_array<std::string_view>({"nav_msgs/Odometry"});
-        } else if constexpr (std::same_as<T, PoseTwistWithCovarianceMeasurement<3>>) {
             return std::to_array<std::string_view>({"nav_msgs/Odometry"});
         } else if constexpr (std::same_as<T, PositionMeasurement<3>>) {
             return std::to_array<std::string_view>({"geometry_msgs/PointStamped", "geometry_msgs/Vector3Stamped",
                     "geometry_msgs/PoseStamped", "geometry_msgs/PoseWithCovarianceStamped",
                     "geometry_msgs/TransformStamped", "nav_msgs/Odometry"});
-        } else if constexpr (std::same_as<T, PositionWithCovarianceMeasurement<3>>) {
-            return std::to_array<std::string_view>({"geometry_msgs/PoseWithCovarianceStamped", "nav_msgs/Odometry"});
         } else if constexpr (std::same_as<T, std::vector<PoseMeasurement<3>>>) {
             return std::to_array<std::string_view>({"nav_msgs/Path", "tf2_msgs/TFMessage"});
         } else if constexpr (std::same_as<T, PoseMeasurements<3>>) {
@@ -994,6 +988,19 @@ public:
     T read();
 
     /**
+     * @brief Read a matrix (Scalar[Rows * Cols]).
+     *
+     * @tparam Rows
+     * @tparam Cols
+     * @tparam Scalar scalar type of the matrix in the message
+     * @tparam StorageOrder order of the elements in the message, Eigen::RowMajor or Eigen::ColMajor
+     * @return Eigen::Matrix<Scalar, Rows, Cols>
+     */
+    template<int Rows, int Cols, typename Scalar = double, Eigen::StorageOptions StorageOrder = Eigen::RowMajor>
+        requires(StorageOrder == Eigen::RowMajor || StorageOrder == Eigen::ColMajor)
+    Eigen::Matrix<Scalar, Rows, Cols> read_matrix();
+
+    /**
      * @brief Read data to `std::optional<T>`.
      *
      * @tparam T
@@ -1059,15 +1066,9 @@ public:
 
     void read_to(PoseMeasurements<3>& out);
 
-    void read_to(PoseWithCovarianceMeasurement<3>& out);
-
     void read_to(PoseTwistMeasurement<3>& out);
 
-    void read_to(PoseTwistWithCovarianceMeasurement<3>& out);
-
     void read_to(PositionMeasurement<3>& out);
-
-    void read_to(PositionWithCovarianceMeasurement<3>& out);
 
     void read_to(TemporalMeasurement& out);
 
