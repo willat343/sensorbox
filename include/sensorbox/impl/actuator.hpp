@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cppbox/exceptions.hpp>
+#include <ranges>
 
 #include "sensorbox/actuator.hpp"
 
@@ -159,25 +160,46 @@ inline bool ActuatorMeasurements::equal_joint_measurements(const ActuatorMeasure
     return equal_joint_positions(other) && equal_joint_velocities(other) && equal_joint_torques(other);
 }
 
-inline std::vector<double> ActuatorMeasurements::joint_positions() const {
-    std::vector<double> joint_positions_(size());
-    std::transform(measurements().cbegin(), measurements().cend(), joint_positions_.begin(),
-            [](const ActuatorMeasurement& measurement) { return *measurement.joint_position(); });
-    return joint_positions_;
+inline std::optional<std::vector<double>> ActuatorMeasurements::joint_positions() const {
+    const bool measured = measurements().empty() || measurements().front().joint_position().has_value();
+    throw_if(!std::all_of(measurements().cbegin(), measurements().cend(),
+                     [measured](const ActuatorMeasurement& measurement) {
+                         return measurement.joint_position().has_value() == measured;
+                     }),
+            "Only some of the actuators measured a joint position.");
+    const auto joint_positions_ = measurements() | std::views::transform([](const ActuatorMeasurement& measurement) {
+        return *measurement.joint_position();
+    });
+    return measured ? std::make_optional(std::vector<double>(joint_positions_.begin(), joint_positions_.end()))
+                    : std::nullopt;
 }
 
-inline std::vector<double> ActuatorMeasurements::joint_velocities() const {
-    std::vector<double> joint_velocities_(size());
-    std::transform(measurements().cbegin(), measurements().cend(), joint_velocities_.begin(),
-            [](const ActuatorMeasurement& measurement) { return *measurement.joint_velocity(); });
-    return joint_velocities_;
+inline std::optional<std::vector<double>> ActuatorMeasurements::joint_velocities() const {
+    const bool measured = measurements().empty() || measurements().front().joint_velocity().has_value();
+    throw_if(!std::all_of(measurements().cbegin(), measurements().cend(),
+                     [measured](const ActuatorMeasurement& measurement) {
+                         return measurement.joint_velocity().has_value() == measured;
+                     }),
+            "Only some of the actuators measured a joint velocity.");
+    const auto joint_velocities_ = measurements() | std::views::transform([](const ActuatorMeasurement& measurement) {
+        return *measurement.joint_velocity();
+    });
+    return measured ? std::make_optional(std::vector<double>(joint_velocities_.begin(), joint_velocities_.end()))
+                    : std::nullopt;
 }
 
-inline std::vector<double> ActuatorMeasurements::joint_torques() const {
-    std::vector<double> joint_torques_(size());
-    std::transform(measurements().cbegin(), measurements().cend(), joint_torques_.begin(),
-            [](const ActuatorMeasurement& measurement) { return *measurement.joint_torque(); });
-    return joint_torques_;
+inline std::optional<std::vector<double>> ActuatorMeasurements::joint_torques() const {
+    const bool measured = measurements().empty() || measurements().front().joint_torque().has_value();
+    throw_if(!std::all_of(measurements().cbegin(), measurements().cend(),
+                     [measured](const ActuatorMeasurement& measurement) {
+                         return measurement.joint_torque().has_value() == measured;
+                     }),
+            "Only some of the actuators measured a joint torque.");
+    const auto joint_torques_ = measurements() | std::views::transform([](const ActuatorMeasurement& measurement) {
+        return *measurement.joint_torque();
+    });
+    return measured ? std::make_optional(std::vector<double>(joint_torques_.begin(), joint_torques_.end()))
+                    : std::nullopt;
 }
 
 inline const std::vector<ActuatorMeasurement>& ActuatorMeasurements::measurements() const {

@@ -4,6 +4,7 @@
 
 #include <chrono>
 #include <nlohmann/json.hpp>
+#include <optional>
 #include <stdexcept>
 #include <vector>
 
@@ -160,15 +161,50 @@ TEST(actuator_measurements, construction) {
 
 TEST(actuator_measurements, joint_quantities) {
     const ActuatorMeasurements measurements = test_actuator_measurements();
+    const std::optional<std::vector<double>> positions = measurements.joint_positions();
+    const std::optional<std::vector<double>> velocities = measurements.joint_velocities();
+    const std::optional<std::vector<double>> torques = measurements.joint_torques();
+    ASSERT_TRUE(positions.has_value());
+    ASSERT_TRUE(velocities.has_value());
+    ASSERT_TRUE(torques.has_value());
     const std::vector<double> expected_positions{0.0, 0.1, 0.2};
     const std::vector<double> expected_velocities{0.0, 0.2, 0.4};
     const std::vector<double> expected_torques{0.0, 0.3, 0.6};
-    ASSERT_EQ(measurements.joint_positions().size(), 3);
+    ASSERT_EQ(positions->size(), 3);
+    ASSERT_EQ(velocities->size(), 3);
+    ASSERT_EQ(torques->size(), 3);
     for (std::size_t i = 0; i < measurements.size(); ++i) {
-        EXPECT_DOUBLE_EQ(measurements.joint_positions()[i], expected_positions[i]);
-        EXPECT_DOUBLE_EQ(measurements.joint_velocities()[i], expected_velocities[i]);
-        EXPECT_DOUBLE_EQ(measurements.joint_torques()[i], expected_torques[i]);
+        EXPECT_DOUBLE_EQ((*positions)[i], expected_positions[i]);
+        EXPECT_DOUBLE_EQ((*velocities)[i], expected_velocities[i]);
+        EXPECT_DOUBLE_EQ((*torques)[i], expected_torques[i]);
     }
+}
+
+TEST(actuator_measurements, joint_quantities_of_no_actuators) {
+    const ActuatorMeasurements measurements;
+    ASSERT_TRUE(measurements.joint_positions().has_value());
+    EXPECT_TRUE(measurements.joint_positions()->empty());
+}
+
+TEST(actuator_measurements, joint_quantities_not_measured) {
+    ActuatorMeasurements measurements = test_actuator_measurements();
+    for (ActuatorMeasurement& measurement : measurements.measurements()) {
+        measurement.joint_velocity().reset();
+        measurement.joint_torque().reset();
+    }
+    EXPECT_TRUE(measurements.joint_positions().has_value());
+    EXPECT_FALSE(measurements.joint_velocities().has_value());
+    EXPECT_FALSE(measurements.joint_torques().has_value());
+}
+
+TEST(actuator_measurements, joint_quantities_measured_by_some_actuators_throws) {
+    ActuatorMeasurements measurements = test_actuator_measurements();
+    measurements.measurements()[0].joint_position().reset();
+    measurements.measurements()[1].joint_velocity().reset();
+    measurements.measurements()[2].joint_torque().reset();
+    EXPECT_THROW(measurements.joint_positions(), std::runtime_error);
+    EXPECT_THROW(measurements.joint_velocities(), std::runtime_error);
+    EXPECT_THROW(measurements.joint_torques(), std::runtime_error);
 }
 
 TEST(actuator_measurements, names) {

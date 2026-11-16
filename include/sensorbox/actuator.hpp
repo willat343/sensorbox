@@ -250,11 +250,32 @@ public:
 
     bool equal_joint_measurements(const ActuatorMeasurements& other) const;
 
-    std::vector<double> joint_positions() const;
+    /**
+     * @brief Get the joint positions of the actuators, in the order of the measurements.
+     *
+     * @return std::optional<std::vector<double>> joint positions if every actuator measured one, or `std::nullopt` if
+     * none did
+     * @throws std::runtime_error if only some actuators measured one
+     */
+    std::optional<std::vector<double>> joint_positions() const;
 
-    std::vector<double> joint_velocities() const;
+    /**
+     * @brief Get the joint velocities of the actuators, in the order of the measurements.
+     *
+     * @return std::optional<std::vector<double>> joint velocities if every actuator measured one, or `std::nullopt` if
+     * none did
+     * @throws std::runtime_error if only some actuators measured one
+     */
+    std::optional<std::vector<double>> joint_velocities() const;
 
-    std::vector<double> joint_torques() const;
+    /**
+     * @brief Get the joint torques of the actuators, in the order of the measurements.
+     *
+     * @return std::optional<std::vector<double>> joint torques if every actuator measured one, or `std::nullopt` if
+     * none did
+     * @throws std::runtime_error if only some actuators measured one
+     */
+    std::optional<std::vector<double>> joint_torques() const;
 
     const std::vector<ActuatorMeasurement>& measurements() const;
 
