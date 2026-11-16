@@ -14,7 +14,7 @@ A package for processing sensor data.
 | Eigen3 | >= 3.4.0 | Linear Algebra Package |
 | nlohmann_json |  >= 3.8.0 | JSON Package |
 | nlohmann_json_schema_validator |  >= 2.3.0 | JSON Package |
-| [mathbox](https://github.com/willat343/mathbox) | >= 0.8.7 | Math Package |
+| [mathbox](https://github.com/willat343/mathbox) | >= 0.9.0 | Math Package |
 | [convert](https://github.com/willat343/convert) | >= 0.7.3 | General Conversion Package |
 
 There are several ways to include `sensorbox` within your project:
