@@ -64,7 +64,8 @@ SENSORBOX_INLINE void ROS2BytesDecoder::read_to(PoseMeasurement<3>& out) {
         decode_internal_to("geometry_msgs/Pose", out.pose());
     } else if (msg_type() == "geometry_msgs/PoseWithCovarianceStamped") {
         decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
-        decode_internal_to("geometry_msgs/PoseWithCovariance", out.pose());
+        decode_internal_to("geometry_msgs/Pose", out.pose());
+        out.covariance() = PoseMeasurement<3>::Covariance{read_matrix<6, 6>(), true};
     } else if (msg_type() == "geometry_msgs/TransformStamped") {
         decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
         read_to(out.child_frame());
@@ -72,7 +73,8 @@ SENSORBOX_INLINE void ROS2BytesDecoder::read_to(PoseMeasurement<3>& out) {
     } else if (msg_type() == "nav_msgs/Odometry") {
         decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
         read_to(out.child_frame());
-        decode_internal_to("geometry_msgs/PoseWithCovariance", out.pose());
+        decode_internal_to("geometry_msgs/Pose", out.pose());
+        out.covariance() = PoseMeasurement<3>::Covariance{read_matrix<6, 6>(), true};
         ignore("geometry_msgs/TwistWithCovariance");  // twist
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to PoseMeasurement<3>.");
@@ -103,76 +105,20 @@ SENSORBOX_INLINE void ROS2BytesDecoder::read_to(PoseMeasurements<3>& out) {
     }
 }
 
-SENSORBOX_INLINE void ROS2BytesDecoder::read_to(PoseWithCovarianceMeasurement<3>& out) {
-    if (msg_type() == "geometry_msgs/PoseWithCovarianceStamped") {
-        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
-        decode_internal_to("geometry_msgs/Pose", out.pose());
-        Eigen::Matrix<double, 6, 6> covariance;
-        for (int row = 0; row < 6; ++row) {
-            for (int col = 0; col < 6; ++col) {
-                covariance(row, col) = read<double>();  // covariance (row-major)
-            }
-        }
-        out.covariance() = PoseWithCovarianceMeasurement<3>::Covariance{covariance, true};
-    } else if (msg_type() == "nav_msgs/Odometry") {
-        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
-        read_to(out.child_frame());
-        decode_internal_to("geometry_msgs/Pose", out.pose());
-        Eigen::Matrix<double, 6, 6> covariance;
-        for (int row = 0; row < 6; ++row) {
-            for (int col = 0; col < 6; ++col) {
-                covariance(row, col) = read<double>();  // covariance (row-major)
-            }
-        }
-        out.covariance() = PoseWithCovarianceMeasurement<3>::Covariance{covariance, true};
-        ignore("geometry_msgs/TwistWithCovariance");  // twist
-    } else {
-        throw_here("msg_type " + msg_type() + " cannot be converted to PoseWithCovarianceMeasurement<3>.");
-    }
-}
-
 SENSORBOX_INLINE void ROS2BytesDecoder::read_to(PoseTwistMeasurement<3>& out) {
     if (msg_type() == "nav_msgs/Odometry") {
         decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
         read_to(out.child_frame());
-        decode_internal_to("geometry_msgs/PoseWithCovariance", out.pose());
+        decode_internal_to("geometry_msgs/Pose", out.pose());
+        out.pose_covariance() = PoseTwistMeasurement<3>::Covariance{read_matrix<6, 6>(), true};
         Eigen::Vector3d linear;
         Eigen::Vector3d angular;
         decode_internal_to("geometry_msgs/Vector3", linear);   // twist.twist.linear
         decode_internal_to("geometry_msgs/Vector3", angular);  // twist.twist.angular
         out.twist() << linear, angular;
-        ignore<double>(36);  // twist.covariance
+        out.twist_covariance() = PoseTwistMeasurement<3>::Covariance{read_matrix<6, 6>(), true};
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to PoseTwistMeasurement<3>.");
-    }
-}
-
-SENSORBOX_INLINE void ROS2BytesDecoder::read_to(PoseTwistWithCovarianceMeasurement<3>& out) {
-    if (msg_type() == "nav_msgs/Odometry") {
-        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
-        read_to(out.child_frame());
-        decode_internal_to("geometry_msgs/Pose", out.pose());
-        Eigen::Matrix<double, 6, 6> pose_covariance;
-        for (int row = 0; row < 6; ++row) {
-            for (int col = 0; col < 6; ++col) {
-                pose_covariance(row, col) = read<double>();  // pose.covariance (row-major)
-            }
-        }
-        out.pose_covariance() = PoseTwistWithCovarianceMeasurement<3>::Covariance{pose_covariance, true};
-        Eigen::Vector3d linear;
-        Eigen::Vector3d angular;
-        decode_internal_to("geometry_msgs/Vector3", linear);   // twist.twist.linear
-        decode_internal_to("geometry_msgs/Vector3", angular);  // twist.twist.angular
-        out.twist() << linear, angular;
-        Eigen::Matrix<double, 6, 6> twist_covariance;
-        for (int row = 0; row < 6; ++row) {
-            for (int col = 0; col < 6; ++col) {
-                twist_covariance(row, col) = read<double>();  // twist.covariance (row-major)
-            }
-        }
-        out.twist_covariance() = PoseTwistWithCovarianceMeasurement<3>::Covariance{twist_covariance, true};
-    } else {
-        throw_here("msg_type " + msg_type() + " cannot be converted to PoseTwistWithCovarianceMeasurement<3>.");
     }
 }
 
@@ -188,7 +134,8 @@ SENSORBOX_INLINE void ROS2BytesDecoder::read_to(PositionMeasurement<3>& out) {
         decode_internal_to("geometry_msgs/Pose", out.position());
     } else if (msg_type() == "geometry_msgs/PoseWithCovarianceStamped") {
         decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
-        decode_internal_to("geometry_msgs/PoseWithCovariance", out.position());
+        decode_internal_to("geometry_msgs/Pose", out.position());
+        out.covariance() = PositionMeasurement<3>::Covariance{read_matrix<6, 6>().topLeftCorner<3, 3>(), true};
     } else if (msg_type() == "geometry_msgs/TransformStamped") {
         decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
         read_to(out.child_frame());
@@ -196,38 +143,11 @@ SENSORBOX_INLINE void ROS2BytesDecoder::read_to(PositionMeasurement<3>& out) {
     } else if (msg_type() == "nav_msgs/Odometry") {
         decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
         read_to(out.child_frame());
-        decode_internal_to("geometry_msgs/PoseWithCovariance", out.position());
+        decode_internal_to("geometry_msgs/Pose", out.position());
+        out.covariance() = PositionMeasurement<3>::Covariance{read_matrix<6, 6>().topLeftCorner<3, 3>(), true};
         ignore("geometry_msgs/TwistWithCovariance");  // twist
     } else {
         throw_here("msg_type " + msg_type() + " cannot be converted to PositionMeasurement<3>.");
-    }
-}
-
-SENSORBOX_INLINE void ROS2BytesDecoder::read_to(PositionWithCovarianceMeasurement<3>& out) {
-    if (msg_type() == "geometry_msgs/PoseWithCovarianceStamped") {
-        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
-        decode_internal_to("geometry_msgs/Pose", out.position());
-        Eigen::Matrix<double, 6, 6> covariance;
-        for (int row = 0; row < 6; ++row) {
-            for (int col = 0; col < 6; ++col) {
-                covariance(row, col) = read<double>();  // covariance (row-major)
-            }
-        }
-        out.covariance() = PositionWithCovarianceMeasurement<3>::Covariance{covariance.topLeftCorner<3, 3>(), true};
-    } else if (msg_type() == "nav_msgs/Odometry") {
-        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));
-        read_to(out.child_frame());
-        decode_internal_to("geometry_msgs/Pose", out.position());
-        Eigen::Matrix<double, 6, 6> covariance;
-        for (int row = 0; row < 6; ++row) {
-            for (int col = 0; col < 6; ++col) {
-                covariance(row, col) = read<double>();  // covariance (row-major)
-            }
-        }
-        out.covariance() = PositionWithCovarianceMeasurement<3>::Covariance{covariance.topLeftCorner<3, 3>(), true};
-        ignore("geometry_msgs/TwistWithCovariance");  // twist
-    } else {
-        throw_here("msg_type " + msg_type() + " cannot be converted to PositionWithCovarianceMeasurement<3>.");
     }
 }
 

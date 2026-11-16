@@ -9,7 +9,7 @@ namespace sensorbox {
 
 template<int D_>
 inline Gyroscope<D_>::Gyroscope(const nlohmann::json& config, const bool validate)
-    : RandomWalkSensor<D_*(D_ - 1) / 2>(config, false),
+    : RandomWalkSensor<math::SODoF<D_>>(config, false),
       JsonLoadable<GyroscopeSchemaFilepath, sensorbox_schema_loader>(config, validate) {
     assert(this->type() == SensorType::GYROSCOPE);
 }
@@ -17,7 +17,7 @@ inline Gyroscope<D_>::Gyroscope(const nlohmann::json& config, const bool validat
 template<int D_>
 inline Gyroscope<D_>::Gyroscope(const double frequency_, const double noise_density_, const double bias_noise_density_,
         const double initial_noise_)
-    : RandomWalkSensor<D_*(D_ - 1) / 2>(SensorType::GYROSCOPE, frequency_, noise_density_, bias_noise_density_,
+    : RandomWalkSensor<math::SODoF<D_>>(SensorType::GYROSCOPE, frequency_, noise_density_, bias_noise_density_,
               initial_noise_) {}
 
 }

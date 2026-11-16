@@ -184,16 +184,10 @@ TEST(ros1_decoder, is_decodable_to) {
     EXPECT_TRUE(ROS1BytesDecoder::is_decodable_to<TemporalMeasurement>("sensor_msgs/Imu"));
     EXPECT_FALSE((ROS1BytesDecoder::is_decodable_to<ImuMeasurement<3>>("nav_msgs/Odometry")));
     EXPECT_FALSE((ROS1BytesDecoder::is_decodable_to<ImuMeasurement<3>>("not_a_pkg/NotAMessage")));
-    EXPECT_TRUE((ROS1BytesDecoder::is_decodable_to<PoseWithCovarianceMeasurement<3>>("nav_msgs/Odometry")));
-    EXPECT_TRUE((ROS1BytesDecoder::is_decodable_to<PoseWithCovarianceMeasurement<3>>(
-            "geometry_msgs/PoseWithCovarianceStamped")));
-    EXPECT_TRUE((ROS1BytesDecoder::is_decodable_to<PositionWithCovarianceMeasurement<3>>("nav_msgs/Odometry")));
-    EXPECT_TRUE((ROS1BytesDecoder::is_decodable_to<PositionWithCovarianceMeasurement<3>>(
-            "geometry_msgs/PoseWithCovarianceStamped")));
-    // A geometry_msgs/PoseStamped and geometry_msgs/PointStamped have no covariance
-    EXPECT_FALSE((ROS1BytesDecoder::is_decodable_to<PoseWithCovarianceMeasurement<3>>("geometry_msgs/PoseStamped")));
-    EXPECT_FALSE(
-            (ROS1BytesDecoder::is_decodable_to<PositionWithCovarianceMeasurement<3>>("geometry_msgs/PointStamped")));
+    EXPECT_TRUE((ROS1BytesDecoder::is_decodable_to<PoseMeasurement<3>>("nav_msgs/Odometry")));
+    EXPECT_TRUE((ROS1BytesDecoder::is_decodable_to<PoseMeasurement<3>>("geometry_msgs/PoseWithCovarianceStamped")));
+    EXPECT_TRUE((ROS1BytesDecoder::is_decodable_to<PositionMeasurement<3>>("nav_msgs/Odometry")));
+    EXPECT_TRUE((ROS1BytesDecoder::is_decodable_to<PositionMeasurement<3>>("geometry_msgs/PoseWithCovarianceStamped")));
     // Only a nav_msgs/Odometry has a twist
     EXPECT_TRUE((ROS1BytesDecoder::is_decodable_to<PoseTwistMeasurement<3>>("nav_msgs/Odometry")));
     EXPECT_FALSE(
@@ -262,12 +256,10 @@ TEST(ros2_decoder, is_decodable_to) {
     EXPECT_TRUE((ROS2BytesDecoder::is_decodable_to<PoseMeasurement<3>>("geometry_msgs/PoseStamped")));
     EXPECT_TRUE(ROS2BytesDecoder::is_decodable_to<TemporalSpatialMeasurement>("std_msgs/Header"));
     EXPECT_FALSE((ROS2BytesDecoder::is_decodable_to<ImuMeasurement<3>>("nav_msgs/Odometry")));
-    EXPECT_TRUE((ROS2BytesDecoder::is_decodable_to<PoseWithCovarianceMeasurement<3>>("nav_msgs/Odometry")));
-    EXPECT_TRUE((ROS2BytesDecoder::is_decodable_to<PoseWithCovarianceMeasurement<3>>(
-            "geometry_msgs/PoseWithCovarianceStamped")));
-    EXPECT_TRUE((ROS2BytesDecoder::is_decodable_to<PositionWithCovarianceMeasurement<3>>("nav_msgs/Odometry")));
-    EXPECT_TRUE((ROS2BytesDecoder::is_decodable_to<PositionWithCovarianceMeasurement<3>>(
-            "geometry_msgs/PoseWithCovarianceStamped")));
+    EXPECT_TRUE((ROS2BytesDecoder::is_decodable_to<PoseMeasurement<3>>("nav_msgs/Odometry")));
+    EXPECT_TRUE((ROS2BytesDecoder::is_decodable_to<PoseMeasurement<3>>("geometry_msgs/PoseWithCovarianceStamped")));
+    EXPECT_TRUE((ROS2BytesDecoder::is_decodable_to<PositionMeasurement<3>>("nav_msgs/Odometry")));
+    EXPECT_TRUE((ROS2BytesDecoder::is_decodable_to<PositionMeasurement<3>>("geometry_msgs/PoseWithCovarianceStamped")));
     EXPECT_TRUE((ROS2BytesDecoder::is_decodable_to<PoseTwistMeasurement<3>>("nav_msgs/Odometry")));
     EXPECT_FALSE(
             (ROS2BytesDecoder::is_decodable_to<PoseTwistMeasurement<3>>("geometry_msgs/PoseWithCovarianceStamped")));

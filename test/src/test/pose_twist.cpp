@@ -47,4 +47,31 @@ TEST(pose_twist_measurement, mutable_access) {
     EXPECT_TRUE(measurement.twist().isApprox(Twist::Ones()));
 }
 
+TEST(pose_twist_measurement, covariances) {
+    using Covariance = PoseTwistMeasurement<3>::Covariance;
+    const math::PosePerturbation split_right{math::SEType::SPLIT, math::ApplicationSide::RIGHT};
+    const math::PosePerturbation joint_right{math::SEType::JOINT, math::ApplicationSide::RIGHT};
+    const Twist variances{Twist::LinSpaced(0.1, 0.6)};
+    // A measurement has no covariances unless it is given them
+    PoseTwistMeasurement<3> measurement{Timestamp{std::chrono::nanoseconds{42}}, test_string(0), test_string(1),
+            test_isometry3(1), Twist::Ones()};
+    EXPECT_FALSE(measurement.pose_covariance().has_value());
+    EXPECT_FALSE(measurement.twist_covariance().has_value());
+    EXPECT_THROW(measurement.pose_covariance(joint_right), std::exception);
+    measurement.pose_covariance() = Covariance{variances};
+    measurement.twist_covariance() = Covariance{Twist::Ones()};
+    EXPECT_TRUE(measurement.pose_covariance()->diagonal().isApprox(variances));
+    EXPECT_TRUE(measurement.twist_covariance()->isApprox(Eigen::Matrix<double, 6, 6>::Identity()));
+    // The perturbation is not known unless set, and the pose covariance of another perturbation requires it
+    EXPECT_FALSE(measurement.pose_covariance_perturbation().has_value());
+    EXPECT_THROW(measurement.pose_covariance(joint_right), std::exception);
+    measurement.pose_covariance_perturbation() = split_right;
+    EXPECT_TRUE(measurement.pose_covariance(split_right).isApprox(*measurement.pose_covariance()));
+    // The position noise of the joint perturbation is in the child frame
+    const Eigen::Matrix3d R = test_isometry3(1).rotation();
+    const Eigen::Matrix3d position_covariance = measurement.pose_covariance()->block(0, 0, 3, 3);
+    const Eigen::Matrix<double, 6, 6> covariance = measurement.pose_covariance(joint_right);
+    EXPECT_TRUE(covariance.block(0, 0, 3, 3).isApprox(R.transpose() * position_covariance * R));
+}
+
 }

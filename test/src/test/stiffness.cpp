@@ -73,7 +73,7 @@ TEST(contains_uncertainty, fields) {
     for (const std::string field : {"covariance", "information", "sigma", "sigmas", "variance", "variances"}) {
         EXPECT_TRUE(contains_uncertainty(nlohmann::json{{field, 0.5}}));
     }
-    EXPECT_FALSE(contains_uncertainty(nlohmann::json{{"type", "DIRECT_POSE"}}));
+    EXPECT_FALSE(contains_uncertainty(nlohmann::json{{"type", "POSE"}}));
     EXPECT_FALSE(contains_uncertainty(nlohmann::json::object()));
 }
 

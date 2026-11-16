@@ -14,15 +14,15 @@ nlohmann::json test_actuator_config();
 
 nlohmann::json test_current_sensor_config();
 
-nlohmann::json test_direct_pose_sensor_config();
-
-nlohmann::json test_direct_position_sensor_config();
-
 nlohmann::json test_encoder_config();
 
 nlohmann::json test_gyroscope_config();
 
 nlohmann::json test_imu_config();
+
+nlohmann::json test_pose_sensor_config();
+
+nlohmann::json test_position_sensor_config();
 
 Eigen::Matrix3d test_covariance_3x3(const unsigned int i);
 

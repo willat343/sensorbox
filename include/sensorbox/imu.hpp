@@ -4,6 +4,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <chrono>
+#include <mathbox/geometry.hpp>
 #include <nlohmann/json.hpp>
 #include <string>
 
@@ -53,7 +54,7 @@ public:
     using typename TemporalSpatialMeasurement::Timestamp;
     static constexpr int D = D_;
     static constexpr int AccelDoF = D;
-    static constexpr int GyroDoF = D * (D - 1) / 2;
+    static constexpr int GyroDoF = math::SODoF<D>;
     using AngularVelocity = Eigen::Vector<double, GyroDoF>;
     using LinearAcceleration = Eigen::Vector<double, AccelDoF>;
     using Pose = Eigen::Transform<double, D, Eigen::Isometry>;

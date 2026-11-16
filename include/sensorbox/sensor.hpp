@@ -17,19 +17,17 @@ namespace sensorbox {
 constexpr inline SchemaFilepath AccelerometerSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Accelerometer.schema.json"};
 constexpr inline SchemaFilepath ActuatorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Actuator.schema.json"};
 constexpr inline SchemaFilepath CurrentSensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "CurrentSensor.schema.json"};
-constexpr inline SchemaFilepath DirectPoseSensorSchemaFilepath{
-        SENSORBOX_SCHEMAS_DIRECTORY "DirectPoseSensor.schema.json"};
-constexpr inline SchemaFilepath DirectPositionSensorSchemaFilepath{
-        SENSORBOX_SCHEMAS_DIRECTORY "DirectPositionSensor.schema.json"};
 constexpr inline SchemaFilepath EncoderSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Encoder.schema.json"};
 constexpr inline SchemaFilepath GyroscopeSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Gyroscope.schema.json"};
 constexpr inline SchemaFilepath ImuSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Imu.schema.json"};
+constexpr inline SchemaFilepath PoseSensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "PoseSensor.schema.json"};
+constexpr inline SchemaFilepath PositionSensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "PositionSensor.schema.json"};
 constexpr inline SchemaFilepath RandomWalkSensorSchemaFilepath{
         SENSORBOX_SCHEMAS_DIRECTORY "RandomWalkSensor.schema.json"};
 constexpr inline SchemaFilepath SensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Sensor.schema.json"};
 
-CREATE_SMART_ENUM(SensorTypeBase, ACCELEROMETER, ACTUATOR, ACTUATORS, CONTACTS_CLASSIFIER, CURRENT, DIRECT_POSE,
-        DIRECT_POSITION, ENCODER, GYROSCOPE, IMU)
+CREATE_SMART_ENUM(SensorTypeBase, ACCELEROMETER, ACTUATOR, ACTUATORS, CONTACTS_CLASSIFIER, CURRENT, ENCODER, GYROSCOPE,
+        IMU, POSE, POSITION)
 
 /**
  * @brief Sensor type, each of which is associated with a measurement type.
@@ -55,16 +53,16 @@ public:
                 return MeasurementType::CONTACT_CLASSIFICATIONS;
             case CURRENT:
                 return MeasurementType::CURRENT;
-            case DIRECT_POSE:
-                return MeasurementType::POSE;
-            case DIRECT_POSITION:
-                return MeasurementType::POSITION;
             case ENCODER:
                 return MeasurementType::ANGLE;
             case GYROSCOPE:
                 return MeasurementType::ANGULAR_VELOCITY;
             case IMU:
                 return MeasurementType::IMU_MEASUREMENT;
+            case POSE:
+                return MeasurementType::POSE;
+            case POSITION:
+                return MeasurementType::POSITION;
             default:
                 throw_here("No MeasurementType for SensorType " + std::string(*this) + ".");
         }

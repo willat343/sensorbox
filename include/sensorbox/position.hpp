@@ -3,6 +3,7 @@
 
 #include <Eigen/Geometry>
 #include <mathbox/covariance.hpp>
+#include <optional>
 #include <string>
 
 #include "sensorbox/json_loadable.hpp"
@@ -12,8 +13,7 @@
 namespace sensorbox {
 
 template<int D_>
-class DirectPositionSensor : public Sensor,
-                             public JsonLoadable<DirectPositionSensorSchemaFilepath, sensorbox_schema_loader> {
+class PositionSensor : public Sensor, public JsonLoadable<PositionSensorSchemaFilepath, sensorbox_schema_loader> {
 public:
     /**
      * @brief Dimension D
@@ -46,7 +46,7 @@ public:
      * @param config
      * @param validate
      */
-    explicit DirectPositionSensor(const nlohmann::json& config, const bool validate = true);
+    explicit PositionSensor(const nlohmann::json& config, const bool validate = true);
 
     /**
      * @brief Get stiffness matrix for sensor.
@@ -69,6 +69,8 @@ public:
     using Position = Eigen::Vector<double, D>;
     using RotationMatrix = Eigen::Matrix<double, D, D>;
     using Pose = Eigen::Transform<double, D, Eigen::Isometry>;
+    static constexpr int DoF = D;
+    using Covariance = math::Covariance<double, DoF>;
 
     explicit PositionMeasurement();
 
@@ -80,12 +82,25 @@ public:
      * @param frame_ reference frame in which the measurement is made, e.g. map_frame
      * @param child_frame_ reference frame that has been measured, e.g. body_frame
      * @param position_ position of child_frame_ in frame_ expressed in frame_, \f$ {}_{F}\mathbf{p}_{FC} \f$
+     * @param covariance_ covariance of the position, expressed in frame_, as given by the source of the measurement,
+     * if any
      */
     explicit PositionMeasurement(const Timestamp& timestamp_, const std::string& frame_,
-            const std::string& child_frame_, const Position& position_);
+            const std::string& child_frame_, const Position& position_,
+            const std::optional<Covariance>& covariance_ = std::nullopt);
 
     /**
-     * @brief Return \f$ {}_{C}\mathbf{p}_{CF} = - \mathbf{R}_{CF} \cdot {}_{F}\mathbf{p}_{FC} \f$
+     * @brief Covariance of the position, expressed in the frame of the measurement, if the measurement has one.
+     *
+     * @return const std::optional<Covariance>&
+     */
+    const std::optional<Covariance>& covariance() const;
+
+    std::optional<Covariance>& covariance();
+
+    /**
+     * @brief Return \f$ {}_{C}\mathbf{p}_{CF} = - \mathbf{R}_{CF} \cdot {}_{F}\mathbf{p}_{FC} \f$, with any
+     * covariance rotated to the child frame (the rotation is taken to be exact).
      *
      * @param R_C_F Rotation from child frame C to frame F, \f$ \mathbf{R}_{C,F} \f$.
      * @return PositionMeasurement
@@ -111,6 +126,9 @@ public:
      *                             = {}_{F}\mathbf{p}_{F,C} + \mathbf{R}_{F,C} \cdot {}_{C}\mathbf{p}_{C,N}
      * \f]
      *
+     * The new measurement has no covariance, because the covariance of the position of the new child frame depends
+     * on the uncertainty of the orientation, which the measurement does not have.
+     *
      * @param new_child_frame new child frame \f$ N \f$
      * @param R_F_C Rotation from frame F to child frame C, \f$ \mathbf{R}_{C,F} \f$.
      * @param C_p_C_N position of new child frame in the current child frame \f$ {}_{C}\mathbf{p}_{C,N} \f$
@@ -127,6 +145,8 @@ public:
      *                             = \mathbf{R}_{N,F} \cdot {}_{F}\mathbf{p}_{F,C} + {}_{N}\mathbf{p}_{N,F}
      * \f]
      *
+     * Any covariance is rotated to the new frame.
+     *
      * @param new_frame new frame \f$ N \f$
      * @param T_N_F pose of current frame in the new frame \f$ T_{N,F} \f$
      * @return PositionMeasurement
@@ -141,6 +161,8 @@ public:
      *          = T_{NF,F} \cdot ({}_{F}\mathbf{p}_{F,C} + \mathbf{R}_{F,C} \cdot {}_{C}\mathbf{p}_{C,NC})
      * \f]
      *
+     * The new measurement has no covariance (see `transform_to_new_child_frame`).
+     *
      * @param new_frame new frame \f$ NF \f$
      * @param new_child_frame new child frame \f$ NC \f$
      * @param T_NF_F pose of current frame in the new frame \f$ T_{NF,F} \f$
@@ -153,45 +175,7 @@ public:
 
 private:
     Position position_;
-};
-
-template<int D_>
-class PositionWithCovarianceMeasurement : public TemporalSpatialRelationalMeasurement {
-public:
-    using typename TemporalSpatialRelationalMeasurement::Clock;
-    using typename TemporalSpatialRelationalMeasurement::Duration;
-    using typename TemporalSpatialRelationalMeasurement::Timestamp;
-    static constexpr int D = D_;
-    using Position = Eigen::Vector<double, D>;
-    static constexpr int DoF = D;
-    using Covariance = math::Covariance<double, DoF>;
-
-    explicit PositionWithCovarianceMeasurement();
-
-    /**
-     * @brief Construct a Position Measurement with the covariance of the position, of child_frame_ (C) in frame_ (F)
-     * expressed in frame_ (F), i.e. \f$ {}_{F}\mathbf{p}_{FC} \f$.
-     *
-     * @param timestamp_ timestamp
-     * @param frame_ reference frame in which the measurement is made, e.g. map_frame
-     * @param child_frame_ reference frame that has been measured, e.g. body_frame
-     * @param position_ position of child_frame_ in frame_ expressed in frame_, \f$ {}_{F}\mathbf{p}_{FC} \f$
-     * @param covariance_ covariance of the position, as given by the source of the measurement
-     */
-    explicit PositionWithCovarianceMeasurement(const Timestamp& timestamp_, const std::string& frame_,
-            const std::string& child_frame_, const Position& position_, const Covariance& covariance_);
-
-    const Position& position() const;
-
-    Position& position();
-
-    const Covariance& covariance() const;
-
-    Covariance& covariance();
-
-private:
-    Position position_;
-    Covariance covariance_;
+    std::optional<Covariance> covariance_;
 };
 
 }
