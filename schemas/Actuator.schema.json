@@ -27,6 +27,11 @@
                         "UNSPECIFIED"
                     ]
                 },
+                "frequency": {
+                    "description": "Measurement frequency (Hz)",
+                    "type": "number",
+                    "exclusiveMinimum": 0.0
+                },
                 "current_sensor": {
                     "$ref": "CurrentSensor.schema.json"
                 },

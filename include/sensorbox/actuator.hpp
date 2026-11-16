@@ -39,8 +39,25 @@ public:
      */
     ActuatorType actuator_type() const;
 
+    /**
+     * @brief Get the measurement frequency (Hz) if configured.
+     *
+     * @return const std::optional<double>&
+     */
+    const std::optional<double>& frequency() const;
+
 private:
+    /**
+     * @brief Actuator type.
+     *
+     */
     ActuatorType actuator_type_;
+
+    /**
+     * @brief Measurement frequency (Hz) if configured.
+     *
+     */
+    std::optional<double> frequency_;
 
     /**
      * @brief Embedded current sensor if available.

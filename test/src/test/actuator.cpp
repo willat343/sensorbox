@@ -57,6 +57,8 @@ TEST(actuator, construction_from_config) {
     EXPECT_EQ(actuator.actuator_type(), ActuatorType::SERIES_ELASTIC);
     EXPECT_EQ(actuator.make(), "ANYbotics");
     EXPECT_EQ(actuator.model(), "ANYdrive");
+    ASSERT_TRUE(actuator.frequency().has_value());
+    EXPECT_DOUBLE_EQ(*actuator.frequency(), 400.0);
     ASSERT_TRUE(actuator.current_sensor().has_value());
     EXPECT_EQ(actuator.current_sensor()->type(), SensorType::CURRENT);
     ASSERT_TRUE(actuator.motor_encoder().has_value());
@@ -76,12 +78,21 @@ TEST(actuator, construction_from_config_without_optional_sensors) {
     EXPECT_FALSE(actuator.joint_encoder().has_value());
 }
 
+TEST(actuator, construction_from_config_without_frequency) {
+    nlohmann::json config = test_actuator_config();
+    config.erase("frequency");
+    EXPECT_FALSE(Actuator{config}.frequency().has_value());
+}
+
 TEST(actuator, invalid_config_throws) {
     nlohmann::json config = test_actuator_config();
     config.erase("actuator_type");
     EXPECT_THROW((Actuator{config}), std::exception);
     config = test_actuator_config();
     config["actuator_type"] = "NOT_AN_ACTUATOR_TYPE";
+    EXPECT_THROW((Actuator{config}), std::exception);
+    config = test_actuator_config();
+    config["frequency"] = 0.0;
     EXPECT_THROW((Actuator{config}), std::exception);
 }
 

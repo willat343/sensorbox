@@ -12,6 +12,7 @@ inline Actuator::Actuator(const nlohmann::json& config, const bool validate)
     : Sensor(config, false),
       JsonLoadable<ActuatorSchemaFilepath, sensorbox_schema_loader>(config, validate),
       actuator_type_(config["actuator_type"].get<std::string>()),
+      frequency_(config.contains("frequency") ? std::make_optional(config["frequency"].get<double>()) : std::nullopt),
       current_sensor_(config.contains("current_sensor")
                               ? std::make_optional<CurrentSensor>(config["current_sensor"], false)
                               : std::nullopt),
@@ -34,6 +35,10 @@ inline const std::optional<Encoder>& Actuator::joint_encoder() const {
 
 inline ActuatorType Actuator::actuator_type() const {
     return actuator_type_;
+}
+
+inline const std::optional<double>& Actuator::frequency() const {
+    return frequency_;
 }
 
 inline ActuatorMeasurement::ActuatorMeasurement()
