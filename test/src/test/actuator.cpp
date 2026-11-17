@@ -213,6 +213,23 @@ TEST(actuator_measurements, names) {
     EXPECT_EQ(measurements.names(), expected_names);
 }
 
+TEST(actuator_measurements, ordered) {
+    const ActuatorMeasurements measurements = test_actuator_measurements();
+    const ActuatorMeasurements ordered = measurements.ordered(std::vector<std::string>{test_string(2), test_string(0)});
+    const ActuatorMeasurements expected{measurements.timestamp(),
+            std::vector<ActuatorMeasurement>{test_actuator_measurement(2), test_actuator_measurement(0)}};
+    EXPECT_EQ(ordered.timestamp(), expected.timestamp());
+    EXPECT_EQ(ordered.names(), expected.names());
+    EXPECT_TRUE(ordered.equal_joint_measurements(expected));
+}
+
+TEST(actuator_measurements, ordered_by_a_missing_or_repeated_name_throws) {
+    ActuatorMeasurements measurements = test_actuator_measurements();
+    EXPECT_THROW(measurements.ordered(std::vector<std::string>{test_string(3)}), std::runtime_error);
+    measurements.measurements().push_back(test_actuator_measurement(0));
+    EXPECT_THROW(measurements.ordered(std::vector<std::string>{test_string(0)}), std::runtime_error);
+}
+
 TEST(actuator_measurements, overwrite_names) {
     ActuatorMeasurements measurements = test_actuator_measurements();
     const std::vector<std::string> new_names{test_string(10), test_string(11), test_string(12)};

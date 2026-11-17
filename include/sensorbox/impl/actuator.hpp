@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cppbox/exceptions.hpp>
+#include <iterator>
 #include <ranges>
 
 #include "sensorbox/actuator.hpp"
@@ -210,18 +211,32 @@ inline std::vector<ActuatorMeasurement>& ActuatorMeasurements::measurements() {
     return const_cast<std::vector<ActuatorMeasurement>&>(std::as_const(*this).measurements());
 }
 
-inline void ActuatorMeasurements::overwrite_names(const std::vector<std::string>& new_names) {
-    throw_if(measurements().size() != new_names.size(), "Size mismatch when overwriting names.", std::invalid_argument);
-    for (std::size_t i = 0; i < measurements().size(); ++i) {
-        measurements()[i].name() = new_names[i];
-    }
-}
-
 inline std::vector<std::string> ActuatorMeasurements::names() const {
     std::vector<std::string> names_(size());
     std::transform(measurements().cbegin(), measurements().cend(), names_.begin(),
             [](const ActuatorMeasurement& measurement) { return measurement.name(); });
     return names_;
+}
+
+inline ActuatorMeasurements ActuatorMeasurements::ordered(const std::vector<std::string>& names_) const {
+    ActuatorMeasurements ordered_{timestamp()};
+    for (const std::string& name : names_) {
+        // Find the named actuator, and check that no actuator after it has the name, in one pass
+        const auto named = [&name](const ActuatorMeasurement& measurement) { return measurement.name() == name; };
+        const auto measurement = std::find_if(measurements().cbegin(), measurements().cend(), named);
+        throw_if(measurement == measurements().cend() ||
+                         std::find_if(std::next(measurement), measurements().cend(), named) != measurements().cend(),
+                "There is not exactly one actuator named " + name + ".");
+        ordered_.measurements().push_back(*measurement);
+    }
+    return ordered_;
+}
+
+inline void ActuatorMeasurements::overwrite_names(const std::vector<std::string>& new_names) {
+    throw_if(measurements().size() != new_names.size(), "Size mismatch when overwriting names.", std::invalid_argument);
+    for (std::size_t i = 0; i < measurements().size(); ++i) {
+        measurements()[i].name() = new_names[i];
+    }
 }
 
 inline std::size_t ActuatorMeasurements::size() const {

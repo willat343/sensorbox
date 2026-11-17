@@ -283,6 +283,15 @@ public:
 
     std::vector<std::string> names() const;
 
+    /**
+     * @brief Get the measurements of the named actuators, in the order of the names, leaving out the other actuators.
+     *
+     * @param names_ actuator names
+     * @return ActuatorMeasurements at the same timestamp, with the measurement of each named actuator
+     * @throws std::runtime_error if a name is not that of exactly one actuator
+     */
+    ActuatorMeasurements ordered(const std::vector<std::string>& names_) const;
+
     void overwrite_names(const std::vector<std::string>& new_names);
 
     std::size_t size() const;
