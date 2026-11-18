@@ -21,6 +21,7 @@ ActuatorMeasurement test_actuator_measurement(const unsigned int i) {
             test_string(i), ActuatorType::SERIES_ELASTIC};
     measurement.joint_position() = 0.1 * i;
     measurement.joint_velocity() = 0.2 * i;
+    measurement.joint_acceleration() = 0.4 * i;
     measurement.joint_torque() = 0.3 * i;
     return measurement;
 }
@@ -107,9 +108,11 @@ TEST(actuator_measurement, default_construction) {
     EXPECT_FALSE(measurement.current().has_value());
     EXPECT_FALSE(measurement.joint_position().has_value());
     EXPECT_FALSE(measurement.joint_velocity().has_value());
+    EXPECT_FALSE(measurement.joint_acceleration().has_value());
     EXPECT_FALSE(measurement.joint_torque().has_value());
     EXPECT_FALSE(measurement.motor_position().has_value());
     EXPECT_FALSE(measurement.motor_velocity().has_value());
+    EXPECT_FALSE(measurement.motor_acceleration().has_value());
     EXPECT_FALSE(measurement.motor_torque().has_value());
 }
 
@@ -131,18 +134,22 @@ TEST(actuator_measurement, mutable_access) {
     measurement.current() = 1.0;
     measurement.joint_position() = 2.0;
     measurement.joint_velocity() = 3.0;
+    measurement.joint_acceleration() = 8.0;
     measurement.joint_torque() = 4.0;
     measurement.motor_position() = 5.0;
     measurement.motor_velocity() = 6.0;
+    measurement.motor_acceleration() = 9.0;
     measurement.motor_torque() = 7.0;
     EXPECT_EQ(measurement.name(), test_string(3));
     EXPECT_EQ(measurement.actuator_type(), ActuatorType::STEPPER);
     EXPECT_DOUBLE_EQ(*measurement.current(), 1.0);
     EXPECT_DOUBLE_EQ(*measurement.joint_position(), 2.0);
     EXPECT_DOUBLE_EQ(*measurement.joint_velocity(), 3.0);
+    EXPECT_DOUBLE_EQ(*measurement.joint_acceleration(), 8.0);
     EXPECT_DOUBLE_EQ(*measurement.joint_torque(), 4.0);
     EXPECT_DOUBLE_EQ(*measurement.motor_position(), 5.0);
     EXPECT_DOUBLE_EQ(*measurement.motor_velocity(), 6.0);
+    EXPECT_DOUBLE_EQ(*measurement.motor_acceleration(), 9.0);
     EXPECT_DOUBLE_EQ(*measurement.motor_torque(), 7.0);
 }
 
@@ -163,19 +170,24 @@ TEST(actuator_measurements, joint_quantities) {
     const ActuatorMeasurements measurements = test_actuator_measurements();
     const std::optional<std::vector<double>> positions = measurements.joint_positions();
     const std::optional<std::vector<double>> velocities = measurements.joint_velocities();
+    const std::optional<std::vector<double>> accelerations = measurements.joint_accelerations();
     const std::optional<std::vector<double>> torques = measurements.joint_torques();
     ASSERT_TRUE(positions.has_value());
     ASSERT_TRUE(velocities.has_value());
+    ASSERT_TRUE(accelerations.has_value());
     ASSERT_TRUE(torques.has_value());
     const std::vector<double> expected_positions{0.0, 0.1, 0.2};
     const std::vector<double> expected_velocities{0.0, 0.2, 0.4};
+    const std::vector<double> expected_accelerations{0.0, 0.4, 0.8};
     const std::vector<double> expected_torques{0.0, 0.3, 0.6};
     ASSERT_EQ(positions->size(), 3);
     ASSERT_EQ(velocities->size(), 3);
+    ASSERT_EQ(accelerations->size(), 3);
     ASSERT_EQ(torques->size(), 3);
     for (std::size_t i = 0; i < measurements.size(); ++i) {
         EXPECT_DOUBLE_EQ((*positions)[i], expected_positions[i]);
         EXPECT_DOUBLE_EQ((*velocities)[i], expected_velocities[i]);
+        EXPECT_DOUBLE_EQ((*accelerations)[i], expected_accelerations[i]);
         EXPECT_DOUBLE_EQ((*torques)[i], expected_torques[i]);
     }
 }
@@ -190,10 +202,12 @@ TEST(actuator_measurements, joint_quantities_not_measured) {
     ActuatorMeasurements measurements = test_actuator_measurements();
     for (ActuatorMeasurement& measurement : measurements.measurements()) {
         measurement.joint_velocity().reset();
+        measurement.joint_acceleration().reset();
         measurement.joint_torque().reset();
     }
     EXPECT_TRUE(measurements.joint_positions().has_value());
     EXPECT_FALSE(measurements.joint_velocities().has_value());
+    EXPECT_FALSE(measurements.joint_accelerations().has_value());
     EXPECT_FALSE(measurements.joint_torques().has_value());
 }
 
@@ -201,9 +215,11 @@ TEST(actuator_measurements, joint_quantities_measured_by_some_actuators_throws) 
     ActuatorMeasurements measurements = test_actuator_measurements();
     measurements.measurements()[0].joint_position().reset();
     measurements.measurements()[1].joint_velocity().reset();
+    measurements.measurements()[0].joint_acceleration().reset();
     measurements.measurements()[2].joint_torque().reset();
     EXPECT_THROW(measurements.joint_positions(), std::runtime_error);
     EXPECT_THROW(measurements.joint_velocities(), std::runtime_error);
+    EXPECT_THROW(measurements.joint_accelerations(), std::runtime_error);
     EXPECT_THROW(measurements.joint_torques(), std::runtime_error);
 }
 
@@ -247,10 +263,16 @@ TEST(actuator_measurements, equal_joint_measurements) {
     ActuatorMeasurements other = test_actuator_measurements();
     EXPECT_TRUE(measurements.equal_joint_positions(other));
     EXPECT_TRUE(measurements.equal_joint_velocities(other));
+    EXPECT_TRUE(measurements.equal_joint_accelerations(other));
     EXPECT_TRUE(measurements.equal_joint_torques(other));
     EXPECT_TRUE(measurements.equal_joint_measurements(other));
     other.measurements()[1].joint_position() = 100.0;
     EXPECT_FALSE(measurements.equal_joint_positions(other));
+    EXPECT_TRUE(measurements.equal_joint_velocities(other));
+    EXPECT_FALSE(measurements.equal_joint_measurements(other));
+    other = test_actuator_measurements();
+    other.measurements()[0].joint_acceleration() = 100.0;
+    EXPECT_FALSE(measurements.equal_joint_accelerations(other));
     EXPECT_TRUE(measurements.equal_joint_velocities(other));
     EXPECT_FALSE(measurements.equal_joint_measurements(other));
     other = test_actuator_measurements();
@@ -265,6 +287,7 @@ TEST(actuator_measurements, equal_joint_measurements_of_different_sizes) {
     other.measurements().pop_back();
     EXPECT_FALSE(measurements.equal_joint_positions(other));
     EXPECT_FALSE(measurements.equal_joint_velocities(other));
+    EXPECT_FALSE(measurements.equal_joint_accelerations(other));
     EXPECT_FALSE(measurements.equal_joint_torques(other));
     EXPECT_FALSE(measurements.equal_joint_measurements(other));
 }

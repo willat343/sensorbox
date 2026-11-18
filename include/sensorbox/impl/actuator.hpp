@@ -77,6 +77,14 @@ inline std::optional<double>& ActuatorMeasurement::joint_velocity() {
     return const_cast<std::optional<double>&>(std::as_const(*this).joint_velocity());
 }
 
+inline const std::optional<double>& ActuatorMeasurement::joint_acceleration() const {
+    return joint_acceleration_;
+}
+
+inline std::optional<double>& ActuatorMeasurement::joint_acceleration() {
+    return const_cast<std::optional<double>&>(std::as_const(*this).joint_acceleration());
+}
+
 inline const std::optional<double>& ActuatorMeasurement::joint_torque() const {
     return joint_torque_;
 }
@@ -99,6 +107,14 @@ inline const std::optional<double>& ActuatorMeasurement::motor_velocity() const 
 
 inline std::optional<double>& ActuatorMeasurement::motor_velocity() {
     return const_cast<std::optional<double>&>(std::as_const(*this).motor_velocity());
+}
+
+inline const std::optional<double>& ActuatorMeasurement::motor_acceleration() const {
+    return motor_acceleration_;
+}
+
+inline std::optional<double>& ActuatorMeasurement::motor_acceleration() {
+    return const_cast<std::optional<double>&>(std::as_const(*this).motor_acceleration());
 }
 
 inline const std::optional<double>& ActuatorMeasurement::motor_torque() const {
@@ -149,6 +165,14 @@ inline bool ActuatorMeasurements::equal_joint_velocities(const ActuatorMeasureme
                    });
 }
 
+inline bool ActuatorMeasurements::equal_joint_accelerations(const ActuatorMeasurements& other) const {
+    return size() == other.size() &&
+           std::equal(measurements().cbegin(), measurements().cend(), other.measurements().cbegin(),
+                   [](const ActuatorMeasurement& lhs, const ActuatorMeasurement& rhs) -> bool {
+                       return lhs.joint_acceleration() == rhs.joint_acceleration();
+                   });
+}
+
 inline bool ActuatorMeasurements::equal_joint_torques(const ActuatorMeasurements& other) const {
     return size() == other.size() &&
            std::equal(measurements().cbegin(), measurements().cend(), other.measurements().cbegin(),
@@ -158,7 +182,8 @@ inline bool ActuatorMeasurements::equal_joint_torques(const ActuatorMeasurements
 }
 
 inline bool ActuatorMeasurements::equal_joint_measurements(const ActuatorMeasurements& other) const {
-    return equal_joint_positions(other) && equal_joint_velocities(other) && equal_joint_torques(other);
+    return equal_joint_positions(other) && equal_joint_velocities(other) && equal_joint_accelerations(other) &&
+           equal_joint_torques(other);
 }
 
 inline std::optional<std::vector<double>> ActuatorMeasurements::joint_positions() const {
@@ -186,6 +211,21 @@ inline std::optional<std::vector<double>> ActuatorMeasurements::joint_velocities
         return *measurement.joint_velocity();
     });
     return measured ? std::make_optional(std::vector<double>(joint_velocities_.begin(), joint_velocities_.end()))
+                    : std::nullopt;
+}
+
+inline std::optional<std::vector<double>> ActuatorMeasurements::joint_accelerations() const {
+    const bool measured = measurements().empty() || measurements().front().joint_acceleration().has_value();
+    throw_if(!std::all_of(measurements().cbegin(), measurements().cend(),
+                     [measured](const ActuatorMeasurement& measurement) {
+                         return measurement.joint_acceleration().has_value() == measured;
+                     }),
+            "Only some of the actuators measured a joint acceleration.");
+    const auto joint_accelerations_ =
+            measurements() | std::views::transform([](const ActuatorMeasurement& measurement) {
+                return *measurement.joint_acceleration();
+            });
+    return measured ? std::make_optional(std::vector<double>(joint_accelerations_.begin(), joint_accelerations_.end()))
                     : std::nullopt;
 }
 

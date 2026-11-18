@@ -119,6 +119,20 @@ public:
 
     std::optional<double>& joint_velocity();
 
+    /**
+     * @brief Get the joint-side acceleration [rad/s^2], if measured.
+     *
+     * @return const std::optional<double>&
+     */
+    const std::optional<double>& joint_acceleration() const;
+
+    /**
+     * @brief Get the joint-side acceleration [rad/s^2], if measured, to set or reset it.
+     *
+     * @return std::optional<double>&
+     */
+    std::optional<double>& joint_acceleration();
+
     const std::optional<double>& joint_torque() const;
 
     std::optional<double>& joint_torque();
@@ -130,6 +144,20 @@ public:
     const std::optional<double>& motor_velocity() const;
 
     std::optional<double>& motor_velocity();
+
+    /**
+     * @brief Get the motor-side acceleration [rad/s^2], if measured.
+     *
+     * @return const std::optional<double>&
+     */
+    const std::optional<double>& motor_acceleration() const;
+
+    /**
+     * @brief Get the motor-side acceleration [rad/s^2], if measured, to set or reset it.
+     *
+     * @return std::optional<double>&
+     */
+    std::optional<double>& motor_acceleration();
 
     const std::optional<double>& motor_torque() const;
 
@@ -181,6 +209,15 @@ private:
     std::optional<double> motor_velocity_;
 
     /**
+     * @brief Motor-side acceleration [rad/s^2]
+     *
+     * Usually not sensed directly but estimated by numerical differentiation of the velocity, and often filtered, which
+     * attenuates and delays it.
+     *
+     */
+    std::optional<double> motor_acceleration_;
+
+    /**
      * @brief Motor-side torque [Nm]
      *
      * Usually computed as \f$ \tau_m = K \cdot I \f$ where \f$ K \f$ is the motor torque constant [Nm/A] and \f$ I \f$
@@ -210,6 +247,15 @@ private:
      *
      */
     std::optional<double> joint_velocity_;
+
+    /**
+     * @brief Joint-side (output-side) acceleration [rad/s^2]
+     *
+     * Usually not sensed directly but estimated by numerical differentiation of the velocity, and often filtered, which
+     * attenuates and delays it.
+     *
+     */
+    std::optional<double> joint_acceleration_;
 
     /**
      * @brief Joint-side torque [Nm]
@@ -246,6 +292,8 @@ public:
 
     bool equal_joint_velocities(const ActuatorMeasurements& other) const;
 
+    bool equal_joint_accelerations(const ActuatorMeasurements& other) const;
+
     bool equal_joint_torques(const ActuatorMeasurements& other) const;
 
     bool equal_joint_measurements(const ActuatorMeasurements& other) const;
@@ -267,6 +315,15 @@ public:
      * @throws std::runtime_error if only some actuators measured one
      */
     std::optional<std::vector<double>> joint_velocities() const;
+
+    /**
+     * @brief Get the joint accelerations of the actuators, in the order of the measurements.
+     *
+     * @return std::optional<std::vector<double>> joint accelerations if every actuator measured one, or `std::nullopt`
+     * if none did
+     * @throws std::runtime_error if only some actuators measured one
+     */
+    std::optional<std::vector<double>> joint_accelerations() const;
 
     /**
      * @brief Get the joint torques of the actuators, in the order of the measurements.

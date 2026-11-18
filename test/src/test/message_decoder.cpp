@@ -4,6 +4,8 @@
 
 #include <Eigen/Geometry>
 #include <chrono>
+#include <cstddef>
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -13,6 +15,68 @@
 #include "sensorbox/ros2_decoder.hpp"
 
 namespace sensorbox {
+
+/**
+ * @brief Append a value to a message in ROS 1 serialisation, as its bytes in little endian without padding, which is
+ * this machine's representation.
+ *
+ * @param bytes serialised message
+ * @param value value of a trivially copyable type, e.g. an integer or a double
+ */
+void append_ros1(std::vector<std::byte>& bytes, const auto value) {
+    const std::byte* const begin = reinterpret_cast<const std::byte*>(&value);
+    bytes.insert(bytes.end(), begin, begin + sizeof(value));
+}
+
+/**
+ * @brief Append a string to a message in ROS 1 serialisation, as its length (uint32) followed by its characters.
+ *
+ * @param bytes serialised message
+ * @param string
+ */
+void append_ros1_string(std::vector<std::byte>& bytes, const std::string& string) {
+    append_ros1(bytes, static_cast<uint32_t>(string.size()));
+    for (const char c : string) {
+        bytes.push_back(static_cast<std::byte>(c));
+    }
+}
+
+/**
+ * @brief Append a float64 array of variable size to a message in ROS 1 serialisation, as its size (uint32) followed by
+ * its values.
+ *
+ * @param bytes serialised message
+ * @param values
+ */
+void append_ros1_values(std::vector<std::byte>& bytes, const std::vector<double>& values) {
+    append_ros1(bytes, static_cast<uint32_t>(values.size()));
+    for (const double value : values) {
+        append_ros1(bytes, value);
+    }
+}
+
+/**
+ * @brief Get an any_msgs/ExtendedJointState message in ROS 1 serialisation: header, then the names of two joints and
+ * their positions, velocities, the given accelerations and efforts.
+ *
+ * @param accelerations joint accelerations, one per joint in a valid message
+ * @return std::vector<std::byte> serialised message
+ */
+std::vector<std::byte> test_extended_joint_state_bytes(const std::vector<double>& accelerations) {
+    std::vector<std::byte> bytes;
+    append_ros1(bytes, uint32_t{7});           // header.seq
+    append_ros1(bytes, uint32_t{1700000000});  // header.stamp.sec
+    append_ros1(bytes, uint32_t{250000000});   // header.stamp.nsec
+    append_ros1_string(bytes, "base");         // header.frame_id
+    append_ros1(bytes, uint32_t{2});           // name
+    append_ros1_string(bytes, "LF_HAA");
+    append_ros1_string(bytes, "LF_HFE");
+    append_ros1_values(bytes, {1.0, 1.5});     // position
+    append_ros1_values(bytes, {2.0, 2.5});     // velocity
+    append_ros1_values(bytes, accelerations);  // acceleration
+    append_ros1_values(bytes, {4.0, 4.5});     // effort
+    return bytes;
+}
 
 TEST(message_decoder, message_is_array_type) {
     static_assert(message_is_array_type("float64[36]"));
@@ -198,36 +262,26 @@ TEST(ros1_decoder, odometry_to_pose_twist) {
     // A nav_msgs/Odometry message in ROS 1 serialisation (little endian, without padding): header (seq, stamp,
     // frame_id), child_frame_id, pose with covariance and twist with covariance
     std::vector<std::byte> bytes;
-    const auto append = [&bytes](const auto value) {
-        const std::byte* const begin = reinterpret_cast<const std::byte*>(&value);
-        bytes.insert(bytes.end(), begin, begin + sizeof(value));
-    };
-    const auto append_string = [&bytes, &append](const std::string& string) {
-        append(static_cast<uint32_t>(string.size()));
-        for (const char c : string) {
-            bytes.push_back(static_cast<std::byte>(c));
-        }
-    };
-    append(uint32_t{7});           // header.seq
-    append(uint32_t{1700000000});  // header.stamp.sec
-    append(uint32_t{250000000});   // header.stamp.nsec
-    append_string("map");          // header.frame_id
-    append_string("body");         // child_frame_id
+    append_ros1(bytes, uint32_t{7});           // header.seq
+    append_ros1(bytes, uint32_t{1700000000});  // header.stamp.sec
+    append_ros1(bytes, uint32_t{250000000});   // header.stamp.nsec
+    append_ros1_string(bytes, "map");          // header.frame_id
+    append_ros1_string(bytes, "body");         // child_frame_id
     const Eigen::Vector3d position{1.0, 2.0, 3.0};
     const Eigen::Quaterniond orientation{Eigen::AngleAxisd{0.5, Eigen::Vector3d{1.0, 2.0, 3.0}.normalized()}};
     for (const double value : {position.x(), position.y(), position.z(), orientation.x(), orientation.y(),
                  orientation.z(), orientation.w()}) {
-        append(value);
+        append_ros1(bytes, value);
     }
     for (int i = 0; i < 36; ++i) {
-        append(0.01 * i);  // pose.covariance
+        append_ros1(bytes, 0.01 * i);  // pose.covariance
     }
     const Eigen::Vector<double, 6> twist{0.1, 0.2, 0.3, 0.4, 0.5, 0.6};
     for (int i = 0; i < 6; ++i) {
-        append(twist[i]);  // twist.twist.linear, twist.twist.angular
+        append_ros1(bytes, twist[i]);  // twist.twist.linear, twist.twist.angular
     }
     for (int i = 0; i < 36; ++i) {
-        append(1.0 + i);  // twist.covariance
+        append_ros1(bytes, 1.0 + i);  // twist.covariance
     }
     ROS1BytesDecoder decoder{bytes.data(), bytes.size(), "nav_msgs/Odometry"};
     const PoseTwistMeasurement<3> measurement = decoder.decode<PoseTwistMeasurement<3>>();
@@ -238,6 +292,68 @@ TEST(ros1_decoder, odometry_to_pose_twist) {
     EXPECT_TRUE(measurement.pose().translation().isApprox(position));
     EXPECT_TRUE(Eigen::Quaterniond{measurement.pose().rotation()}.isApprox(orientation));
     EXPECT_TRUE(measurement.twist().isApprox(twist));
+}
+
+TEST(ros1_decoder, se_actuator_state_to_actuator_measurement) {
+    // A series_elastic_actuator_msgs/SeActuatorState message in ROS 1 serialisation (little endian, without padding):
+    // header, name, statusword, the actuator's quantities and an IMU message
+    std::vector<std::byte> bytes;
+    append_ros1(bytes, uint32_t{7});           // header.seq
+    append_ros1(bytes, uint32_t{1700000000});  // header.stamp.sec
+    append_ros1(bytes, uint32_t{250000000});   // header.stamp.nsec
+    append_ros1_string(bytes, "base");         // header.frame_id
+    append_ros1_string(bytes, "LF_HAA");       // name
+    append_ros1(bytes, uint32_t{0});           // statusword
+    // current, gear_position, gear_velocity, joint_position, joint_velocity, joint_acceleration and joint_torque
+    for (const double value : {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0}) {
+        append_ros1(bytes, value);
+    }
+    append_ros1(bytes, uint32_t{0});   // imu.header.seq
+    append_ros1(bytes, uint32_t{0});   // imu.header.stamp.sec
+    append_ros1(bytes, uint32_t{0});   // imu.header.stamp.nsec
+    append_ros1_string(bytes, "imu");  // imu.header.frame_id
+    // imu.orientation, imu.angular_velocity and imu.linear_acceleration, each followed by its float64[9] covariance
+    for (int i = 0; i < 4 + 9 + 3 + 9 + 3 + 9; ++i) {
+        append_ros1(bytes, 0.0);
+    }
+    ROS1BytesDecoder decoder{bytes.data(), bytes.size(), "series_elastic_actuator_msgs/SeActuatorState"};
+    const ActuatorMeasurement measurement = decoder.decode<ActuatorMeasurement>();
+    EXPECT_TRUE(decoder.is_finished());
+    EXPECT_EQ(measurement.timestamp(),
+            ActuatorMeasurement::Timestamp{std::chrono::seconds{1700000000} + std::chrono::nanoseconds{250000000}});
+    EXPECT_EQ(measurement.frame(), "base");
+    EXPECT_EQ(measurement.name(), "LF_HAA");
+    EXPECT_EQ(measurement.actuator_type(), ActuatorType::SERIES_ELASTIC);
+    EXPECT_EQ(measurement.current(), 1.0);
+    EXPECT_EQ(measurement.motor_position(), 2.0);
+    EXPECT_EQ(measurement.motor_velocity(), 3.0);
+    EXPECT_EQ(measurement.joint_position(), 4.0);
+    EXPECT_EQ(measurement.joint_velocity(), 5.0);
+    EXPECT_EQ(measurement.joint_acceleration(), 6.0);
+    EXPECT_EQ(measurement.joint_torque(), 7.0);
+}
+
+TEST(ros1_decoder, extended_joint_state_to_actuator_measurements) {
+    const std::vector<std::byte> bytes = test_extended_joint_state_bytes({3.0, 3.5});
+    ROS1BytesDecoder decoder{bytes.data(), bytes.size(), "any_msgs/ExtendedJointState"};
+    const ActuatorMeasurements measurements = decoder.decode<ActuatorMeasurements>();
+    EXPECT_TRUE(decoder.is_finished());
+    EXPECT_EQ(measurements.timestamp(),
+            ActuatorMeasurements::Timestamp{std::chrono::seconds{1700000000} + std::chrono::nanoseconds{250000000}});
+    EXPECT_EQ(measurements.names(), (std::vector<std::string>{"LF_HAA", "LF_HFE"}));
+    EXPECT_EQ(measurements.joint_positions(), (std::vector<double>{1.0, 1.5}));
+    EXPECT_EQ(measurements.joint_velocities(), (std::vector<double>{2.0, 2.5}));
+    EXPECT_EQ(measurements.joint_accelerations(), (std::vector<double>{3.0, 3.5}));
+    EXPECT_EQ(measurements.joint_torques(), (std::vector<double>{4.0, 4.5}));
+}
+
+TEST(ros1_decoder, extended_joint_state_with_another_number_of_accelerations_throws) {
+    // Accelerations of fewer or more joints than the names
+    for (const std::vector<double>& accelerations : {std::vector<double>{3.0}, std::vector<double>{3.0, 3.5, 3.75}}) {
+        const std::vector<std::byte> bytes = test_extended_joint_state_bytes(accelerations);
+        ROS1BytesDecoder decoder{bytes.data(), bytes.size(), "any_msgs/ExtendedJointState"};
+        EXPECT_THROW(decoder.decode<ActuatorMeasurements>(), std::runtime_error);
+    }
 }
 
 TEST(ros1_decoder, is_vector_or_start_recursively_decodable_to) {
