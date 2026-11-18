@@ -17,6 +17,7 @@ add_executable(${PROJECT_NAME}_tests
     src/test/sensor.cpp
     src/test/stiffness.cpp
     src/test/test_instances.cpp
+    src/test/wrench.cpp
 )
 
 # Include Directories

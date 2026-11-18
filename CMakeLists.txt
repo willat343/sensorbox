@@ -155,6 +155,7 @@ else()
         src/ros2_decoder.cpp
         src/sensor.cpp
         src/stiffness.cpp
+        src/wrench.cpp
     )
     set(PUBLIC_OR_INTERFACE PUBLIC)
 

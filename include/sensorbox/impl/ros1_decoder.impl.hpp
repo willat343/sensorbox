@@ -59,7 +59,7 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(ActuatorMeasurement& out) {
         read_optional_to<double>(out.motor_velocity());
         read_optional_to<double>(out.joint_position());
         read_optional_to<double>(out.joint_velocity());
-        ignore<double>();  // joint_acceleration
+        read_optional_to<double>(out.joint_acceleration());
         read_optional_to(out.joint_torque());
         ignore("sensor_msgs/Imu");  // imu
     } else {
@@ -97,7 +97,11 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(std::vector<ActuatorMeasurement>
         for (uint32_t i = 0; i < velocity_size; ++i) {
             read_optional_to<double>(out[i].joint_velocity());
         }
-        ignore("float64[]");  // acceleration
+        const uint32_t acceleration_size = read<uint32_t>();
+        throw_if(acceleration_size != names_size, "Size mismatch in any_msgs/ExtendedJointState arrays.");
+        for (uint32_t i = 0; i < acceleration_size; ++i) {
+            read_optional_to<double>(out[i].joint_acceleration());
+        }
         const uint32_t effort_size = read<uint32_t>();
         throw_if(effort_size != names_size, "Size mismatch in any_msgs/ExtendedJointState arrays.");
         for (uint32_t i = 0; i < effort_size; ++i) {
