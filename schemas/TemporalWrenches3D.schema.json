@@ -1,0 +1,92 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "file:///TemporalWrenches3D.schema.json",
+    "type": "object",
+    "description": "Temporal 3D wrenches, each acting at its child frame's origin, in its frame's axes.",
+    "properties": {
+        "timestamp": {
+            "type": "integer",
+            "description": "Timestamp (nanoseconds)"
+        },
+        "wrenches": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "frame_id": {
+                        "type": "string",
+                        "description": "Frame in whose axes the wrench is expressed"
+                    },
+                    "child_frame_id": {
+                        "type": "string",
+                        "description": "Frame at whose origin the wrench acts"
+                    },
+                    "force": {
+                        "type": "object",
+                        "description": "Force (N)",
+                        "properties": {
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "x",
+                            "y",
+                            "z"
+                        ],
+                        "additionalProperties": false
+                    },
+                    "torque": {
+                        "type": "object",
+                        "description": "Torque (Nm) about the origin of the child frame",
+                        "properties": {
+                            "x": {
+                                "type": "number"
+                            },
+                            "y": {
+                                "type": "number"
+                            },
+                            "z": {
+                                "type": "number"
+                            }
+                        },
+                        "required": [
+                            "x",
+                            "y",
+                            "z"
+                        ],
+                        "additionalProperties": false
+                    }
+                },
+                "required": [
+                    "frame_id",
+                    "child_frame_id"
+                ],
+                "anyOf": [
+                    {
+                        "required": [
+                            "force"
+                        ]
+                    },
+                    {
+                        "required": [
+                            "torque"
+                        ]
+                    }
+                ],
+                "additionalProperties": false
+            }
+        }
+    },
+    "required": [
+        "timestamp",
+        "wrenches"
+    ],
+    "additionalProperties": false
+}
