@@ -26,10 +26,25 @@ public:
      */
     explicit Actuator(const nlohmann::json& config, const bool validate = true);
 
+    /**
+     * @brief Get the embedded current sensor, if available.
+     *
+     * @return const std::optional<CurrentSensor>&
+     */
     const std::optional<CurrentSensor>& current_sensor() const;
 
+    /**
+     * @brief Get the motor-side encoder, if available.
+     *
+     * @return const std::optional<Encoder>&
+     */
     const std::optional<Encoder>& motor_encoder() const;
 
+    /**
+     * @brief Get the joint-side (output-side) encoder, if available.
+     *
+     * @return const std::optional<Encoder>&
+     */
     const std::optional<Encoder>& joint_encoder() const;
 
     /**
@@ -39,8 +54,25 @@ public:
      */
     ActuatorType actuator_type() const;
 
+    /**
+     * @brief Get the measurement frequency (Hz) if configured.
+     *
+     * @return const std::optional<double>&
+     */
+    const std::optional<double>& frequency() const;
+
 private:
+    /**
+     * @brief Actuator type.
+     *
+     */
     ActuatorType actuator_type_;
+
+    /**
+     * @brief Measurement frequency (Hz) if configured.
+     *
+     */
+    std::optional<double> frequency_;
 
     /**
      * @brief Embedded current sensor if available.
@@ -90,40 +122,158 @@ public:
     explicit ActuatorMeasurement(const Timestamp& timestamp_, const std::string& frame_,
             const std::string& child_frame_, const std::string& name_, const ActuatorType actuator_type_);
 
+    /**
+     * @brief Get the motor current [A], if measured.
+     *
+     * @return const std::optional<double>&
+     */
     const std::optional<double>& current() const;
 
+    /**
+     * @brief Get the motor current [A], if measured, to set or reset it.
+     *
+     * @return std::optional<double>&
+     */
     std::optional<double>& current();
 
+    /**
+     * @brief Get the joint-side position [rad], if measured.
+     *
+     * @return const std::optional<double>&
+     */
     const std::optional<double>& joint_position() const;
 
+    /**
+     * @brief Get the joint-side position [rad], if measured, to set or reset it.
+     *
+     * @return std::optional<double>&
+     */
     std::optional<double>& joint_position();
 
+    /**
+     * @brief Get the joint-side velocity [rad/s], if measured.
+     *
+     * @return const std::optional<double>&
+     */
     const std::optional<double>& joint_velocity() const;
 
+    /**
+     * @brief Get the joint-side velocity [rad/s], if measured, to set or reset it.
+     *
+     * @return std::optional<double>&
+     */
     std::optional<double>& joint_velocity();
 
+    /**
+     * @brief Get the joint-side acceleration [rad/s^2], if measured.
+     *
+     * @return const std::optional<double>&
+     */
+    const std::optional<double>& joint_acceleration() const;
+
+    /**
+     * @brief Get the joint-side acceleration [rad/s^2], if measured, to set or reset it.
+     *
+     * @return std::optional<double>&
+     */
+    std::optional<double>& joint_acceleration();
+
+    /**
+     * @brief Get the joint-side torque [Nm], if measured.
+     *
+     * @return const std::optional<double>&
+     */
     const std::optional<double>& joint_torque() const;
 
+    /**
+     * @brief Get the joint-side torque [Nm], if measured, to set or reset it.
+     *
+     * @return std::optional<double>&
+     */
     std::optional<double>& joint_torque();
 
+    /**
+     * @brief Get the motor-side position [rad], if measured.
+     *
+     * @return const std::optional<double>&
+     */
     const std::optional<double>& motor_position() const;
 
+    /**
+     * @brief Get the motor-side position [rad], if measured, to set or reset it.
+     *
+     * @return std::optional<double>&
+     */
     std::optional<double>& motor_position();
 
+    /**
+     * @brief Get the motor-side velocity [rad/s], if measured.
+     *
+     * @return const std::optional<double>&
+     */
     const std::optional<double>& motor_velocity() const;
 
+    /**
+     * @brief Get the motor-side velocity [rad/s], if measured, to set or reset it.
+     *
+     * @return std::optional<double>&
+     */
     std::optional<double>& motor_velocity();
 
+    /**
+     * @brief Get the motor-side acceleration [rad/s^2], if measured.
+     *
+     * @return const std::optional<double>&
+     */
+    const std::optional<double>& motor_acceleration() const;
+
+    /**
+     * @brief Get the motor-side acceleration [rad/s^2], if measured, to set or reset it.
+     *
+     * @return std::optional<double>&
+     */
+    std::optional<double>& motor_acceleration();
+
+    /**
+     * @brief Get the motor-side torque [Nm], if measured.
+     *
+     * @return const std::optional<double>&
+     */
     const std::optional<double>& motor_torque() const;
 
+    /**
+     * @brief Get the motor-side torque [Nm], if measured, to set or reset it.
+     *
+     * @return std::optional<double>&
+     */
     std::optional<double>& motor_torque();
 
+    /**
+     * @brief Get the actuator (joint) name.
+     *
+     * @return const std::string&
+     */
     const std::string& name() const;
 
+    /**
+     * @brief Get the actuator (joint) name, to set it.
+     *
+     * @return std::string&
+     */
     std::string& name();
 
+    /**
+     * @brief Set the actuator type.
+     *
+     * @param type__ actuator type
+     */
     void set_actuator_type(const ActuatorType type__);
 
+    /**
+     * @brief Get the actuator type.
+     *
+     * @return ActuatorType
+     */
     ActuatorType actuator_type() const;
 
 private:
@@ -164,6 +314,15 @@ private:
     std::optional<double> motor_velocity_;
 
     /**
+     * @brief Motor-side acceleration [rad/s^2]
+     *
+     * Usually not sensed directly but estimated by numerical differentiation of the velocity, and often filtered, which
+     * attenuates and delays it.
+     *
+     */
+    std::optional<double> motor_acceleration_;
+
+    /**
      * @brief Motor-side torque [Nm]
      *
      * Usually computed as \f$ \tau_m = K \cdot I \f$ where \f$ K \f$ is the motor torque constant [Nm/A] and \f$ I \f$
@@ -195,6 +354,15 @@ private:
     std::optional<double> joint_velocity_;
 
     /**
+     * @brief Joint-side (output-side) acceleration [rad/s^2]
+     *
+     * Usually not sensed directly but estimated by numerical differentiation of the velocity, and often filtered, which
+     * attenuates and delays it.
+     *
+     */
+    std::optional<double> joint_acceleration_;
+
+    /**
      * @brief Joint-side torque [Nm]
      *
      * Usually computed in the following ways for the different actuator types:
@@ -219,37 +387,163 @@ public:
     using typename TemporalMeasurement::Duration;
     using typename TemporalMeasurement::Timestamp;
 
+    /**
+     * @brief Construct actuator measurements without actuators, at the zero timestamp.
+     *
+     */
     explicit ActuatorMeasurements();
 
+    /**
+     * @brief Construct actuator measurements without actuators.
+     *
+     * @param timestamp_ timestamp
+     */
     explicit ActuatorMeasurements(const Timestamp& timestamp_);
 
+    /**
+     * @brief Construct actuator measurements.
+     *
+     * @param timestamp_ timestamp
+     * @param measurements_ measurements of the actuators
+     */
     explicit ActuatorMeasurements(const Timestamp& timestamp_, const std::vector<ActuatorMeasurement>& measurements_);
 
+    /**
+     * @brief Check if another measurement has as many actuators and, actuator by actuator in order, the same joint
+     * position or none.
+     *
+     * @param other
+     * @return true
+     * @return false
+     */
     bool equal_joint_positions(const ActuatorMeasurements& other) const;
 
+    /**
+     * @brief Check if another measurement has as many actuators and, actuator by actuator in order, the same joint
+     * velocity or none.
+     *
+     * @param other
+     * @return true
+     * @return false
+     */
     bool equal_joint_velocities(const ActuatorMeasurements& other) const;
 
+    /**
+     * @brief Check if another measurement has as many actuators and, actuator by actuator in order, the same joint
+     * acceleration or none.
+     *
+     * @param other
+     * @return true
+     * @return false
+     */
+    bool equal_joint_accelerations(const ActuatorMeasurements& other) const;
+
+    /**
+     * @brief Check if another measurement has as many actuators and, actuator by actuator in order, the same joint
+     * torque or none.
+     *
+     * @param other
+     * @return true
+     * @return false
+     */
     bool equal_joint_torques(const ActuatorMeasurements& other) const;
 
+    /**
+     * @brief Check if another measurement has as many actuators and, actuator by actuator in order, the same joint
+     * positions, velocities, accelerations and torques, each or none (see `equal_joint_positions()`).
+     *
+     * @param other
+     * @return true
+     * @return false
+     */
     bool equal_joint_measurements(const ActuatorMeasurements& other) const;
 
-    std::vector<double> joint_positions() const;
+    /**
+     * @brief Get the joint positions of the actuators, in the order of the measurements.
+     *
+     * @return std::optional<std::vector<double>> joint positions if every actuator measured one, or `std::nullopt` if
+     * none did
+     * @throws std::runtime_error if only some actuators measured one
+     */
+    std::optional<std::vector<double>> joint_positions() const;
 
-    std::vector<double> joint_velocities() const;
+    /**
+     * @brief Get the joint velocities of the actuators, in the order of the measurements.
+     *
+     * @return std::optional<std::vector<double>> joint velocities if every actuator measured one, or `std::nullopt` if
+     * none did
+     * @throws std::runtime_error if only some actuators measured one
+     */
+    std::optional<std::vector<double>> joint_velocities() const;
 
-    std::vector<double> joint_torques() const;
+    /**
+     * @brief Get the joint accelerations of the actuators, in the order of the measurements.
+     *
+     * @return std::optional<std::vector<double>> joint accelerations if every actuator measured one, or `std::nullopt`
+     * if none did
+     * @throws std::runtime_error if only some actuators measured one
+     */
+    std::optional<std::vector<double>> joint_accelerations() const;
 
+    /**
+     * @brief Get the joint torques of the actuators, in the order of the measurements.
+     *
+     * @return std::optional<std::vector<double>> joint torques if every actuator measured one, or `std::nullopt` if
+     * none did
+     * @throws std::runtime_error if only some actuators measured one
+     */
+    std::optional<std::vector<double>> joint_torques() const;
+
+    /**
+     * @brief Get the measurements of the actuators.
+     *
+     * @return const std::vector<ActuatorMeasurement>&
+     */
     const std::vector<ActuatorMeasurement>& measurements() const;
 
+    /**
+     * @brief Get the measurements of the actuators, to modify them.
+     *
+     * @return std::vector<ActuatorMeasurement>&
+     */
     std::vector<ActuatorMeasurement>& measurements();
 
+    /**
+     * @brief Get the names of the actuators, in the order of the measurements.
+     *
+     * @return std::vector<std::string>
+     */
     std::vector<std::string> names() const;
 
+    /**
+     * @brief Get the measurements of the named actuators, in the order of the names, leaving out the other actuators.
+     *
+     * @param names_ actuator names
+     * @return ActuatorMeasurements at the same timestamp, with the measurement of each named actuator
+     * @throws std::runtime_error if a name is not that of exactly one actuator
+     */
+    ActuatorMeasurements ordered(const std::vector<std::string>& names_) const;
+
+    /**
+     * @brief Overwrite the names of the actuators, in the order of the measurements.
+     *
+     * @param new_names one name for each actuator
+     * @throws std::invalid_argument if the number of names is not the number of actuators
+     */
     void overwrite_names(const std::vector<std::string>& new_names);
 
+    /**
+     * @brief Get the number of actuators.
+     *
+     * @return std::size_t
+     */
     std::size_t size() const;
 
 private:
+    /**
+     * @brief Measurements of the actuators
+     *
+     */
     std::vector<ActuatorMeasurement> measurements_;
 };
 

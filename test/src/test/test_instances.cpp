@@ -11,7 +11,7 @@ nlohmann::json test_accelerometer_config() {
 
 nlohmann::json test_actuator_config() {
     return nlohmann::json{{"type", "ACTUATOR"}, {"make", "ANYbotics"}, {"model", "ANYdrive"},
-            {"actuator_type", "SERIES_ELASTIC"}, {"current_sensor", test_current_sensor_config()},
+            {"actuator_type", "SERIES_ELASTIC"}, {"frequency", 400.0}, {"current_sensor", test_current_sensor_config()},
             {"motor_encoder", test_encoder_config()}, {"joint_encoder", test_encoder_config()}};
 }
 
