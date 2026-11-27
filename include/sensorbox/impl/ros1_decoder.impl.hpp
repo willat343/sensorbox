@@ -291,6 +291,51 @@ SENSORBOX_INLINE void ROS1BytesDecoder::read_to(TemporalSpatialMeasurement& out)
     }
 }
 
+SENSORBOX_INLINE void ROS1BytesDecoder::read_to(WrenchMeasurement<3>& out) {
+    if (msg_type() == "anymal_msgs/Contact") {
+        decode_internal_to("std_msgs/Header", static_cast<TemporalSpatialMeasurement&>(out));  // header
+        read_to(out.child_frame());                                                            // name
+        ignore<uint8_t>();                                                                     // state
+        out.force() = decode_internal<Eigen::Vector3d>("geometry_msgs/Vector3");               // wrench.force
+        out.torque() = decode_internal<Eigen::Vector3d>("geometry_msgs/Vector3");              // wrench.torque
+        ignore("geometry_msgs/Point");                                                         // position
+        ignore("geometry_msgs/Vector3");                                                       // normal
+        ignore<double>();                                                                      // frictionCoefficient
+        ignore<double>();                                                                      // restitutionCoefficient
+    } else {
+        throw_here("msg_type " + msg_type() + " cannot be converted to WrenchMeasurement<3>.");
+    }
+}
+
+SENSORBOX_INLINE void ROS1BytesDecoder::read_to(std::vector<WrenchMeasurement<3>>& out) {
+    if (msg_type() == "anymal_msgs/AnymalState") {
+        ignore("std_msgs/Header");              // header
+        ignore<int8_t>();                       // state
+        ignore("geometry_msgs/PoseStamped");    // pose
+        ignore("geometry_msgs/TwistStamped");   // twist
+        ignore("any_msgs/ExtendedJointState");  // joints
+        decode_vector_to("anymal_msgs/Contact", out);
+        ignore("geometry_msgs/TransformStamped[]");  // frame_transforms
+    } else if (msg_type() == "anymal_msgs/Contacts") {
+        decode_vector_to("anymal_msgs/Contact", out);
+    } else {
+        throw_here("msg_type " + msg_type() + " cannot be converted to std::vector<WrenchMeasurement<3>>.");
+    }
+}
+
+SENSORBOX_INLINE void ROS1BytesDecoder::read_to(WrenchMeasurements<3>& out) {
+    if (msg_type() == "anymal_msgs/AnymalState") {
+        out.timestamp() = peak<typename WrenchMeasurements<3>::Timestamp>(sizeof(uint32_t));  // (peak past header.seq)
+        read_to(out.measurements());
+    } else if (msg_type() == "anymal_msgs/Contacts") {
+        read_to(out.measurements());
+        out.timestamp() = out.measurements().empty() ? WrenchMeasurements<3>::Timestamp()
+                                                     : out.measurements().front().timestamp();
+    } else {
+        throw_here("msg_type " + msg_type() + " cannot be converted to WrenchMeasurements<3>.");
+    }
+}
+
 SENSORBOX_INLINE std::size_t ROS1BytesDecoder::internal_msg_size(const std::string_view internal_msg_type,
         std::size_t extra_offset) {
     const std::size_t initial_offset = extra_offset;
