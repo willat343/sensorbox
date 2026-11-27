@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 
+#include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <chrono>
 #include <cstddef>
@@ -11,8 +12,10 @@
 #include <string_view>
 #include <vector>
 
+#include "sensorbox/contact.hpp"
 #include "sensorbox/ros1_decoder.hpp"
 #include "sensorbox/ros2_decoder.hpp"
+#include "sensorbox/wrench.hpp"
 
 namespace sensorbox {
 
@@ -76,6 +79,78 @@ std::vector<std::byte> test_extended_joint_state_bytes(const std::vector<double>
     append_ros1_values(bytes, accelerations);  // acceleration
     append_ros1_values(bytes, {4.0, 4.5});     // effort
     return bytes;
+}
+
+/**
+ * @brief Append a std_msgs/Header to a message in ROS 1 serialisation.
+ *
+ * @param bytes serialised message
+ * @param sec header.stamp.sec
+ * @param nsec header.stamp.nsec
+ * @param frame header.frame_id
+ */
+void append_ros1_header(std::vector<std::byte>& bytes, const uint32_t sec, const uint32_t nsec,
+        const std::string& frame) {
+    append_ros1(bytes, uint32_t{0});  // seq
+    append_ros1(bytes, sec);
+    append_ros1(bytes, nsec);
+    append_ros1_string(bytes, frame);
+}
+
+/**
+ * @brief Append an anymal_msgs/Contact to a message in ROS 1 serialisation, with a stamp of 1700000000.25 s in the
+ * odom frame, a closed state, and a position, normal and coefficients that the wrench decoding skips.
+ *
+ * @param bytes serialised message
+ * @param name contact name
+ * @param force wrench.force
+ * @param torque wrench.torque
+ */
+void append_ros1_contact(std::vector<std::byte>& bytes, const std::string& name, const Eigen::Vector3d& force,
+        const Eigen::Vector3d& torque) {
+    append_ros1_header(bytes, 1700000000, 250000000, "odom");
+    append_ros1_string(bytes, name);
+    append_ros1(bytes, uint8_t{1});  // state
+    for (const Eigen::Vector3d& vector :
+            {force, torque, Eigen::Vector3d{0.1, 0.2, -0.3}, Eigen::Vector3d{0.0, 0.0, 1.0}}) {
+        append_ros1(bytes, vector.x());
+        append_ros1(bytes, vector.y());
+        append_ros1(bytes, vector.z());
+    }
+    append_ros1(bytes, 0.8);  // frictionCoefficient
+    append_ros1(bytes, 0.0);  // restitutionCoefficient
+}
+
+/**
+ * @brief Append the anymal_msgs/Contact[] of two contacts, LF_FOOT and RH_FOOT, to a message in ROS 1 serialisation.
+ *
+ * @param bytes serialised message
+ */
+void append_ros1_test_contacts(std::vector<std::byte>& bytes) {
+    append_ros1(bytes, uint32_t{2});
+    append_ros1_contact(bytes, "LF_FOOT", Eigen::Vector3d{1.0, -2.0, 250.0}, Eigen::Vector3d::Zero());
+    append_ros1_contact(bytes, "RH_FOOT", Eigen::Vector3d{-3.0, 4.0, -5.0}, Eigen::Vector3d{0.5, -0.25, 0.125});
+}
+
+/**
+ * @brief Check the wrench measurements of the contacts of `append_ros1_test_contacts()`.
+ *
+ * @param measurements
+ */
+void expect_test_contact_wrenches(const std::vector<WrenchMeasurement<3>>& measurements) {
+    ASSERT_EQ(measurements.size(), 2);
+    for (const WrenchMeasurement<3>& measurement : measurements) {
+        EXPECT_EQ(measurement.timestamp(), WrenchMeasurement<3>::Timestamp{std::chrono::seconds{1700000000} +
+                                                                           std::chrono::nanoseconds{250000000}});
+        EXPECT_EQ(measurement.frame(), "odom");
+        EXPECT_EQ(measurement.type(), WrenchType::WRENCH);
+    }
+    EXPECT_EQ(measurements[0].child_frame(), "LF_FOOT");
+    EXPECT_EQ(*measurements[0].force(), (Eigen::Vector3d{1.0, -2.0, 250.0}));
+    EXPECT_EQ(*measurements[0].torque(), Eigen::Vector3d::Zero());
+    EXPECT_EQ(measurements[1].child_frame(), "RH_FOOT");
+    EXPECT_EQ(*measurements[1].force(), (Eigen::Vector3d{-3.0, 4.0, -5.0}));
+    EXPECT_EQ(*measurements[1].torque(), (Eigen::Vector3d{0.5, -0.25, 0.125}));
 }
 
 TEST(message_decoder, message_is_array_type) {
@@ -208,6 +283,7 @@ TEST(ros1_decoder, is_decodable) {
     EXPECT_TRUE((ROS1BytesDecoder::is_decodable<PoseMeasurement<3>>()));
     EXPECT_TRUE((ROS1BytesDecoder::is_decodable<ActuatorMeasurements>()));
     EXPECT_TRUE(ROS1BytesDecoder::is_decodable<ContactClassifications>());
+    EXPECT_TRUE((ROS1BytesDecoder::is_decodable<WrenchMeasurements<3>>()));
     EXPECT_TRUE(ROS1BytesDecoder::is_decodable<TemporalMeasurement>());
     EXPECT_TRUE(ROS1BytesDecoder::is_decodable<std::string>());
     EXPECT_TRUE(ROS1BytesDecoder::is_decodable<Eigen::Vector3d>());
@@ -354,6 +430,65 @@ TEST(ros1_decoder, extended_joint_state_with_another_number_of_accelerations_thr
         ROS1BytesDecoder decoder{bytes.data(), bytes.size(), "any_msgs/ExtendedJointState"};
         EXPECT_THROW(decoder.decode<ActuatorMeasurements>(), std::runtime_error);
     }
+}
+
+TEST(ros1_decoder, contacts_to_wrench_measurements) {
+    std::vector<std::byte> bytes;
+    append_ros1_test_contacts(bytes);
+    ROS1BytesDecoder decoder{bytes.data(), bytes.size(), "anymal_msgs/Contacts"};
+    const WrenchMeasurements<3> measurements = decoder.decode<WrenchMeasurements<3>>();
+    EXPECT_TRUE(decoder.is_finished());
+    // The timestamp of the first contact
+    EXPECT_EQ(measurements.timestamp(),
+            WrenchMeasurements<3>::Timestamp{std::chrono::seconds{1700000000} + std::chrono::nanoseconds{250000000}});
+    expect_test_contact_wrenches(measurements.measurements());
+}
+
+TEST(ros1_decoder, contacts_without_contacts_to_wrench_measurements) {
+    std::vector<std::byte> bytes;
+    append_ros1(bytes, uint32_t{0});  // contacts
+    ROS1BytesDecoder decoder{bytes.data(), bytes.size(), "anymal_msgs/Contacts"};
+    const WrenchMeasurements<3> measurements = decoder.decode<WrenchMeasurements<3>>();
+    EXPECT_TRUE(decoder.is_finished());
+    EXPECT_EQ(measurements.timestamp(), WrenchMeasurements<3>::Timestamp{});
+    EXPECT_TRUE(measurements.measurements().empty());
+}
+
+TEST(ros1_decoder, anymal_state_to_wrench_measurements) {
+    // An anymal_msgs/AnymalState message in ROS 1 serialisation: header, state, pose, twist, joints, contacts and frame
+    // transforms
+    std::vector<std::byte> bytes;
+    append_ros1_header(bytes, 1700000001, 500000000, "odom");
+    append_ros1(bytes, int8_t{0});  // state
+    append_ros1_header(bytes, 1700000001, 500000000, "odom");
+    for (const double value : {1.0, 2.0, 3.0, 0.0, 0.0, 0.0, 1.0}) {  // pose.pose
+        append_ros1(bytes, value);
+    }
+    append_ros1_header(bytes, 1700000001, 500000000, "base");
+    for (int i = 0; i < 6; ++i) {  // twist.twist
+        append_ros1(bytes, 0.0);
+    }
+    const std::vector<std::byte> joints = test_extended_joint_state_bytes({3.0, 3.5});
+    bytes.insert(bytes.end(), joints.begin(), joints.end());
+    append_ros1_test_contacts(bytes);
+    append_ros1(bytes, uint32_t{0});  // frame_transforms
+    ROS1BytesDecoder decoder{bytes.data(), bytes.size(), "anymal_msgs/AnymalState"};
+    const WrenchMeasurements<3> measurements = decoder.decode<WrenchMeasurements<3>>();
+    EXPECT_TRUE(decoder.is_finished());
+    // The timestamp of the state's header, not of its contacts
+    EXPECT_EQ(measurements.timestamp(),
+            WrenchMeasurements<3>::Timestamp{std::chrono::seconds{1700000001} + std::chrono::nanoseconds{500000000}});
+    expect_test_contact_wrenches(measurements.measurements());
+}
+
+TEST(ros1_decoder, contacts_to_wrench_measurements_and_contact_classifications) {
+    // The same message also decodes to the contact classifications
+    std::vector<std::byte> bytes;
+    append_ros1_test_contacts(bytes);
+    ROS1BytesDecoder decoder{bytes.data(), bytes.size(), "anymal_msgs/Contacts"};
+    const ContactClassifications classifications = decoder.decode<ContactClassifications>();
+    EXPECT_TRUE(decoder.is_finished());
+    EXPECT_EQ(classifications.num_contacts(), 2);
 }
 
 TEST(ros1_decoder, is_vector_or_start_recursively_decodable_to) {

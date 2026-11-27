@@ -19,6 +19,7 @@
 #include "sensorbox/pose.hpp"
 #include "sensorbox/pose_twist.hpp"
 #include "sensorbox/position.hpp"
+#include "sensorbox/wrench.hpp"
 
 namespace sensorbox {
 
@@ -1024,6 +1025,12 @@ struct ROS1Conversions {
             return std::to_array<std::string_view>({"std_msgs/Header"});
         } else if constexpr (std::same_as<T, TemporalSpatialMeasurement>) {
             return std::to_array<std::string_view>({"std_msgs/Header"});
+        } else if constexpr (std::same_as<T, WrenchMeasurement<3>>) {
+            return std::to_array<std::string_view>({"anymal_msgs/Contact"});
+        } else if constexpr (std::same_as<T, std::vector<WrenchMeasurement<3>>>) {
+            return std::to_array<std::string_view>({"anymal_msgs/AnymalState", "anymal_msgs/Contacts"});
+        } else if constexpr (std::same_as<T, WrenchMeasurements<3>>) {
+            return std::to_array<std::string_view>({"anymal_msgs/AnymalState", "anymal_msgs/Contacts"});
         } else {
             return std::array<std::string_view, 0>();
         }
@@ -1203,6 +1210,12 @@ public:
     void read_to(TemporalMeasurement& out);
 
     void read_to(TemporalSpatialMeasurement& out);
+
+    void read_to(WrenchMeasurement<3>& out);
+
+    void read_to(std::vector<WrenchMeasurement<3>>& out);
+
+    void read_to(WrenchMeasurements<3>& out);
 
 protected:
     explicit ROS1BytesDecoder(const std::byte* bytes_, const std::size_t size_, const std::string& msg_type_,
