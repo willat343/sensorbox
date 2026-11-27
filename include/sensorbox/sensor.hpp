@@ -27,7 +27,7 @@ constexpr inline SchemaFilepath RandomWalkSensorSchemaFilepath{
 constexpr inline SchemaFilepath SensorSchemaFilepath{SENSORBOX_SCHEMAS_DIRECTORY "Sensor.schema.json"};
 
 CREATE_SMART_ENUM(SensorTypeBase, ACCELEROMETER, ACTUATOR, ACTUATORS, CONTACTS_CLASSIFIER, CURRENT, ENCODER, GYROSCOPE,
-        IMU, POSE, POSITION)
+        IMU, POSE, POSITION, WRENCH, WRENCHES)
 
 /**
  * @brief Sensor type, each of which is associated with a measurement type.
@@ -63,6 +63,10 @@ public:
                 return MeasurementType::POSE;
             case POSITION:
                 return MeasurementType::POSITION;
+            case WRENCH:
+                return MeasurementType::WRENCH_MEASUREMENT;
+            case WRENCHES:
+                return MeasurementType::WRENCH_MEASUREMENTS;
             default:
                 throw_here("No MeasurementType for SensorType " + std::string(*this) + ".");
         }
