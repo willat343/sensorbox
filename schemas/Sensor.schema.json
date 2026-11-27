@@ -16,7 +16,9 @@
                 "GYROSCOPE",
                 "IMU",
                 "POSE",
-                "POSITION"
+                "POSITION",
+                "WRENCH",
+                "WRENCHES"
             ]
         },
         "make": {

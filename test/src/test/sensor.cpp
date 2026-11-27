@@ -35,6 +35,8 @@ TEST(sensor_type, measurement_type) {
     EXPECT_EQ(SensorType(SensorType::IMU).measurement_type(), MeasurementType::IMU_MEASUREMENT);
     EXPECT_EQ(SensorType(SensorType::POSE).measurement_type(), MeasurementType::POSE);
     EXPECT_EQ(SensorType(SensorType::POSITION).measurement_type(), MeasurementType::POSITION);
+    EXPECT_EQ(SensorType(SensorType::WRENCH).measurement_type(), MeasurementType::WRENCH_MEASUREMENT);
+    EXPECT_EQ(SensorType(SensorType::WRENCHES).measurement_type(), MeasurementType::WRENCH_MEASUREMENTS);
 }
 
 TEST(sensor_type, every_sensor_type_has_a_measurement_type) {
